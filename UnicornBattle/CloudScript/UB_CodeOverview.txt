@@ -1,0 +1,50 @@
+
+
+UB Overview
+=============
+
+5 major scenes 
+Authenticate
+Character Select
+Profile
+Gameplay
+Social
+
+Authentication 
+You can build to iOS or Android or use the development mode (a flag on the Authentication controller) to test in the editor.
+
+
+All playfab code is spread across many PF_XXXX classes
+PF_Bridge - has some basic PF helper fuctions and callbacks
+PF_Authentication 
+PF_Gamedata
+PF_GamePlay
+PF_PlayerData
+
+
+Singletons and other core scene components
+ * GameController (iconmanager, cdn)
+ * DialogCanvasController (interstitial, loading, & other overlays)
+ * SceneController (request scene change)
+ * Event call back system
+
+
+
+Known issues--
+MVCesque with the PF classes acting as the model, and the controllers for major UI components.
+Sloppy inconsistent use of callbacks and event queuing that would need to be cleaned up be for releasing to the public
+needs commetns
+needs removal of unused scripts and assets. There is alot that can be condensed and removed
+screen refrehes after certain actions, too many PF data calls (IMO)
+centralization of animations
+redo the sprite packing of the assets
+lots of unused vatiables that can be cleaned up
+
+
+
+Quick list of tasks to divy up next week
+ * 
+
+update google store
+
+

@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 353608153
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: c2a376effb73898bfb90f185c69402af
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 6759894fca659e2049f05064db45ce61
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+Assets:
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Background_Sales2Banner.jpg
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Background_Sales2Splash.jpg
+Dependencies: []

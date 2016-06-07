@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.playfab.unicornbattle" android:installLocation="preferExternal" android:theme="@android:style/Theme.NoTitleBar" android:versionCode="1" android:versionName="1.0">
+  <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="14" />
+  <supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" />
+  
+  <!-- Android GCM Plugin -->
+  <!-- Change the following two lines to your package name (example: [packagename].permission.C2D_MESSAGE ) -->
+  <permission android:name="com.playfab.unicornbattle.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+  <uses-permission android:name="com.playfab.unicornbattle.permission.C2D_MESSAGE" />
+  <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="com.android.vending.BILLING" />
+  <!-- Android GCM Plugin -->
+  
+  <!-- Android IAB Plugin -->
+  <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
+  <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
+    
+  <!-- for tablets, important ! -->
+  <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    
+  <permission android:name="com.tmoney.vending.INBILLING"/>
+   <!-- Android IAB Plugin -->
+  
+  <application android:icon="@drawable/app_icon" android:banner="@drawable/app_icon" android:label="@string/app_name" android:debuggable="true" android:isGame="true">
+    <activity android:name="com.unity3d.player.UnityPlayerProxyActivity" android:launchMode="singleTask" android:label="@string/app_name"  android:screenOrientation="landscape" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" android:clearTaskOnLaunch="false">
+
+    </activity>
+    
+    <activity android:name="com.unity3d.player.UnityPlayerActivity" android:launchMode="singleTask" android:label="@string/app_name" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" android:clearTaskOnLaunch="false">
+    </activity>
+    <activity android:name="com.unity3d.player.UnityPlayerNativeActivity" android:launchMode="singleTask" android:label="@string/app_name" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" android:clearTaskOnLaunch="false">
+       <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      
+      <meta-data android:name="android.app.lib_name" android:value="unity" />
+      <meta-data android:name="unityplayer.ForwardNativeEventsToDalvik" android:value="false" />
+      
+    </activity>
+    
+    <activity android:name="org.onepf.openiab.UnityProxyActivity"
+              android:launchMode="singleTask"
+              android:label="@string/app_name"
+              android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen">
+    </activity>
+    
+    <!-- Begin GCM -->
+    <receiver android:name="com.google.android.gms.gcm.GcmReceiver" android:permission="com.google.android.c2dm.permission.SEND" android:exported="true">
+      <intent-filter>
+        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+        <!-- for Gingerbread GSF backward compat -->
+        <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+        <!-- Change to your package name -->
+        <category android:name="com.playfab.unicornbattle" />
+      </intent-filter>
+    </receiver>
+    <service android:name="com.playfab.unityplugin.GCM.PlayFabGcmListenerService" android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+      </intent-filter>
+    </service>
+    <service android:name="com.playfab.unityplugin.GCM.PlayFabInstanceIDListenerService" android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.android.gms.iid.InstanceID" />
+      </intent-filter>
+    </service>
+    <service android:name="com.playfab.unityplugin.GCM.PlayFabRegistrationIntentService" android:exported="false">
+    </service>
+    <service android:name="com.playfab.unityplugin.PlayFabUnityAndroidPlugin" android:exported="false" android:stopWithTask="true">
+    </service>
+    <!-- End GCM -->
+    
+    
+    <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+    
+    <!-- Android GCM Plugin -->
+    <activity android:name="com.facebook.unity.FBUnityLoginActivity" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+    </activity>
+    <activity android:name="com.facebook.unity.FBUnityDialogsActivity" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+    </activity>
+    <activity android:name="com.facebook.LoginActivity" android:configChanges="keyboardHidden|orientation" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+    </activity>
+    <activity android:name="com.facebook.unity.FBUnityDeepLinkingActivity" android:exported="true">
+    </activity>
+    <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="\ 403608796495072" />
+  </application>
+</manifest>

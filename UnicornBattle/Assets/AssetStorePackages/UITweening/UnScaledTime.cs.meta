@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: e8f45c883eba386458ddb4a49a70df1f
+labels:
+- UGUI
+- Tween
+- Tweening
+- UserInterface
+- UI
+- Animation
+- GUI
+- Effect
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

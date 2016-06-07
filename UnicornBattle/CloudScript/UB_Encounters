@@ -1,0 +1,759 @@
+// Default Creeps
+{
+	"Primal Ooze" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "Ooze_1",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Acid Bolts",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 1,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 75,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	},
+
+	"Evil Shadow" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "RedJack",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Scare",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 1,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 75,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	},
+
+	"Icy Spirit" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "BlueJack",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Scare",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 1,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 75,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	},
+
+	"Noxious Sprite" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "An elemental made purely out of poison gas.",
+
+		"Icon" : "GreenJack",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Acidic Spray",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 1,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 75,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	}
+}
+
+
+//Mega-Creeps
+{
+	"Ice Tick" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "Tick_1",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Ice Bolts",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			},
+			
+			"Spell2" :
+			{
+				"SpellName" : "Freezing Stare",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 3,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 225,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	},
+
+	"Ice Tick" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "Tick_1",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Ice Bolts",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			},
+			
+			"Spell2" :
+			{
+				"SpellName" : "Freezing Stare",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 3,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 225,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	},
+
+	"Cave Tick" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "Tick_4",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Rock Slide",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			},
+			
+			"Spell2" :
+			{
+				"SpellName" : "Roots",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 3,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 225,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	},
+
+	"Shadow Tick": 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Creep",
+		"Description" : "",
+
+		"Icon" : "Tick_1",
+		
+		"Spells" : 
+		{
+			"Spell1" :
+			{
+				"SpellName" : "Shadow Blade",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			},
+			
+			"Spell2" :
+			{
+				"SpellName" : "Shadow Curse",
+				"SpellLevel" : 0,
+				"SpellPriority" : 0
+			}
+		},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 3,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 25,
+			"Speed" : 225,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 20,
+			"XpMax" : 29,
+			"GoldMin" : 10,
+			"GoldMax" : 15,
+			"ItemsDropped" : []
+		}
+	}
+}
+
+
+//Boss-Creeps
+{
+    "Willie": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "Willie_1",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Rock Slide",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Energy Blast",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    },
+    "Watson": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "Willie_2",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Shadow Blade",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Shadow Curse",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    },
+    "Kapri": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "BugBoss",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Creeping Vines",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Acidic Spray",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    },
+    "Black Scale": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "DragonBoss",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Energy Blast",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Shadow Curse",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    },
+    "Howler": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "HyenaBoss",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Shadow Blade",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Energy Blast",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    },
+
+    "Frost Beak": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "BirdBoss",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Freezing Stare",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Ice Bolts",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    },
+
+    "Tick-Tock": {
+        "SpawnWeight": 0,
+        "EncounterType": "BossCreep",
+        "Description": "",
+        "Icon": "Tick_2",
+        "Spells": {
+            "Spell1": {
+                "SpellName": "Creeping Vines",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            },
+            "Spell2": {
+                "SpellName": "Rock Slide",
+                "SpellLevel": 0,
+                "SpellPriority": 0
+            }
+        },
+        "Vitals": {
+            "CharacterLevel": 5,
+            "Health": 500,
+            "Mana": 0,
+            "Defense": 25,
+            "Speed": 75,
+            "ActiveStati": [],
+            "UseableItems": []
+        },
+        "EncounterActions": {},
+        "Rewards": {
+            "XpMin": 500,
+            "XpMax": 500,
+            "GoldMin": 700,
+            "GoldMax": 1100,
+            "ItemsDropped": [
+                "CrystalContainer"
+            ]
+        }
+    }
+}
+
+//Rare Creeps
+{
+"Chest Monster" : 
+{
+"SpawnWeight" : 0,	
+"EncounterType" : "RareCreep",
+"Description" : "",
+
+"Icon" : "runes-orange-1",
+
+"Spells" : 
+{
+	"Spell1" :
+	{
+		"SpellName" : "Scare",
+		"SpellLevel" : 0,
+		"SpellPriority" : 0
+	},
+	
+	"Spell2" :
+	{
+		"SpellName" : "Scare",
+		"SpellLevel" : 0,
+		"SpellPriority" : 0
+	},
+	
+	"Spell3" :
+	{
+		"SpellName" : "Scare",
+		"SpellLevel" : 0,
+		"SpellPriority" : 0
+	}
+},
+
+"Vitals" :
+{
+	"CharacterLevel" : 3,
+	"Health" : 100,
+	"Mana" : 0,
+	"Defense" : 25,
+	"Speed" : 10,
+	"ActiveStati" : [],
+	"UseableItems" : []
+},
+
+"EncounterActions" : {},
+
+"Rewards" :
+{
+	"XpMin" : 250,
+	"XpMax" : 250,
+	"GoldMin" : 300,
+	"GoldMax" : 550,
+	"ItemsDropped" : ["CrystalContainer"]
+}
+}
+}
+
+//store encounters
+{
+	"Traveling Merchant" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Store",
+		"Description" : "",
+
+		"Icon" : "wind-grasp-air-1",
+		
+		"Spells" : {},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 3,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 1,
+			"Speed" : 1,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {"Store" : "Traveling Merchant"},
+
+		"Rewards" :
+		{
+			"XpMin" : 0,
+			"XpMax" : 0,
+			"GoldMin" : 0,
+			"GoldMax" : 0,
+			"ItemsDropped" : []
+		}
+	}
+}
+
+
+// Hero Encounters
+{
+	"Imprisoned Unicorn" : 
+	{
+		"SpawnWeight" : 0,	
+		"EncounterType" : "Hero",
+		"Description" : "",
+
+		"Icon" : "shielding-spirit-3",
+		
+		"Spells" : {},
+
+		"Vitals" :
+		{
+			"CharacterLevel" : 3,
+			"Health" : 100,
+			"Mana" : 0,
+			"Defense" : 1,
+			"Speed" : 1,
+			"ActiveStati" : [],
+			"UseableItems" : []
+		},
+
+		"EncounterActions" : {},
+
+		"Rewards" :
+		{
+			"XpMin" : 200,
+			"XpMax" : 200,
+			"GoldMin" : 2000,
+			"GoldMax" : 2000,
+			"ItemsDropped" : ["UnicornRescueBundle"]
+		}
+	}
+}
