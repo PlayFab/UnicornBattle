@@ -19,6 +19,7 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController> {
 	
 	public string UBVersion = "v1.10.10";
 	public Text displayVersion;
+	public Text activeTitleId;
 	public string communityPortal = @"https:\\playfab.com";
 
 	public enum SettingButtonTypes {none = 0, returnToCharacterSelect, leaveBattle, logout, accountSettings, setTitleId, communityPortal, redeemCoupon}
@@ -101,7 +102,9 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController> {
 		
 		TweenPos.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(0, 0, 0), new Vector3(Screen.width/2, Screen.height/2, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null, Space.World);
 		TweenScale.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(0,0,0), new Vector3(1,1,1), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-		
+
+		this.activeTitleId.text = PlayFab.PlayFabSettings.TitleId;
+
 		ToggleOpenCloseButtons();
 	}
 	
@@ -202,6 +205,7 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController> {
 		{
 			if(!string.IsNullOrEmpty(response))
 			{
+				this.activeTitleId.text = response;
 				PlayFab.PlayFabSettings.TitleId = response;
 				PlayerPrefs.SetString("TitleId", response);
 			}
