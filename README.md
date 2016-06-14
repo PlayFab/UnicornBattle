@@ -1,7 +1,7 @@
 #Introducing Unicorn Battle
 This repository is the home of Unicorn Battle (UB), PlayFab's open-source, end-to-end demo project. UB is a complete game sporting dynamic gameplay, driven by PlayFab's back-end technology, showcasing how to build modern live-game systems. 
 
-[[https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/Login.png]]
+![UB Login](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/Login.png "Unicorn Battle Login")
 
 All project documentation can be found in this [**repo's wiki**](https://github.com/PlayFab/UnicornBattle/wiki "Unicorn Battle Wiki").
 
@@ -19,8 +19,7 @@ All project documentation can be found in this [**repo's wiki**](https://github.
   * **Cloud-hosted Logic** - Cloud Script methods that call a variety of  protected APIs
   * **Community Forums** - with API access to your game; built by our partners over at [Innervate](https://playfab.com/marketplace/innervate/ "A turn-key community solution that comes out-of-the-box integrated with Playfab")
 
-
-[[https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/Battle2.png]]
+![UB Battle](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/Battle2.png "Unicorn Battle")
 
 ##Configuration and Setup
 ###Prerequisites:
@@ -45,7 +44,7 @@ If no errors were reported, then you are ready to move on to the client setup!
 
 See the [Back-end Guide](https://github.com/PlayFab/UnicornBattle/wiki/1-Unicorn-Battle-Backend-Guide) for additional details. 
 
-[[https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/UB_Uploader.png]]
+![UB_Uploader](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/UB_Uploader.png "UB_Uploader")
 
 ####Client Setup:
 The [Unicorn Battle Client](/UnicornBattle/ "Unity Project") was built with iOS and Android targets using Unity3d 5.3.4f. Testing within the Unity editor, on web or desktop works, but not all features are available. This game was designed to be viewed in 16:9 aspect ratio, but most common ratios should display reasonably well. 
@@ -56,7 +55,7 @@ At this point you should be at a point where you can build and test the game loc
 
 See the [Client Guide](https://github.com/PlayFab/UnicornBattle/wiki/2-Unicorn-Battle-Client-Guide) for additional details.
 
-[[https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/QuestComplete.png]]
+![Quest Complete](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/QuestComplete.png "Quest Complete!")
 
 ##Additional Documentation
   * [Back-end Guide](https://github.com/PlayFab/UnicornBattle/wiki/1-Unicorn-Battle-Backend-Guide)
