@@ -1,0 +1,151 @@
+Setting Destination TitleId to:276
+Setting DeveloperSecretKey to:H45DTTT8EF5QFF8GKFWGKPK6EP481J1XSW8YB9ORP1BJORMJ63
+Uploading Title Data Keys & Values...
+	Uploading: Achievements
+		Achievements Uploaded.
+	Uploading: CharacterLevelRamp
+		CharacterLevelRamp Uploaded.
+	Uploading: Classes
+		Classes Uploaded.
+	Uploading: CommunityWebsite
+		CommunityWebsite Uploaded.
+	Uploading: DefaultBossCreeps
+		DefaultBossCreeps Uploaded.
+	Uploading: DefaultCreeps
+		DefaultCreeps Uploaded.
+	Uploading: DefaultHeroEncounters
+		DefaultHeroEncounters Uploaded.
+	Uploading: DefaultMegaCreeps
+		DefaultMegaCreeps Uploaded.
+	Uploading: DefaultRareCreeps
+		DefaultRareCreeps Uploaded.
+	Uploading: DefaultStoreEncounters
+		DefaultStoreEncounters Uploaded.
+	Uploading: Events
+		Events Uploaded.
+	Uploading: Levels
+		Levels Uploaded.
+	Uploading: MinimumInterstitialWait
+		MinimumInterstitialWait Uploaded.
+	Uploading: Offers
+		Offers Uploaded.
+	Uploading: Sales
+		Sales Uploaded.
+	Uploading: Spells
+		Spells Uploaded.
+	Uploading: StandardStores
+		StandardStores Uploaded.
+	Uploading: StartingCharacterSlots
+		StartingCharacterSlots Uploaded.
+Uploading Virtual Currency Settings...
+	Uploaded VC!
+Uploading CatalogItems...
+	Uploaded Catalog!
+Uploading DropTables...
+	Uploaded DropTables!
+Uploading Stores...
+	Uploading: Character Slot Store
+		Store: Character Slot Store Uploaded.
+	Uploading: ExtraHeartsStore
+		Store: ExtraHeartsStore Uploaded.
+	Uploading: Gem Store
+		Store: Gem Store Uploaded.
+	Uploading: Gem Store MN
+		Store: Gem Store MN Uploaded.
+	Uploading: Gem Store WH
+		Store: Gem Store WH Uploaded.
+	Uploading: Gold Store
+		Store: Gold Store Uploaded.
+	Uploading: Happy Hour
+		Store: Happy Hour Uploaded.
+	Uploading: LaunchParty
+		Store: LaunchParty Uploaded.
+	Uploading: Profile Store
+		Store: Profile Store Uploaded.
+	Uploading: Traveling Merchant
+		Store: Traveling Merchant Uploaded.
+Reuploading [1] CatalogItems due to DropTable conflicts...
+	Uploaded Catalog!
+Uploading CloudScript...
+	Uploaded CloudScript!
+Uploading TitleNews...
+	Uploading: Try All Pony Classes
+		Try All Pony Classes Uploaded.
+	Uploading: Prepare Before A Quest
+		Prepare Before A Quest Uploaded.
+	Uploading: Use Cooldowns Wisely
+		Use Cooldowns Wisely Uploaded.
+Updating Player Statistics Definitions ...
+	Uploading: Total_BossesKilled
+	Statistic Already Exists, Updating values: Total_BossesKilled
+		Statistics Definition: Total_BossesKilled Updated 
+	Uploading: Total_DamageDone
+	Statistic Already Exists, Updating values: Total_DamageDone
+		Statistics Definition: Total_DamageDone Updated 
+	Uploading: Total_Revenue
+	Statistic Already Exists, Updating values: Total_Revenue
+		Statistics Definition: Total_Revenue Updated 
+	Uploading: what
+	Statistic Already Exists, Updating values: what
+		Statistics Definition: what Updated 
+	Uploading: Total_XPGained
+	Statistic Already Exists, Updating values: Total_XPGained
+		Statistics Definition: Total_XPGained Updated 
+	Uploading: Total_GoldFound
+	Statistic Already Exists, Updating values: Total_GoldFound
+		Statistics Definition: Total_GoldFound Updated 
+	Uploading: Total_EncountersCompleted
+	Statistic Already Exists, Updating values: Total_EncountersCompleted
+		Statistics Definition: Total_EncountersCompleted Updated 
+	Uploading: Total_ItemsFound
+	Statistic Already Exists, Updating values: Total_ItemsFound
+		Statistics Definition: Total_ItemsFound Updated 
+	Uploading: Total_UnicornsRescued
+	Statistic Already Exists, Updating values: Total_UnicornsRescued
+		Statistics Definition: Total_UnicornsRescued Updated 
+	Uploading: Total_QuestsCompleted
+	Statistic Already Exists, Updating values: Total_QuestsCompleted
+		Statistics Definition: Total_QuestsCompleted Updated 
+	Uploading: Total_ItemsUsed
+	Statistic Already Exists, Updating values: Total_ItemsUsed
+		Statistics Definition: Total_ItemsUsed Updated 
+	Uploading: TotalWins
+	Statistic Already Exists, Updating values: TotalWins
+		Statistics Definition: TotalWins Updated 
+Uploading CDN AssetBundles...
+	Fetching CDN endpoint for sales/s100
+		Aquired CDN Address: sales/s100
+		Starting HTTP PUT for: sales/s100
+			HTTP PUT Successful:sales/s100
+	Fetching CDN endpoint for sales/s200
+		Aquired CDN Address: sales/s200
+		Starting HTTP PUT for: sales/s200
+			HTTP PUT Successful:sales/s200
+	Fetching CDN endpoint for sales/gm100
+		Aquired CDN Address: sales/gm100
+		Starting HTTP PUT for: sales/gm100
+			HTTP PUT Successful:sales/gm100
+	Fetching CDN endpoint for iOS/sales/s100
+		Aquired CDN Address: iOS/sales/s100
+		Starting HTTP PUT for: iOS/sales/s100
+			HTTP PUT Successful:iOS/sales/s100
+	Fetching CDN endpoint for iOS/sales/s200
+		Aquired CDN Address: iOS/sales/s200
+		Starting HTTP PUT for: iOS/sales/s200
+			HTTP PUT Successful:iOS/sales/s200
+	Fetching CDN endpoint for iOS/sales/gm100
+		Aquired CDN Address: iOS/sales/gm100
+		Starting HTTP PUT for: iOS/sales/gm100
+			HTTP PUT Successful:iOS/sales/gm100
+	Fetching CDN endpoint for Android/sales/s100
+		Aquired CDN Address: Android/sales/s100
+		Starting HTTP PUT for: Android/sales/s100
+			HTTP PUT Successful:Android/sales/s100
+	Fetching CDN endpoint for Android/sales/s200
+		Aquired CDN Address: Android/sales/s200
+		Starting HTTP PUT for: Android/sales/s200
+			HTTP PUT Successful:Android/sales/s200
+	Fetching CDN endpoint for Android/sales/gm100
+		Aquired CDN Address: Android/sales/gm100
+		Starting HTTP PUT for: Android/sales/gm100
+			HTTP PUT Successful:Android/sales/gm100

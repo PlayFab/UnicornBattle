@@ -1,0 +1,19 @@
+{
+	"DT_CrystalContainer": {
+		"CatalogVersion": "CharacterClasses",
+		"TableId": "DT_CrystalContainer",
+		"Nodes": [{
+			"ResultItemType": "ItemId",
+			"ResultItem": "CrystalKey",
+			"Weight": 10
+		}, {
+			"ResultItemType": "ItemId",
+			"ResultItem": "NilLoot",
+			"Weight": 25
+		}, {
+			"ResultItemType": "ItemId",
+			"ResultItem": "SmallHealthPotion",
+			"Weight": 65
+		}]
+	}
+}
