@@ -1,0 +1,183 @@
+{
+	"Character Slot Store": [{
+		"ItemId": "ExtraCharacterSlot",
+		"VirtualCurrencyPrices": {
+			"Gm": 5
+		}
+	}],
+	"ExtraHeartsStore": [{
+		"ItemId": "ExtraHearts3",
+		"VirtualCurrencyPrices": {
+			"Gm": 1
+		}
+	}, {
+		"ItemId": "SmallGemBundle",
+		"VirtualCurrencyPrices": {
+			"RM": 99
+		}
+	}, {
+		"ItemId": "SmallHeatlhPotion",
+		"VirtualCurrencyPrices": {
+			"G": 400
+		}
+	}],
+	"Gem Store": [{
+		"ItemId": "small_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 99
+		}
+	}, {
+		"ItemId": "medium_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 299
+		}
+	}, {
+		"ItemId": "large_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 499
+		}
+	}, {
+		"ItemId": "extralarge_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 999
+		}
+	}],
+	"Gem Store MN": [{
+		"ItemId": "small_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 99
+		}
+	}, {
+		"ItemId": "medium_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 299
+		}
+	}, {
+		"ItemId": "large_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 499
+		}
+	}, {
+		"ItemId": "extralarge_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 999
+		}
+	}],
+	"Gem Store WH": [{
+		"ItemId": "mega_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"G": 0,
+			"Gm": 0,
+			"HT": 0,
+			"RM": 4999
+		}
+	}, {
+		"ItemId": "epic_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"G": 0,
+			"Gm": 0,
+			"HT": 0,
+			"RM": 9999
+		}
+	}, {
+		"ItemId": "medium_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 299
+		}
+	}, {
+		"ItemId": "extralarge_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 999
+		}
+	}],
+	"Gold Store": [{
+		"ItemId": "SmallHeatlhPotion",
+		"VirtualCurrencyPrices": {
+			"G": 400
+		}
+	}, {
+		"ItemId": "CrystalKey",
+		"VirtualCurrencyPrices": {
+			"G": 100
+		}
+	}, {
+		"ItemId": "MediumHealthPotion",
+		"VirtualCurrencyPrices": {
+			"G": 800
+		}
+	}, {
+		"ItemId": "ExtraHearts3",
+		"VirtualCurrencyPrices": {
+			"G": 10000
+		}
+	}],
+	"Happy Hour": [{
+		"ItemId": "MediumHealthPotion",
+		"VirtualCurrencyPrices": {
+			"G": 500
+		}
+	}, {
+		"ItemId": "LargeHealthPotion",
+		"VirtualCurrencyPrices": {
+			"G": 750
+		}
+	}, {
+		"ItemId": "ExtraHearts3",
+		"VirtualCurrencyPrices": {
+			"Gm": 3
+		}
+	}, {
+		"ItemId": "SmallHealthPotion",
+		"VirtualCurrencyPrices": {
+			"G": 200
+		}
+	}],
+	"LaunchParty": [{
+		"ItemId": "LargePileOGold",
+		"VirtualCurrencyPrices": {
+			"Gm": 10
+		}
+	}, {
+		"ItemId": "MediumPileOGold",
+		"VirtualCurrencyPrices": {
+			"Gm": 5
+		}
+	}, {
+		"ItemId": "CrystalKey",
+		"VirtualCurrencyPrices": {
+			"G": 100
+		}
+	}, {
+		"ItemId": "small_gem_bundle",
+		"VirtualCurrencyPrices": {
+			"RM": 49
+		}
+	}],
+	"Profile Store": [{
+		"ItemId": "LargeHealthPotion",
+		"VirtualCurrencyPrices": {
+			"G": 1000
+		}
+	}, {
+		"ItemId": "CrystalKey",
+		"VirtualCurrencyPrices": {
+			"G": 200
+		}
+	}, {
+		"ItemId": "LargePileOGold",
+		"VirtualCurrencyPrices": {
+			"Gm": 18
+		}
+	}, {
+		"ItemId": "SmallHealthPotion",
+		"VirtualCurrencyPrices": {
+			"G": 400
+		}
+	}],
+	"Traveling Merchant": [{
+		"ItemId": "SmallHeatlhPotion",
+		"VirtualCurrencyPrices": {
+			"G": 400
+		}
+	}]
+}
