@@ -76,9 +76,9 @@ The asset creators below retain all rights to their assets. Please do not use wi
 - [**Cartoon FX Package**](https://www.assetstore.unity3d.com/en/#!/content/4010 "https://www.assetstore.unity3d.com/en/#!/content/4010"): 
 [Jean Moreno](http://www.jeanmoreno.com/contact.html "Creator's Contact") -- [http://www.jeanmoreno.com/](http://www.jeanmoreno.com/ "Creator's Site")
 - [**UGuiTween**](https://www.assetstore.unity3d.com/en/#!/content/26547 "https://www.assetstore.unity3d.com/en/#!/content/26547"): [Chris Cunningham](http://rightsomegoodgames.ca/contact.html "Creator's Contact") -- [http://rightsomegoodgames.ca/](http://rightsomegoodgames.ca/ "Creator's Site")
-- **[Painterly Spell Icons](http://opengameart.org/content/painterly-spell-icons-part-1 "http://opengameart.org/content/painterly-spell-icons-part-1")**: [J. W. Bjerk](mailto:me@jwbjerk.com "Crator's Contact") (eleazzaar) -find this and other open art at: [http://opengameart.org](http://opengameart.org "http://opengameart.org")
-- **[Facebook SDK](https://developers.facebook.com/docs/unity/ "https://developers.facebook.com/docs/unity/")**: [Facebook](https://developers.facebook.com/ "Crator's Contact") - [https://developers.facebook.com/](https://developers.facebook.com/ "https://developers.facebook.com/")
-- **[OpenIAB](https://github.com/onepf/OpenIAB "https://github.com/onepf/OpenIAB")**: [OpenIAB](http://onepf.org/openiab/ "Crator's Contact") - [http://onepf.org/openiab/](http://onepf.org/openiab/ "http://onepf.org/openiab/")
+- **[Painterly Spell Icons](http://opengameart.org/content/painterly-spell-icons-part-1 "http://opengameart.org/content/painterly-spell-icons-part-1")**: [J. W. Bjerk](mailto:me@jwbjerk.com "Crator's Contact") (eleazzaar) -- find this and other open art at: [http://opengameart.org](http://opengameart.org "http://opengameart.org")
+- **[Facebook SDK](https://developers.facebook.com/docs/unity/ "https://developers.facebook.com/docs/unity/")**: [Facebook](https://developers.facebook.com/ "Crator's Contact") -- [https://developers.facebook.com/](https://developers.facebook.com/ "https://developers.facebook.com/")
+- **[OpenIAB](https://github.com/onepf/OpenIAB "https://github.com/onepf/OpenIAB")**: [OpenIAB](http://onepf.org/openiab/ "Crator's Contact") -- [http://onepf.org/openiab/](http://onepf.org/openiab/ "http://onepf.org/openiab/")
 
 ##Community Development
 Ideas on how we can make our examples, documentation and services better? -- **[Contact Us](mailto:devrel@playfab.com "PlayFab")** 
