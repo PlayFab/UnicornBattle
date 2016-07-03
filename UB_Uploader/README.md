@@ -1,6 +1,6 @@
 
 ##Back-end Setup:
-We built [this handy tool](/UB_Uploader/ "UB_Uploader") to clone the Unicorn Battle back-end to a PlayFab title of your choosing. 
+We built this tool to clone the Unicorn Battle back-end to any PlayFab title of your choosing. 
 
 ##Creating your Unicorn Battle clone:
   1. Download the directory or compile the solution
