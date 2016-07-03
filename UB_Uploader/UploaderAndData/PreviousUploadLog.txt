@@ -1,5 +1,5 @@
-Setting Destination TitleId to:276
-Setting DeveloperSecretKey to:H45DTTT8EF5QFF8GKFWGKPK6EP481J1XSW8YB9ORP1BJORMJ63
+Setting Destination TitleId to:XXXX
+Setting DeveloperSecretKey to:XXXXXX...XXXXX
 Uploading Title Data Keys & Values...
 	Uploading: Achievements
 		Achievements Uploaded.
