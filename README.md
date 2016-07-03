@@ -26,25 +26,17 @@ All project documentation can be found in the [**GitHub Wiki**](https://github.c
 This is an advanced example and can be quite dense at times due to the many sub-systems. 
 
 - You should be very familiar with Unity3d & UUI 
-- Have a basic understanding of the PlayFab Unity SDK and API
+- Have a [basic understanding](https://api.playfab.com/) of the PlayFab API
 - Be comfortable working with JSON-to-C# serialization & deserialization
 
 ####Back-end Setup:
 The Unicorn Battle data is distributed across many cloud-based technologies. 
 
 We built [this handy tool](/UB_Uploader/ "UB_Uploader") to clone the Unicorn Battle back-end to a PlayFab title of your choosing. 
-
-#####Uploading your Unicorn Battle clone:
-  1. Download the directory or compile the solution
-  2. Update the */PlayFabData/TitleSettings.json* file with your **TitleId** and corresponding **DeveloperSecretKey**. 
-  3. Locate and run *UB_Uploader.exe*
-  4. A log [*PreviousUploadLog.txt*] of the results will be generated within the exe's working directory. 
  
-If no errors were reported, then you are ready to move on to the client setup!
+After running, if no errors were reported, then you are ready to move on to the client setup!
 
 See the [Back-end Guide](https://github.com/PlayFab/UnicornBattle/wiki/1-Unicorn-Battle-Backend-Guide) for additional details. 
-
-![UB_Uploader](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/UB_Uploader.png "UB_Uploader")
 
 ####Client Setup:
 The [Unicorn Battle Client](/UnicornBattle/ "Unity Project") was built with iOS and Android targets using Unity3d 5.3.4f. Testing within the Unity editor, on web or desktop works, but not all features are available. This game was designed to be viewed in 16:9 aspect ratio, but most common ratios should display reasonably well. 
@@ -54,8 +46,6 @@ Prior to running Unicorn Battle you will need to set your TitleId in GlobalStrin
 At this point you should be at a point where you can build and test the game locally. 
 
 See the [Client Guide](https://github.com/PlayFab/UnicornBattle/wiki/2-Unicorn-Battle-Client-Guide) for additional details.
-
-![Quest Complete](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/QuestComplete.png "Quest Complete!")
 
 ##Additional Documentation
   * [Back-end Guide](https://github.com/PlayFab/UnicornBattle/wiki/1-Unicorn-Battle-Backend-Guide)
@@ -79,7 +69,7 @@ Our Developer Success Team can assist with answering any questions as well as pr
   License Details available in [LICENSE.txt](https://github.com/PlayFab/UnicornBattle/blob/master/LICENSE "Apache 2.0 License")
 
 ###Third-Party Code Attribution:
-If you liked any of the art used in Unicorn Battle,  support it's creators:
+The asset crators below retain all rights to their assets. Please do not use without explicit concent. If you liked any of the assets used in Unicorn Battle, support it's creators:
 
 - **Featured Art**: [Ashley Sarroca](mailto:sarroca.a@gmail.com "Creator's Email") -- [http://ashleysarroca.com/](http://ashleysarroca.com/ "Creator's Site")
 - **[GUI DarkStone 1](https://www.assetstore.unity3d.com/en/#!/content/18225 "https://www.assetstore.unity3d.com/en/#!/content/18225")**: [Layer Lab](http://www.layerlab.io/talk/ "Creator's Contact") -- [http://www.layerlab.io/work](http://www.layerlab.io/work "Creator's Site")
