@@ -1,5 +1,5 @@
 ##Client Setup:
-The [Unicorn Battle Client](/UnicornBattle/ "Unity Project") was built with iOS and Android targets using Unity3d 5.3.4f. Testing within the Unity editor, on web or desktop works, but not all features are available. This game was designed to be viewed in 16:9 aspect ratio, but most common ratios should display reasonably well. 
+The Unicorn Battle Client was built with iOS and Android targets using Unity3d 5.3.4f. Testing within the Unity editor, on web or desktop works, but not all features are available. This game was designed to be viewed in 16:9 aspect ratio, but most common ratios should display reasonably well. 
 
 Prior to running Unicorn Battle you will need to set your TitleId in [GlobalStrings.cs](https://github.com/PlayFab/UnicornBattle/blob/master/UnicornBattle/Assets/Scripts/Misc/GlobalStrings.cs). This is the same value you used when setting up the back-end.
 
