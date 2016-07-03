@@ -69,7 +69,7 @@ Our Developer Success Team can assist with answering any questions as well as pr
   License Details available in [LICENSE.txt](https://github.com/PlayFab/UnicornBattle/blob/master/LICENSE "Apache 2.0 License")
 
 ###Third-Party Code Attribution:
-The asset crators below retain all rights to their assets. Please do not use without explicit concent. If you liked any of the assets used in Unicorn Battle, support it's creators:
+The asset creators below retain all rights to their assets. Please do not use without explicit consent. If you liked any of the assets used in Unicorn Battle, support it's creators:
 
 - **Featured Art**: [Ashley Sarroca](mailto:sarroca.a@gmail.com "Creator's Email") -- [http://ashleysarroca.com/](http://ashleysarroca.com/ "Creator's Site")
 - **[GUI DarkStone 1](https://www.assetstore.unity3d.com/en/#!/content/18225 "https://www.assetstore.unity3d.com/en/#!/content/18225")**: [Layer Lab](http://www.layerlab.io/talk/ "Creator's Contact") -- [http://www.layerlab.io/work](http://www.layerlab.io/work "Creator's Site")
