@@ -265,9 +265,6 @@ public class ItemViewerController : MonoBehaviour {
 
 	public void AfterUnlock(UnlockContainerItemResult result)
 	{
-		//Debug.Log("ITEMs: " + result.GrantedItems.Count);
-		//Debug.Log("VCs: " + result.VirtualCurrency.Count);
-		
 		// unlocking a container will automatically add the returned items, this ensures that items are not added twice.
 		PF_GamePlay.QuestProgress.ItemsFound.Remove(this.selectedItem.ItemId);
 		
@@ -316,11 +313,8 @@ public class ItemViewerController : MonoBehaviour {
 		this.CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId+"_Open");	
 		this.openedBoxes.Add(this.selectedIndex, items);
 		EnableUnlockedItemsView(items);
-		
-//		if(this.afterUnlockCallback != null)
-//		{
-			DialogCanvasController.RequestInventoryPrompt();
-//		}
+
+		DialogCanvasController.RequestInventoryPrompt();
 	}
 	
 	
@@ -361,40 +355,6 @@ public class ItemViewerController : MonoBehaviour {
 			}
 		}
 	}
-	
-	
-	
-	
-#region unused	
-	void OnEnable()
-	{
-        GameplayController.OnGameplayEvent += OnGameplayEventReceived;
-		//uiSlider.onValueChanged.AddListener((v) => { OnSliderChanged(v); });
-	}
-	
-	void OnDisable()
-	{
-        GameplayController.OnGameplayEvent -= OnGameplayEventReceived;
-		
-	}
-	
-    void OnGameplayEventReceived(string message,  PF_GamePlay.GameplayEventTypes type )
-	{
-		
-	}
-	
-	
-	// Use this for initialization
-	void Start () 
-	{
-
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-#endregion	
 }
 
 

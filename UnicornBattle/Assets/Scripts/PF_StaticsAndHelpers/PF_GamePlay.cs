@@ -220,7 +220,7 @@ public static class PF_GamePlay
 	/// <param name="storeID">Store I.</param>
 	public static void StartBuyStoreItem(CatalogItem item, string storeID)
 	{
-        if (item.VirtualCurrencyPrices.ContainsKey("RM"))
+		if (item.VirtualCurrencyPrices.ContainsKey("RM"))
 		{
 			PF_Bridge.IAB_CurrencyCode = "US";
 			PF_Bridge.IAB_Price = (int)item.VirtualCurrencyPrices["RM"];
@@ -229,48 +229,21 @@ public static class PF_GamePlay
             return;
 		}
 
-        string characterId = PF_PlayerData.activeCharacter == null ? null : PF_PlayerData.activeCharacter.characterDetails.CharacterId;
 		var vcKVP = item.VirtualCurrencyPrices.First();
 
-        if (characterId != null)
+		// normal purchase item flow
+        PurchaseItemRequest request = new PurchaseItemRequest();
+        request.ItemId = item.ItemId;
+        request.VirtualCurrency = vcKVP.Key;
+        request.Price = (int)vcKVP.Value;
+        request.StoreId = storeID;
+		if(PF_PlayerData.activeCharacter != null)
 		{
-			DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.MakePurchase);
-
-			ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
-			request.FunctionName = "PurchaseItem";
-			request.FunctionParameter = new { ItemPrice = (int)vcKVP.Value, CurrencyCode = vcKVP.Key, CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId, ItemId = item.ItemId };
-
-			PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) => 
-			{
-				if(!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-					return;
-
-				if((bool)result.FunctionResult == true)
-				{
-					PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.MakePurchase, MessageDisplayStyle.none);	
-				}
-				else
-				{
-					PF_Bridge.RaiseCallbackError("Could not process request due to insufficient VC.", PlayFabAPIMethods.MakePurchase, MessageDisplayStyle.error);
-				}
-					
-			}, PF_Bridge.PlayFabErrorCallback);
+			request.CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
 		}
-        else if (characterId == null)
-        {
-            // normal purchase item flow
-            PurchaseItemRequest request = new PurchaseItemRequest();
-            request.ItemId = item.ItemId;
-            request.VirtualCurrency = vcKVP.Key;
-            request.Price = (int)vcKVP.Value;
-            request.StoreId = storeID;
-			DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.MakePurchase);
-            PlayFabClientAPI.PurchaseItem(request, OnBuyStoreItemSuccess, PF_Bridge.PlayFabErrorCallback);
-        }
-        else
-        {
-            Debug.LogWarning("Store purchase failed: " + characterId);
-        }
+
+		DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.MakePurchase);
+        PlayFabClientAPI.PurchaseItem(request, OnBuyStoreItemSuccess, PF_Bridge.PlayFabErrorCallback);
 	}
 
 	/// <summary>
@@ -290,17 +263,20 @@ public static class PF_GamePlay
 	/// <param name="id">Identifier.</param>
 	public static void ConsumeItem(string id)
 	{
-		//DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericCloudScript);
-		ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
-		request.FunctionName = "ConsumeItem";
-		request.FunctionParameter = new { CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId, ItemId = id };
-
-		PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) => 
+		ConsumeItemRequest request = new ConsumeItemRequest();
+		request.ConsumeCount = 1;
+		request.ItemInstanceId = id;
+		if(PF_PlayerData.activeCharacter != null)
 		{
-			if(!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-				return;
+			request.CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
+		}
 
-			PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.ExecuteCloudScript, MessageDisplayStyle.none);	
+
+		//DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericCloudScript);
+		PlayFabClientAPI.ConsumeItem(request, (ConsumeItemResult result) => 
+		{
+
+			PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.ConsumeItemUse, MessageDisplayStyle.none);	
 		}, PF_Bridge.PlayFabErrorCallback);
 	}
 

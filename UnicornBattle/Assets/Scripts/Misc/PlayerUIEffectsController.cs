@@ -376,9 +376,7 @@ public class PlayerUIEffectsController : MonoBehaviour {
 	{
 		Action<string> afterPickItem = (string item) =>
 		{
-			
 			Debug.Log("Using " + item);
-			
 			
 			InventoryCategory obj;
 			PF_PlayerData.characterInvByCategory.TryGetValue(item, out obj);
@@ -388,8 +386,6 @@ public class PlayerUIEffectsController : MonoBehaviour {
 				var first = obj.inventory.FirstOrDefault();
 				if(first != null)
 				{
-					//TODO make this system more robust (requires spell effect status in place first)
-					
 					var attributes = PlayFab.SimpleJson.DeserializeObject<Dictionary<string,string>>(obj.catalogRef.CustomData);
 					if(attributes.ContainsKey("modifies") && attributes.ContainsKey("modifyPercent") && attributes.ContainsKey("target"))
 					{
@@ -408,18 +404,11 @@ public class PlayerUIEffectsController : MonoBehaviour {
 								RequestShake(defaultShakeTime, PF_GamePlay.ShakeEffects.IncreaseHealth);
 								break;
 							}
-							
-							//StartCoroutine(PF_GamePlay.Wait(
+
 							gameplayController.DecrementPlayerCDs();
-							PF_GamePlay.ConsumeItem(first.ItemId);
+							PF_GamePlay.ConsumeItem(first.ItemInstanceId);
 							PF_GamePlay.QuestProgress.ItemsUsed++;
 						}
-						else
-						{
-							// item effect applies to the enemy
-							// NOT IMPLEMENTED YET
-						}
-						
 					}
 				}
 			}

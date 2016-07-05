@@ -300,13 +300,6 @@ public class FloatingInventoryController : MonoBehaviour {
 	
 	public void UseItem() // not possible outside of battle
 	{
-		//NEED TO KNOW WHICH PURCHASE FLOW TO USE
-		//Debug.Log ("Using Item: " + selectedItem.itemData.category.catalogRef.ItemId);
-		//PF_GamePlay.StartBuyStoreItem(this.selectedItem.itemData.catalogItem, this.StoreName.text);
-		
-		// CALL CS to decrement item
-		//PF_GameData
-		
 		if(this.callbackAfterUse != null)
 		{
 			this.callbackAfterUse(selectedItem.itemData.category.catalogRef.ItemId);

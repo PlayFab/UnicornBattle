@@ -7,6 +7,9 @@ using System.Linq;
 using PlayFab;
 using PlayFab.ClientModels;
 
+/// <summary>
+/// Promotional item types.
+/// </summary>
 public enum PromotionalItemTypes { None, News, Image, Sale, Event, Tip}
 public class UB_PromotionalItem
 {
@@ -324,7 +327,6 @@ public class EnemyVitals
 			}
 		}
 	}
-	
 }
 
 
@@ -362,8 +364,6 @@ public class UB_SalesOccurence
 	public SalesAvailability Availability { get; set; }
 	public string OpensAt { get; set; }
 	public string ClosesAt { get; set; }
-	
-
 
 	//ctor
 	public UB_SalesOccurence(){}
@@ -375,13 +375,8 @@ public class UB_EventData
 	public string EventName { get; set; }
 	public string EventDescription { get; set; }
 	public string StoreToUse { get; set; }
-	
-	//[JsonConverter(typeof(IsoDateTimeConverter))]
 	public DateTime StartDate { get; set; }
-	
-	//[JsonConverter(typeof(IsoDateTimeConverter))]
 	public DateTime EndDate { get; set; }
-	
 	public string BundleId { get; set; }
 	public List<string> AssociatedLevels { get; set; }
 	public UB_EventTrigger EventTrigger { get; set; }
@@ -411,10 +406,6 @@ public class UB_OfferData
 	public string ItemToGrant { get; set; }
 	
 	public OfferAppliesTo AppliesTo { get; set; }
-	
-	//[JsonConverter(typeof(StringEnumConverter))]
-
-	
 	public UB_OfferTrigger OfferTrigger { get; set; }
 
 	//ctor
@@ -426,12 +417,7 @@ public class UB_OfferTrigger
 {
 	public int OnLevelGained { get; set; }
 	public string OnAchievementGained { get; set; }
-	
-	
 	public OfferOccurence Occurence { get; set; }
-	
-	//[JsonConverter(typeof(StringEnumConverter))]
-
 
 	//ctor
 	public UB_OfferTrigger(){}
@@ -538,6 +524,9 @@ public class UB_ClassDetail
 	public UB_ClassDetail(){}
 }
 
+/// <summary>
+/// 
+/// </summary>
 [System.Serializable]
 public class UB_SpellDetail
 {
@@ -578,7 +567,9 @@ public class UB_SpellDetail
 }
 
 
-// struct?
+/// <summary>
+/// details the attributes for effects to apply when spells hit their target. 
+/// </summary>
 [System.Serializable]
 public class UB_SpellStatus
 {
@@ -615,6 +606,9 @@ public class UB_SpellStatus
 	}
 }
 
+/// <summary>
+/// details spell attributes
+/// </summary>
 public class UB_Spell
 {
 	public string SpellName { get; set; }
@@ -632,6 +626,9 @@ public class UB_Spell
 	public UB_Spell(){}
 }
 
+/// <summary>
+/// A wrapper class that contains several important classes for tracking player character state.  
+/// </summary>
 public class UB_SavedCharacter
 {
 	public UB_ClassDetail baseClass { get; set; }
@@ -687,6 +684,10 @@ public class UB_SavedCharacter
 	
 }
 
+
+/// <summary>
+/// A class for tracking players through combat
+/// </summary>
 public class PlayerVitals
 {
 	public int Health { get; set; }
@@ -707,6 +708,9 @@ public class PlayerVitals
 	public PlayerVitals(){}
 }
 
+/// <summary>
+/// Details the player progress 
+/// </summary>
 public class QuestTracker
 {
 	public KeyValuePair<string, UB_LevelAct> CurrentAct { get; set; }
@@ -739,6 +743,9 @@ public class QuestTracker
 	public bool areItemsAwarded = false;
 }
 
+/// <summary>
+/// basic details that describe an item that was granted to the player
+/// </summary>
 public class ItemGrantResult
 {
 	public string PlayFabId { get; set; }
@@ -750,34 +757,9 @@ public class ItemGrantResult
 	public ItemGrantResult(){}
 }
 
-public class CcObj
-{
-	public int kills { get; set; }
-	public int currency { get; set; }
-	public List<ItemGrantResult> ItemGrantResults { get; set; }
-
-	//ctor
-	public CcObj(){}
-}
-
-public class CharacterResult
-{
-	public string CharacterId { get; set; }
-	public string CharacterName { get; set; }
-	public string CharacterType { get; set; }
-
-	//ctor
-	public CharacterResult(){}
-
-	//ctor
-	public CharacterResult(PlayFab.ClientModels.CharacterResult C)
-	{
-		CharacterId = C.CharacterId;
-		CharacterName = C.CharacterName;
-		CharacterType = C.CharacterType;
-	}
-}
-
+/// <summary>
+/// A custom grouping optomized for use in UB.
+/// </summary>
 public class InventoryCategory
 {
 	public string itemId = string.Empty;
@@ -831,5 +813,4 @@ public class InventoryCategory
 			totalUses = 0;
 		}
 	}
-
 }

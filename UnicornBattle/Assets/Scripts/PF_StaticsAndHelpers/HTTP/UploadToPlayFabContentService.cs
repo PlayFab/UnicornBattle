@@ -23,17 +23,8 @@ public class UploadToPlayFabContentService : MonoBehaviour {
 	public bool cleanCacheOnStart = false;
 	public bool isInitalContentUnpacked = false;
 	public bool useCDN = true;
-
-
 	public Texture2D defaultBanner;
 	public Texture2D defaultSplash;
-
-	//public string testPngFileName = "UB_Icon.png";		// The name of the file to send
-	//public string mimeType = "image/png";				// The MIME type that corresponds to the file above
-	//public string contentKey = "images/UB_Icon.png";	// this is the location and 'identifier' for your uploaded file, you will need this key to access the file after uploading
-	
-	//private string assetPath = "";						// The assetPath where the file can be found (will varry depending on the platform)
-
 	public List<AssetBundleHelperObject> assets;
 
 	public Dictionary<string, UB_UnpackedAssetBundle> unpackedAssets = new Dictionary<string, UB_UnpackedAssetBundle>();
@@ -43,19 +34,7 @@ public class UploadToPlayFabContentService : MonoBehaviour {
 		if (cleanCacheOnStart == true) {
 			Caching.CleanCache ();
 		}
-		
-		PlayFabSettings.DeveloperSecretKey = "TK87KDZN7W9TI6JOYZYSD51YTQFXR18DIEB63F9GM597GX7DFA"; //2abe
-		//PlayFabSettings.DeveloperSecretKey = "6POTW8RJM7Q4ZGE49TANNHCBOBIT81PM4UWPN8X4TRG9GIWGH6"; //58DD
-		/* 	Developer Note:
-			To test this script in isolation ( i.e. running in a project without a login) 
-			Use this is a shortcut for accessing client API calls
-		 */
-		//PlayFabClientAPI.AuthKey = "FC5704B9075819E6-0-0-2ABE-8D2A8459D45A585-F6E43E397D45580F.D6ED1897BD2DFE54";
-		PlayFabSettings.TitleId = "2ABE";
-		
-		//StartCoroutine(GetFilePath());
 
-// DISABLED UNTIL ADMIN API IS FIXED
 		foreach (var asset in this.assets) 
 		{
 			if(asset.IsFlagedForUpload)
@@ -433,40 +412,6 @@ public class UploadToPlayFabContentService : MonoBehaviour {
 
 	#endregion
 
-
-	
-	
-	void OnGUI()
-	{
-	/*	if(GUI.Button(new Rect(Screen.width /2 - 100, Screen.height/2 - 50,200, 100), "TEST UPLOAD"))
-		{
-			this.isImageUploaded = false;
-			this.isImageDownloaded = false;
-
-			foreach(var asset in this.assets)
-			{
-				GetContentUploadURL(asset);
-			}
-		}
-		
-		if(this.isImageUploaded == true)
-		{
-			if(this.isImageDownloaded == false)
-			{
-				if(GUI.Button(new Rect(Screen.width /2 - 100, Screen.height/2 + 50,200, 100), "TEST DOWNLOAD"))
-				{
-					StartCoroutine(GetDownloadEndpoints(this.assets));
-				}
-			}
-			else
-			{
-				if(GUI.Button(new Rect(Screen.width /2 - 100, Screen.height/2 + 50,200, 100), this.downloadedImage))
-				{
-					Debug.Log("Demo Complete!");
-				}
-			}
-		}*/
-	}
 }
 
 

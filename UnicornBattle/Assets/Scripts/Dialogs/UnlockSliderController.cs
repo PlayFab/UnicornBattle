@@ -13,9 +13,7 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 	public Slider uiSlider;
 	public Text sliderMessage;
 	public Button storeButton;
-	
-	//public string keyRequired = "Unlocked";
-	
+
 	private float dragStart; 
 	private float slideDelay = 0.333f;
 	private float resistance = 0.05f;
@@ -30,28 +28,15 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 	public Transform UnpackedItemPrefab;
 	public Transform ItemGroup;
 	public Text ItemDescription;
-	//public Transform ItemsTransform;
 	
 	void OnEnable()
 	{
-        GameplayController.OnGameplayEvent += OnGameplayEventReceived;
-		uiSlider.onValueChanged.AddListener((v) => { OnSliderChanged(v); });
+     	// TODO clear listeners?
 		uiSlider.value = uiSlider.minValue;
 		
 	}
-	
-	void OnDisable()
-	{
-        GameplayController.OnGameplayEvent -= OnGameplayEventReceived;
-		
-	}
-	
-    void OnGameplayEventReceived(string message,  PF_GamePlay.GameplayEventTypes type )
-	{
-			
-	}
-	
-	
+
+
 	public void OnPointerUp (PointerEventData eventData) 
 	{
 		Debug.Log ("The mouse click was released");
@@ -131,20 +116,6 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 		}
 	}
 	
-//	void EnableUnlockedItemsView(List<ItemInstance> unlockedItems = null)
-//	{
-//		this.ItemsTransform.gameObject.SetActive(true);
-//		this.ItemDescription.gameObject.SetActive(false);
-//		
-//	}
-//	
-//	void DisableUnlockedItemsView()
-//	{
-//		this.ItemsTransform.gameObject.SetActive(false);
-//		this.ItemDescription.gameObject.SetActive(true);
-//	}
-	
-	
 	public void CheckUnlock()
 	{
 		string item = this.controller.selectedItem.ItemId;
@@ -159,16 +130,5 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 			PF_GameData.TryOpenContainer(item, character, this.afterUnlock);
 		}
 	}
-	
-	
-	
-	
-	public void OnSliderChanged(float value)
-	{
-		//Debug.Log("Check!");
-//		if(this.slideBack != null)
-//		{
-//			StopCoroutine(slideBack);
-//		}
-	}
+
 }
