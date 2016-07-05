@@ -86,6 +86,6 @@
     </activity>
     <activity android:name="com.facebook.unity.FBUnityDeepLinkingActivity" android:exported="true">
     </activity>
-    <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="\ 403608796495072" />
+    <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="\ FACEBOOK_PROJECT_ID" />
   </application>
 </manifest>
