@@ -73,10 +73,7 @@ public class AuthenticationController : MonoBehaviour {
 					this.DeviceIdDisplay.text = PF_Authentication.android_id == null ? PF_Authentication.ios_id : PF_Authentication.android_id;
 				}
                 
-//               StartCoroutine(PF_GamePlay.Wait(1.25f, () => 
-//                {
-					SigninWithDeviceID(); 
-//                }));
+				SigninWithDeviceID(); 
 			} 
 			else 
 			{
