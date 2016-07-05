@@ -8,10 +8,8 @@ using System.Collections.Generic;
 
 public class FX_Placement : MonoBehaviour {
 	public Camera FX_Cam; 
-	public ParticleSystem explosion;
 	public Vector2 clickPos = Vector2.zero;
 	public Text txtPos;
-	public AudioClip boomFx;
 	public List<GameObject> effects = new List<GameObject>();
 	
 	public static Dictionary<string, GameObject> fx_lookup = new Dictionary<string, GameObject>();
@@ -47,55 +45,7 @@ public class FX_Placement : MonoBehaviour {
 		fx.transform.position = here;
 		fx.gameObject.SetActive(true);
 	}
-	
-	
-//	//based on world pos
-//	public void OnPointerClick(BaseEventData eData)
-//	{
-//		
-//		if(!explosion.isPlaying)
-//		{
-//			PointerEventData pData = (PointerEventData)eData;
-//			int rng = Mathf.FloorToInt(Random.Range(5,50));
-//			Vector3 worldPos = FX_Cam.ScreenToWorldPoint(new Vector3(pData.position.x, pData.position.y, rng));
-//			
-//			explosion.transform.position = worldPos; //new Vector3(worldPos.x, worldPos.y, rng); 
-//			//Debug.Log (pData.pointerPressRaycast.gameObject.name );
-//			
-//			//txtPos.text = string.Format("ClickPos: [x]:{0}, [y]:{1}, [z]:{2}", pData.position.x, pData.position.y, rng);
-//		
-//			if(this.boomFx != null)
-//			{
-//				FX_Cam.GetComponent<AudioSource>().clip = this.boomFx;
-//				FX_Cam.GetComponent<AudioSource>().Play();
-//			}
-//			explosion.Play();
-//			
-//		}
-//	}
 
-//	public void AttackFx(GameplayEnemyController enemy)
-//	{
-//		Vector3 center = enemy.myRT.rect.center;
-//		
-//		int rng = Mathf.FloorToInt(Random.Range(5,25));
-//		//Vector3 worldPos = FX_Cam.ScreenToWorldPoint(new Vector3(center.x, center.y, rng));
-//	
-//		Vector3 worldPos = enemy.myRT.TransformPoint(new Vector3(center.x, center.y + (enemy.myRT.offsetMin.y *.40f), rng));
-//		
-//		//Debug.Log(worldPos);
-//		
-//		explosion.transform.position = new Vector3(worldPos.x, worldPos.y, .01f); 
-//		//txtPos.text = string.Format("ClickPos: [x]:{0}, [y]:{1}, [z]:{2}", center.x, center.y, rng);
-//		
-//		if(this.boomFx != null)
-//		{
-//			FX_Cam.GetComponent<AudioSource>().clip = this.boomFx;
-//			FX_Cam.GetComponent<AudioSource>().Play();
-//		}
-//		explosion.Play();
-//	}
-	
 	public void TestFx(GameplayEnemyController enemy, string fxName = null)
 	{
 		Vector3 center = enemy.myRT.rect.center;
@@ -132,11 +82,6 @@ public class FX_Placement : MonoBehaviour {
 		
 		//txtPos.text = string.Format("ClickPos: [x]:{0}, [y]:{1}, [z]:{2}", center.x, center.y, rng);
 		fx.SetActive(true);
-		if(this.boomFx != null)
-		{
-//			FX_Cam.GetComponent<AudioSource>().clip = this.boomFx;
-//			FX_Cam.GetComponent<AudioSource>().Play();
-		}
 		
 	}
 	
@@ -179,11 +124,6 @@ public class FX_Placement : MonoBehaviour {
 		fx.transform.position = new Vector3(FX_Cam.transform.position.x + worldPos.x, FX_Cam.transform.position.y + worldPos.y, -23f);
 		
 		fx.SetActive(true);
-		if(this.boomFx != null)
-		{
-			//FX_Cam.GetComponent<AudioSource>().clip = this.boomFx;
-			//FX_Cam.GetComponent<AudioSource>().Play();
-		}
 		
 	}
 	
