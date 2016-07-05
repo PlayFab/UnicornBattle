@@ -1,5 +1,4 @@
 var defaultCatalog = "CharacterClasses";
-var characterTokens = ["Bucephelous", "Nightmare", "PegaZeus" ];
 
 handlers.CreateCharacter = function(args)
 {
