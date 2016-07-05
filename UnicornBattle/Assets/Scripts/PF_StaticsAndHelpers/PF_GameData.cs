@@ -183,7 +183,7 @@ public static class PF_GameData
 
 		foreach(var ev in Events)
 		{
-			if(ev.Value.PromoType == PromotionType.Promoted)
+			if(ev.Value.PromoType == PromotionType.Promoted && !string.IsNullOrEmpty(ev.Value.BundleId))
 			{
 				requests.Add(new AssetBundleHelperObject()
 				{
@@ -231,7 +231,6 @@ public static class PF_GameData
 	{
 		DateTime today = DateTime.Now;
 		DateTime bounds = today.AddDays (30);
-		//List<UB> activeSales = new
 		foreach (var sale in PF_GameData.Sales) 
 		{
 			if((sale.Value.StartDate <= today && sale.Value.EndDate  >= today))
@@ -278,15 +277,6 @@ public static class PF_GameData
 		}
 	}
 
-
-
-	public static void TEST_GetCatalog()
-	{
-		GetCatalogInfo();
-		//GetStoreItems();
-	}
-	
-	
 	public static void GetEncounterLists(List<string> encounters)
 	{
 		GetTitleDataRequest request = new GetTitleDataRequest();
@@ -348,7 +338,6 @@ public static class PF_GameData
 	{
 		GetTitleNewsRequest request = new GetTitleNewsRequest();
 		request.Count = 15;
-		//DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleNews);
 		PlayFabClientAPI.GetTitleNews(request, OnGetTitleNewsSuccess, PF_Bridge.PlayFabErrorCallback);
 	}
 	
@@ -444,9 +433,7 @@ public static class PF_GameData
 		GetLeaderboardRequest request = new GetLeaderboardRequest();
 		request.MaxResultsCount = 10;
 		request.StatisticName = stat;
-		//request.StartPosition = 1;
-		
-		//DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetPlayerLeaderboard);
+
 		PlayFabClientAPI.GetLeaderboard(request, (GetLeaderboardResult result) => 
 		                                         {
 			currentTop10LB = result.Leaderboard;
@@ -464,8 +451,7 @@ public static class PF_GameData
 		request.MaxResultsCount = 10;
 		request.StatisticName = stat;
 
-		
-		//DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetFriendsLeaderboard);
+
 		PlayFabClientAPI.GetFriendLeaderboard(request, (GetLeaderboardResult result) => 
 		{
 			friendsLB = result.Leaderboard;
@@ -483,8 +469,7 @@ public static class PF_GameData
 		request.CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
 		request.StatisticName = stat;
 		request.MaxResultsCount = 1;
-		
-		//DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetLeaderboardAroundCharacter);
+
 		PlayFabClientAPI.GetLeaderboardAroundCharacter(request, (GetLeaderboardAroundCharacterResult result) => 
 		{
 			if(callback != null && result.Leaderboard.Count > 0)

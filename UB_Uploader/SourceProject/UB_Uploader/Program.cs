@@ -75,7 +75,10 @@ namespace UB_Uploader
             }
             finally
             {
-                LogToFile(string.Format("UB_Uploader.exe {0}", hitErrors ? "ended with errors. See PreviousUploadLog.txt for details" : "ended successfully!"), hitErrors ? ConsoleColor.Red : ConsoleColor.White);
+                var status = hitErrors ? "ended with errors. See PreviousUploadLog.txt for details" : "ended successfully!";
+                var color = hitErrors ? ConsoleColor.Red : ConsoleColor.White;
+
+                LogToFile(string.Format("UB_Uploader.exe {0}", status), color);
                 logStream.Close();
                 Console.WriteLine("Press return to exit.");
                 Console.ReadLine();
@@ -102,7 +105,7 @@ namespace UB_Uploader
                // workaround for the DropTable conflict
                 if (reUploadList.Count > 0)
                 {
-                    LogToFile("Reuploading [" + reUploadList.Count + "] CatalogItems due to DropTable conflicts...");
+                    LogToFile("Re-uploading [" + reUploadList.Count + "] CatalogItems due to DropTable conflicts...");
                     UpdateCatalog(reUploadList);
                 }
                 return true;
@@ -245,7 +248,7 @@ namespace UB_Uploader
                 }
                 else
                 {
-                    LogToFile("\tAn error occured deserializing the CloudScript.js file.", ConsoleColor.Red);
+                    LogToFile("\tAn error occurred deserializing the CloudScript.js file.", ConsoleColor.Red);
                     return false;
                 }
                 return true;
@@ -267,7 +270,7 @@ namespace UB_Uploader
                 }
                 else
                 {
-                    LogToFile("An error occured when trying to parse TitleSettings.json", ConsoleColor.Red);
+                    LogToFile("An error occurred when trying to parse TitleSettings.json", ConsoleColor.Red);
                     return false;
                 }
             }
@@ -395,7 +398,7 @@ namespace UB_Uploader
                 }
                 else
                 {
-                    LogToFile("\tAn error occured deserializing the Catalog.json file.", ConsoleColor.Red);
+                    LogToFile("\tAn error occurred deserializing the Catalog.json file.", ConsoleColor.Red);
                     return false;
                 }
             }
@@ -443,7 +446,7 @@ namespace UB_Uploader
                 }
                 else
                 {
-                    LogToFile("\tAn error occured deserializing the DropTables.json file.", ConsoleColor.Red);
+                    LogToFile("\tAn error occurred deserializing the DropTables.json file.", ConsoleColor.Red);
                     return false;
                 }
             }
@@ -526,7 +529,7 @@ namespace UB_Uploader
            static void OutputPlayFabError(string context, PlayFabError err)
             {
                 hitErrors = true; 
-               LogToFile(string.Format("\t An error occured during: {0}", context), ConsoleColor.Red);;
+               LogToFile(string.Format("\t An error occurred during: {0}", context), ConsoleColor.Red);
 
                 string details = string.Empty;
                 if (err.ErrorDetails != null)
@@ -537,7 +540,7 @@ namespace UB_Uploader
                     }
                 }
 
-               LogToFile(string.Format("\t\t[{0}] -- {1}: {2} ", err.Error, err.ErrorMessage, details), ConsoleColor.Red);;
+               LogToFile(string.Format("\t\t[{0}] -- {1}: {2} ", err.Error, err.ErrorMessage, details), ConsoleColor.Red);
             }
 
            static string ParseFile(string path)
@@ -622,13 +625,13 @@ namespace UB_Uploader
 
                 if (getContentUploadTask.Result.Error != null)
                 {
-                    OutputPlayFabError("\t\tAquire CDN URL Error: ", getContentUploadTask.Result.Error);
+                    OutputPlayFabError("\t\tAcquire CDN URL Error: ", getContentUploadTask.Result.Error);
                     return false;
                 }
                 else
                 {
                     destURL = getContentUploadTask.Result.Result.URL;
-                    LogToFile("\t\tAquired CDN Address: " + key, ConsoleColor.Green);
+                    LogToFile("\t\tAcquired CDN Address: " + key, ConsoleColor.Green);
 
                     byte[] fileContents = File.ReadAllBytes(path);
 
@@ -652,7 +655,7 @@ namespace UB_Uploader
                 }
                 else
                 {
-                    LogToFile("\t\t\tERROR: Byte arrry was empty or null", ConsoleColor.Red);
+                    LogToFile("\t\t\tERROR: Byte array was empty or null", ConsoleColor.Red);
                     return false;
                 }
                 
