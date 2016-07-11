@@ -1,0 +1,56 @@
+[
+    {
+       "Name" : "s100",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/",
+       "Platform" : "Desktop"
+    },
+    {
+       "Name" : "s200",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/",
+       "Platform" : "Desktop"
+    },
+    {
+       "Name" : "gm100",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/",
+       "Platform" : "Desktop"
+    },
+    {
+       "Name" : "s100",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/iOS/",
+       "Platform" : "iOS"
+    },
+    {
+       "Name" : "s200",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/iOS/",
+       "Platform" : "iOS"
+    },
+    {
+       "Name" : "gm100",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/iOS/",
+       "Platform" : "iOS"
+    },
+    {
+       "Name" : "s100",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/Android/",
+       "Platform" : "Android"
+    },
+    {
+       "Name" : "s200",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/Android/",
+       "Platform" : "Android"
+    },
+    {
+       "Name" : "gm100",
+       "Key" : "sales",
+       "Path" : "./PlayFabData/AssetBundles/Android/",
+       "Platform" : "Android"
+    },
+]
