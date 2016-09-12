@@ -150,7 +150,7 @@ public static class PF_GamePlay
 		if(!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
 			return;
 
-		Debug.Log(result.ToString());
+		//Debug.Log(result.ToString());
 		QuestProgress.ItemsGranted = PlayFab.SimpleJson.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
 		
 		PF_GamePlay.QuestProgress.areItemsAwarded = true;

@@ -104,7 +104,7 @@ public static class PF_GameData
 		
 		if(result.Data.ContainsKey("Sales"))
 		{
-			Sales = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_SaleData>>(result.Data["Sales"], PlayFab.Internal.Util.ApiSerializerStrategy);
+			Sales = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_SaleData>>(result.Data["Sales"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
 			Debug.Log ("Sale Data Retrieved");
 
 			if(Sales.Count > 0)
@@ -115,7 +115,7 @@ public static class PF_GameData
 		
 		if(result.Data.ContainsKey("Events"))
 		{
-			Events = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_EventData>>(result.Data["Events"], PlayFab.Internal.Util.ApiSerializerStrategy);
+			Events = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_EventData>>(result.Data["Events"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
 			Debug.Log ("Event Data Retrieved");
 			if(Events.Count > 0)
 			{
@@ -125,7 +125,7 @@ public static class PF_GameData
 
 		if(result.Data.ContainsKey("Offers"))
 		{
-			Offers = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_OfferData>>(result.Data["Offers"], PlayFab.Internal.Util.ApiSerializerStrategy);
+			Offers = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_OfferData>>(result.Data["Offers"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
 			Debug.Log ("Offer Data Retrieved");
 
 		}
@@ -293,7 +293,7 @@ public static class PF_GameData
 			{
 				if(result.Data.ContainsKey(item))
 				{
-					Encounters.Add(item, PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item], PlayFab.Internal.Util.ApiSerializerStrategy));
+						Encounters.Add(item, PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy));
 				}	
 			}
 			

@@ -27,7 +27,9 @@ public class GameController : Singleton<GameController> {
 	//private int pausedOnScene = 0;
 	private string pausedOnScene = string.Empty;
 	private string lostFocusedOnScene = string.Empty;
-	
+
+
+
 	
 	void OnLevelWasLoaded(int index) 
 	{	
@@ -94,7 +96,7 @@ public class GameController : Singleton<GameController> {
 			
 			if(!string.IsNullOrEmpty(this.lostFocusedOnScene) && SceneManager.GetActiveScene().name != this.lostFocusedOnScene)
 			{
-				SceneController.Instance.RequestSceneChange((SceneController.GameScenes)System.Enum.Parse(typeof(SceneController.GameScenes), this.pausedOnScene));
+				SceneController.Instance.RequestSceneChange((SceneController.GameScenes)System.Enum.Parse(typeof(SceneController.GameScenes), this.lostFocusedOnScene));
 			}
 		}
 	}
@@ -141,6 +143,9 @@ public class GameController : Singleton<GameController> {
 			sceneCont.SetParent(this.transform, false);
 			this.sceneController = sceneCont.GetComponent<SceneController>();
 		}		
+
+		//TODO -- add in code to listen for and process scene change events.
+		//SceneManager.sceneLoaded += OnLevelWasLoaded;
 
 	}
 }

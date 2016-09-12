@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Text;
 
 namespace PlayFab
 {
@@ -115,7 +115,6 @@ namespace PlayFab
         InvalidReportDate = 1111,
         ReportNotAvailable = 1112,
         DatabaseThroughputExceeded = 1113,
-        InvalidLobbyId = 1114,
         InvalidGameTicket = 1115,
         ExpiredGameTicket = 1116,
         GameTicketDoesNotMatchLobby = 1117,
@@ -223,7 +222,34 @@ namespace PlayFab
         OperationNotSupportedForPlatform = 1219,
         SegmentNotFound = 1220,
         StoreNotFound = 1221,
-        InvalidStatisticName = 1222
+        InvalidStatisticName = 1222,
+        TitleNotQualifiedForLimit = 1223,
+        InvalidServiceLimitLevel = 1224,
+        ServiceLimitLevelInTransition = 1225,
+        CouponAlreadyRedeemed = 1226,
+        GameServerBuildSizeLimitExceeded = 1227,
+        GameServerBuildCountLimitExceeded = 1228,
+        VirtualCurrencyCountLimitExceeded = 1229,
+        VirtualCurrencyCodeExists = 1230,
+        TitleNewsItemCountLimitExceeded = 1231,
+        InvalidTwitchToken = 1232,
+        TwitchResponseError = 1233,
+        ProfaneDisplayName = 1234,
+        UserAlreadyAdded = 1235,
+        InvalidVirtualCurrencyCode = 1236,
+        VirtualCurrencyCannotBeDeleted = 1237,
+        IdentifierAlreadyClaimed = 1238,
+        IdentifierNotLinked = 1239,
+        InvalidContinuationToken = 1240,
+        ExpiredContinuationToken = 1241,
+        InvalidSegment = 1242,
+        InvalidSessionId = 1243,
+        SessionLogNotFound = 1244,
+        InvalidSearchTerm = 1245,
+        TwoFactorAuthenticationTokenRequired = 1246,
+        GameServerHostCountLimitExceeded = 1247,
+        PlayerTagCountLimitExceeded = 1248,
+        RequestAlreadyRunning = 1249
     }
 
     public delegate void ErrorCallback(PlayFabError error);
@@ -235,40 +261,34 @@ namespace PlayFab
         public PlayFabErrorCode Error;
         public string ErrorMessage;
         public Dictionary<string, List<string> > ErrorDetails;
-    }
-
-    public enum WebRequestType
-    {
-        UnityWww, // High compatability Unity api calls
-        HttpWebRequest // High performance multi-threaded api calls
-    }
-
-    /// <summary>
-    /// This is a callback class for use with HttpWebRequest.
-    /// </summary>
-    public class CallRequestContainer
-    {
-        public enum RequestState { Unstarted, RequestSent, RequestReceived, Error };
-
-        public WebRequestType RequestType;
-        public RequestState State = RequestState.Unstarted;
-        public string Url;
-        public int CallId;
-        public string Data;
-        public string AuthType;
-        public string AuthKey;
-        public object Request;
-        public string ResultStr;
         public object CustomData;
-        public HttpWebRequest HttpRequest;
-        public PlayFabError Error;
-        public Action<CallRequestContainer> Callback;
 
-        public void InvokeCallback()
+        public override string ToString() {
+            var sb = new System.Text.StringBuilder();
+            if (ErrorDetails != null) {
+                foreach (var kv in ErrorDetails) {
+                    sb.Append(kv.Key);
+                    sb.Append(": ");
+                    sb.Append(string.Join(", ", kv.Value.ToArray()));
+                    sb.Append(" | ");
+                }
+            }
+            return string.Format("PlayFabError({0}, {1}, {2} {3}", Error, ErrorMessage, HttpCode, HttpStatus) + (sb.Length > 0 ? " - Details: " + sb.ToString() + ")" : ")");
+        }
+
+        [ThreadStatic]
+        private static StringBuilder _tempSb;
+        public string GenerateErrorReport()
         {
-            // It is expected that the specific callback needs to process the change before the less specific global callback
-            if (Callback != null)
-                Callback(this); // Do the specific callback
+            if (_tempSb == null)
+                _tempSb = new StringBuilder();
+            _tempSb.Length = 0;
+            _tempSb.Append(ErrorMessage);
+            if (ErrorDetails != null)
+                foreach (var pair in ErrorDetails)
+                    foreach (var msg in pair.Value)
+                        _tempSb.Append("\n").Append(pair.Key).Append(": ").Append(msg);
+            return _tempSb.ToString();
         }
     }
 }
