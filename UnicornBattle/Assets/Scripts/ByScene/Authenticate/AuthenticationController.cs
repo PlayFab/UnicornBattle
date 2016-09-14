@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
-using System.Collections;
+using System.Collections.Generic;
 using PlayFab;
+using Facebook.Unity;
 
 public class AuthenticationController : MonoBehaviour {
 	public bool useDevLogin = false;
@@ -147,7 +148,8 @@ public class AuthenticationController : MonoBehaviour {
 	{
 		UnityAction afterFBInit = () =>
 		{	
-			FB.Login("public_profile,email,user_friends", (FBResult response) => 
+			FB.ActivateApp();
+			FB.LogInWithReadPermissions(new List<string>(){"public_profile", "email", "user_friends"}, (ILoginResult response) => 
 			{
 				if (response.Error != null)
 				{
@@ -160,7 +162,7 @@ public class AuthenticationController : MonoBehaviour {
 				else
 				{
 					PF_Authentication.usedManualFacebook = testMode == true ? false : true;
-					PF_Authentication.LoginWithFacebook(FB.AccessToken, true);
+					PF_Authentication.LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString, true);
 				}
 			});
 		};

@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using PlayFab.ClientModels;
 using PlayFab;
-
+using Facebook.Unity;
 
 public class PF_Authentication {
 
@@ -392,7 +392,7 @@ public class PF_Authentication {
 	/// Called on a successful login attempt
 	/// </summary>
 	/// <param name="result">Result object returned from PlayFab server</param>
-	private static void OnLoginResult(LoginResult result) //LoginResult
+	private static void OnLoginResult(PlayFab.ClientModels.LoginResult result) //LoginResult
 	{	
 		PlayFabSettings.PlayerId = result.PlayFabId;
 		PF_PlayerData.PlayerId = result.PlayFabId;
@@ -409,7 +409,7 @@ public class PF_Authentication {
 			if(FB.IsInitialized == false)
 			{
 				//FB.Init(OnInitComplete, OnHideUnity);
-				FB.Init(null);
+				FB.Init();
 			}
 			
 			if(PF_Authentication.usedManualFacebook == true)
@@ -653,7 +653,7 @@ public class PF_Authentication {
 		}
 		else
 		{
-			LoginWithFacebook(FB.AccessToken);
+			LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString);
 		}
 	}
 	
@@ -668,12 +668,12 @@ public class PF_Authentication {
 	/// </summary>
 	public static void CallFBLogin()
 	{
-		FB.Login("public_profile,email,user_friends", LoginCallback);
+		FB.LogInWithReadPermissions(new List<string>(){"public_profile", "email", "user_friends"}, LoginCallback);
 	}
 
 	
 	// callback called after a successful FB login.
-	public static void LoginCallback(FBResult result)
+	public static void LoginCallback(Facebook.Unity.ILoginResult result)
 	{
 		if (result.Error != null)
 		{
@@ -691,13 +691,13 @@ public class PF_Authentication {
 		}
 		else
 		{
-			LoginWithFacebook(FB.AccessToken);
+			LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString);
 		}
 	}
 	
 	public static void CallFBLogout()
 	{
-		FB.Logout();
+		FB.LogOut();
 	}
 	#endregion
 }

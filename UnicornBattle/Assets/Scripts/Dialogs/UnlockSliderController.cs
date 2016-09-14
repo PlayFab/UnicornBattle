@@ -85,7 +85,7 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 				string iconName = "Default";
 				if( !string.Equals(keyReference.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
 				{
-					Dictionary<string, string> kvps = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(keyReference.CustomData);
+					Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(keyReference.CustomData);
 					kvps.TryGetValue("icon", out iconName);	
 				}
 				

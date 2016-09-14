@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using PlayFab.ClientModels;
 using PlayFab.Json;
 using PlayFab;
+using Facebook.Unity;
 
 /// <summary>
 /// PlayerData contains all the PlayFab API calls that relate to manipulating and 
@@ -122,7 +123,7 @@ public static class PF_PlayerData {
 								// here we can process the custom data and apply the propper treatment (eg assign icons)
 								if(catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
 								{
-									Dictionary<string,string> customAttributes = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+										Dictionary<string,string> customAttributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
 									if(customAttributes.ContainsKey("icon"))
 									{
 										customIcon = customAttributes["icon"];
@@ -169,17 +170,17 @@ public static class PF_PlayerData {
 	#region User Statistics
 		public static void GetUserStatistics()
 		{
-			GetUserStatisticsRequest request = new GetUserStatisticsRequest();
-			PlayFabClientAPI.GetUserStatistics(request, OnGetUserStatisticsSuccess, OnGetUserStatisticsError);
+			GetPlayerStatisticsRequest request = new GetPlayerStatisticsRequest();
+			PlayFabClientAPI.GetPlayerStatistics(request, OnGetUserStatisticsSuccess, OnGetUserStatisticsError);
 		}
 		
-		private static void OnGetUserStatisticsSuccess(GetUserStatisticsResult result)
+		private static void OnGetUserStatisticsSuccess(GetPlayerStatisticsResult result)
 		{
 			//TODO update to use new 
 			
 			PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetUserStatistics, MessageDisplayStyle.none);
-			foreach (var each in result.UserStatistics)
-				userStatistics[each.Key] = each.Value;
+			foreach (var each in result.Statistics)
+				userStatistics[each.StatisticName] = each.Value;
 		}
 		
 		private static void OnGetUserStatisticsError(PlayFabError error)
@@ -218,20 +219,21 @@ public static class PF_PlayerData {
 	#region User Account APIs
 		public static void GetUserAccountInfo()
 		{
-			GetUserCombinedInfoRequest request = new GetUserCombinedInfoRequest();
+			GetPlayerCombinedInfoRequest request = new GetPlayerCombinedInfoRequest();
+			request.InfoRequestParameters = new GetPlayerCombinedInfoRequestParams(){ GetUserData = true, GetUserReadOnlyData = true, GetUserInventory = true, GetUserVirtualCurrency = true, GetUserAccountInfo = true, GetPlayerStatistics = true };
 			
 			DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetAccountInfo);
-			PlayFabClientAPI.GetUserCombinedInfo(request, OnGetUserAccountInfoSuccess, PF_Bridge.PlayFabErrorCallback);	
+			PlayFabClientAPI.GetPlayerCombinedInfo(request, OnGetUserAccountInfoSuccess, PF_Bridge.PlayFabErrorCallback);	
 		}
 		
-		public static void OnGetUserAccountInfoSuccess(GetUserCombinedInfoResult result)
+		public static void OnGetUserAccountInfoSuccess(GetPlayerCombinedInfoResult result)
 		{
-			playerInventory = result.Inventory;
-			accountInfo =  result.AccountInfo;
+			playerInventory = result.InfoResultPayload.UserInventory;
+			accountInfo =  result.InfoResultPayload.AccountInfo;
 			
-			if (result.Data.ContainsKey ("IsRegisteredForPush")) 
+			if (result.InfoResultPayload.UserData.ContainsKey ("IsRegisteredForPush")) 
 			{	
-				if(result.Data ["IsRegisteredForPush"].Value == "1")
+				if(result.InfoResultPayload.UserData ["IsRegisteredForPush"].Value == "1")
 				{
 					PF_PlayerData.isRegisteredForPush = true;
 				}	
@@ -245,7 +247,7 @@ public static class PF_PlayerData {
 				PF_PlayerData.isRegisteredForPush = false;
 			} 
 			
-			if (result.Data.ContainsKey ("ShowAccountOptionsOnLogin") && result.Data ["ShowAccountOptionsOnLogin"].Value == "0") 
+			if (result.InfoResultPayload.UserData.ContainsKey ("ShowAccountOptionsOnLogin") && result.InfoResultPayload.UserData ["ShowAccountOptionsOnLogin"].Value == "0") 
 			{
 				PF_PlayerData.showAccountOptionsOnLogin = false;
 			} 
@@ -255,9 +257,9 @@ public static class PF_PlayerData {
 				DialogCanvasController.RequestAccountSettings ();
 			} 
 			
-			if(result.ReadOnlyData.ContainsKey("RedeemedOffers"))
+			if(result.InfoResultPayload.UserReadOnlyData.ContainsKey("RedeemedOffers"))
 			{
-				PF_PlayerData.RedeemedOffers = PlayFab.SimpleJson.DeserializeObject<List<string>>(result.ReadOnlyData["RedeemedOffers"].Value);
+				PF_PlayerData.RedeemedOffers = PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
 			}
 			
 			inventoryByCategory.Clear();
@@ -285,7 +287,7 @@ public static class PF_PlayerData {
 								// here we can process the custom data and apply the propper treatment (eg assign icons)
 								if(catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
 								{
-									Dictionary<string,string> customAttributes = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+								Dictionary<string,string> customAttributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
 									if(customAttributes.ContainsKey("icon"))
 									{
 										customIcon = customAttributes["icon"];
@@ -364,7 +366,7 @@ public static class PF_PlayerData {
 //			}
 			
 			
-			virtualCurrency = result.VirtualCurrency;
+			virtualCurrency = result.InfoResultPayload.UserVirtualCurrency;
 			PF_Bridge.RaiseCallbackSuccess("Player Account Info Loaded", PlayFabAPIMethods.GetAccountInfo, MessageDisplayStyle.none);
 		}
 	#endregion
@@ -400,13 +402,13 @@ public static class PF_PlayerData {
 					
 					if(result.Data.ContainsKey("Achievements"))
 					{
-						characterAchievements.Add(result.CharacterId, PlayFab.SimpleJson.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
+						characterAchievements.Add(result.CharacterId, PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
 					}
 					
 					
 					if(result.Data.ContainsKey("CharacterData"))
 					{
-						playerCharacterData.Add(result.CharacterId, PlayFab.SimpleJson.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
+						playerCharacterData.Add(result.CharacterId, PlayFab.Json.JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
 						remainingCallbacks--;
 						if(remainingCallbacks == 0)
 						{
@@ -432,7 +434,7 @@ public static class PF_PlayerData {
 			                                          {
 				if(result.Data.ContainsKey("CharacterData"))
 				{
-					playerCharacterData[result.CharacterId] = PlayFab.SimpleJson.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
+					playerCharacterData[result.CharacterId] = PlayFab.Json.JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
 					
 					PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
 				}
@@ -474,7 +476,7 @@ public static class PF_PlayerData {
 			if(!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
 				return;
 
-			characterStatistics = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, Dictionary<string,int>>>(result.FunctionResult.ToString());
+			characterStatistics = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, Dictionary<string,int>>>(result.FunctionResult.ToString());
 			PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterStatistics, MessageDisplayStyle.none);
 		}
 		
@@ -558,7 +560,7 @@ public static class PF_PlayerData {
 								// here we can process the custom data and apply the propper treatment (eg assign icons)
 								if(catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
 								{
-									Dictionary<string,string> customAttributes = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+									Dictionary<string,string> customAttributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
 									if(customAttributes.ContainsKey("icon"))
 									{
 										customIcon = customAttributes["icon"];
@@ -887,11 +889,11 @@ public static class PF_PlayerData {
 			
 			if (FB.IsInitialized && FB.IsLoggedIn) 
 			{
-				linkAction(FB.AccessToken);
+				linkAction(AccessToken.CurrentAccessToken.TokenString);
 			} 
 			else 
 			{
-				Action <FBResult> afterFBLogin = (FBResult result) =>
+				Action <ILoginResult> afterFBLogin = (ILoginResult result) =>
 				{
 					if (result.Error != null)
 					{
@@ -903,7 +905,7 @@ public static class PF_PlayerData {
 					}
 					else
 					{
-						linkAction(FB.AccessToken);
+						linkAction(AccessToken.CurrentAccessToken.TokenString);
 					}
 				};
 				
@@ -912,11 +914,11 @@ public static class PF_PlayerData {
 					//Debug.Log("FB.Init completed: Is user logged in? " + FB.IsLoggedIn);
 					if(FB.IsLoggedIn == false)
 					{
-						FB.Login("public_profile,email,user_friends", (FBResult result) => { afterFBLogin(result); } );
+					FB.LogInWithReadPermissions(new List<string>(){"public_profile", "email", "user_friends"}, (ILoginResult result) => { afterFBLogin(result); } );
 					}
 					else
 					{
-						linkAction(FB.AccessToken);
+						linkAction(AccessToken.CurrentAccessToken.UserId);
 					}
 				};
 				

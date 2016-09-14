@@ -64,13 +64,13 @@ public static class PF_GameData
 		Debug.Log ("OnGetTitleDataSuccess -- Classes");
 		if(result.Data.ContainsKey("Classes"))
 		{
-			Spells = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_SpellDetail>>(result.Data["Spells"]);
+			Spells = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_SpellDetail>>(result.Data["Spells"]);
 		}
 		
 		Debug.Log ("OnGetTitleDataSuccess -- Spells");
 		if(result.Data.ContainsKey("Spells"))
 		{
-			Classes = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_ClassDetail>>(result.Data["Classes"]);
+			Classes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_ClassDetail>>(result.Data["Classes"]);
 		}
 		
 		Debug.Log ("OnGetTitleDataSuccess -- StartingCharacterSlots");
@@ -88,23 +88,23 @@ public static class PF_GameData
 		Debug.Log ("OnGetTitleDataSuccess -- CharacterLevelRamp");
 		if(result.Data.ContainsKey("CharacterLevelRamp"))
 		{
-			CharacterLevelRamp = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, int>>(result.Data["CharacterLevelRamp"]);
+			CharacterLevelRamp = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, int>>(result.Data["CharacterLevelRamp"]);
 		}
 		
 		Debug.Log ("OnGetTitleDataSuccess -- Levels");
 		if(result.Data.ContainsKey("Levels"))
 		{
-			Levels = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_LevelData>>(result.Data["Levels"]);
+			Levels = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_LevelData>>(result.Data["Levels"]);
 		}
 
 		if(result.Data.ContainsKey("Achievements"))
 		{
-			Achievements = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_Achievement>>(result.Data["Achievements"]);
+			Achievements = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_Achievement>>(result.Data["Achievements"]);
 		}
 		
 		if(result.Data.ContainsKey("Sales"))
 		{
-			Sales = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_SaleData>>(result.Data["Sales"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
+			Sales = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_SaleData>>(result.Data["Sales"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
 			Debug.Log ("Sale Data Retrieved");
 
 			if(Sales.Count > 0)
@@ -115,7 +115,7 @@ public static class PF_GameData
 		
 		if(result.Data.ContainsKey("Events"))
 		{
-			Events = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_EventData>>(result.Data["Events"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
+			Events = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_EventData>>(result.Data["Events"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
 			Debug.Log ("Event Data Retrieved");
 			if(Events.Count > 0)
 			{
@@ -125,7 +125,7 @@ public static class PF_GameData
 
 		if(result.Data.ContainsKey("Offers"))
 		{
-			Offers = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_OfferData>>(result.Data["Offers"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
+			Offers = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_OfferData>>(result.Data["Offers"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
 			Debug.Log ("Offer Data Retrieved");
 
 		}
@@ -138,7 +138,7 @@ public static class PF_GameData
 		}
 		if(result.Data.ContainsKey("StandardStores"))
 		{
-			StandardStores = PlayFab.SimpleJson.DeserializeObject<List<string>>(result.Data["StandardStores"]);
+			StandardStores = PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.Data["StandardStores"]);
 			Debug.Log ("Standard Stores Retrieved");
 		}
 		
@@ -293,7 +293,7 @@ public static class PF_GameData
 			{
 				if(result.Data.ContainsKey(item))
 				{
-						Encounters.Add(item, PlayFab.SimpleJson.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy));
+						Encounters.Add(item, PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy));
 				}	
 			}
 			
@@ -482,10 +482,10 @@ public static class PF_GameData
 
 	public static void GetMyPlayerLeaderboardRank(string stat, UnityAction<int> callback = null)
 	{
-		GetLeaderboardAroundCurrentUserRequest request = new GetLeaderboardAroundCurrentUserRequest();
+		GetLeaderboardAroundPlayerRequest request = new GetLeaderboardAroundPlayerRequest();
 		request.StatisticName = stat;
 
-		PlayFabClientAPI.GetLeaderboardAroundCurrentUser(request, (GetLeaderboardAroundCurrentUserResult result) => 
+		PlayFabClientAPI.GetLeaderboardAroundPlayer(request, (GetLeaderboardAroundPlayerResult result) => 
 		{
 			if(callback != null && result.Leaderboard.Count > 0)
 			{

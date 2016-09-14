@@ -100,7 +100,7 @@ public class ItemViewerController : MonoBehaviour {
 		this.currentIconId = "Default";
 		if( !string.Equals(item.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
 		{
-			Dictionary<string, string> kvps = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(item.CustomData);
+			Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(item.CustomData);
 			kvps.TryGetValue("icon", out currentIconId);	
 		}
 		Sprite icon = GameController.Instance.iconManager.GetIconById(currentIconId);	
@@ -134,7 +134,7 @@ public class ItemViewerController : MonoBehaviour {
 					{
 						string awardIcon = "Default";
 						CatalogItem catItem = PF_GameData.catalogItems.Find( (i) => {  return i.ItemId == award; } );
-						Dictionary<string, string> kvps = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(catItem.CustomData);
+						Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catItem.CustomData);
 						kvps.TryGetValue("icon", out awardIcon);	
 						
 						items.Add(new ContainerResultItem(){ 
@@ -275,7 +275,7 @@ public class ItemViewerController : MonoBehaviour {
 		{
 			string awardIcon = "Default";
 			CatalogItem catItem = PF_GameData.catalogItems.Find( (i) => {  return i.ItemId == award.ItemId; } );
-			Dictionary<string, string> kvps = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, string>>(catItem.CustomData);
+			Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catItem.CustomData);
 			kvps.TryGetValue("icon", out awardIcon);	
 			
 			items.Add(new ContainerResultItem()

@@ -2,6 +2,7 @@
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
+using Facebook.Unity;
 using Facebook.MiniJSON;
 
 public class FacebookHelperClass  {
@@ -23,7 +24,7 @@ public class FacebookHelperClass  {
 
 	public static string DeserializePictureURLString(string response)
 	{
-		Dictionary<string, FB_PhotoResponse> result = PlayFab.SimpleJson.DeserializeObject<Dictionary<string, FB_PhotoResponse>>(response);
+		Dictionary<string, FB_PhotoResponse> result = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, FB_PhotoResponse>>(response);
 		FB_PhotoResponse urlH;
 
 		if (result.TryGetValue ("data", out urlH)) 
@@ -108,7 +109,7 @@ public class FacebookHelperClass  {
 
 	public static void LoadPictureAPI (string url, WebFetchHandle wwwFetch, UnityAction<Texture2D> callback = null)
 	{
-		FB.API(url,Facebook.HttpMethod.GET, (FBResult result) =>
+		FB.API(url, HttpMethod.GET, (IGraphResult result) =>
 		{
 			if (result.Error != null)
 			{
@@ -117,7 +118,7 @@ public class FacebookHelperClass  {
 				return;
 			}
 			
-			var imageUrl = DeserializePictureURLString(result.Text);
+			var imageUrl = DeserializePictureURLString(result.RawResult);
 			
 			wwwFetch(imageUrl, callback);
 		});
@@ -126,7 +127,7 @@ public class FacebookHelperClass  {
 	
 	public static void GetFBUserName(UnityAction<string> callback = null)
 	{
-		FB.API("me?fields=name", Facebook.HttpMethod.GET, (FBResult result) =>
+		FB.API("me?fields=name", HttpMethod.GET, (IGraphResult result) =>
 		{
 			if (result.Error != null)
 			{                                                                      
@@ -138,8 +139,8 @@ public class FacebookHelperClass  {
 			}
 			else
 			{
-				var dict = Json.Deserialize(result.Text) as IDictionary;
-				if(callback != null)
+				var dict = result.ResultDictionary;
+				if(callback != null && dict.ContainsKey("name"))
 				{ 
 					callback(dict ["name"].ToString());
 				}

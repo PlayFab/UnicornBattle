@@ -151,7 +151,7 @@ public static class PF_GamePlay
 			return;
 
 		//Debug.Log(result.ToString());
-		QuestProgress.ItemsGranted = PlayFab.SimpleJson.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
+		QuestProgress.ItemsGranted = PlayFab.Json.JsonWrapper.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
 		
 		PF_GamePlay.QuestProgress.areItemsAwarded = true;
 		
