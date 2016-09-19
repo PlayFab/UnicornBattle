@@ -73,8 +73,8 @@ public class FloatingInventoryController : MonoBehaviour {
 
 		//only displaying the main currencies (Gold & Gems) for now
 		this.currenciesInUse.Clear ();
-		this.currenciesInUse.Add("G");
-		this.currenciesInUse.Add("Gm");
+		this.currenciesInUse.Add("AU");
+		this.currenciesInUse.Add("GM");
 
 		if(displayMode == InventoryMode.Player)
 		{

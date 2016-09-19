@@ -1,5 +1,5 @@
-Setting Destination TitleId to:276
-Setting DeveloperSecretKey to:H45DTTT8EF5QFF8GKFWGKPK6EP481J1XSW8YB9ORP1BJORMJ63
+Setting Destination TitleId to:A5F3
+Setting DeveloperSecretKey to:47NOTKPHJ5A4XW6NGKMJYCY5BCX7N5W3HRK544OF5S58QWGIPC
 Uploading Title Data Keys & Values...
 	Uploading: Achievements
 		Achievements Uploaded.
@@ -64,7 +64,7 @@ Uploading Stores...
 		Store: Profile Store Uploaded.
 	Uploading: Traveling Merchant
 		Store: Traveling Merchant Uploaded.
-Reuploading [1] CatalogItems due to DropTable conflicts...
+Re-uploading [1] CatalogItems due to DropTable conflicts...
 	Uploaded Catalog!
 Uploading CloudScript...
 	Uploaded CloudScript!
@@ -114,38 +114,39 @@ Updating Player Statistics Definitions ...
 		Statistics Definition: TotalWins Updated 
 Uploading CDN AssetBundles...
 	Fetching CDN endpoint for sales/s100
-		Aquired CDN Address: sales/s100
+		Acquired CDN Address: sales/s100
 		Starting HTTP PUT for: sales/s100
 			HTTP PUT Successful:sales/s100
 	Fetching CDN endpoint for sales/s200
-		Aquired CDN Address: sales/s200
+		Acquired CDN Address: sales/s200
 		Starting HTTP PUT for: sales/s200
 			HTTP PUT Successful:sales/s200
 	Fetching CDN endpoint for sales/gm100
-		Aquired CDN Address: sales/gm100
+		Acquired CDN Address: sales/gm100
 		Starting HTTP PUT for: sales/gm100
 			HTTP PUT Successful:sales/gm100
 	Fetching CDN endpoint for iOS/sales/s100
-		Aquired CDN Address: iOS/sales/s100
+		Acquired CDN Address: iOS/sales/s100
 		Starting HTTP PUT for: iOS/sales/s100
 			HTTP PUT Successful:iOS/sales/s100
 	Fetching CDN endpoint for iOS/sales/s200
-		Aquired CDN Address: iOS/sales/s200
+		Acquired CDN Address: iOS/sales/s200
 		Starting HTTP PUT for: iOS/sales/s200
 			HTTP PUT Successful:iOS/sales/s200
 	Fetching CDN endpoint for iOS/sales/gm100
-		Aquired CDN Address: iOS/sales/gm100
+		Acquired CDN Address: iOS/sales/gm100
 		Starting HTTP PUT for: iOS/sales/gm100
 			HTTP PUT Successful:iOS/sales/gm100
 	Fetching CDN endpoint for Android/sales/s100
-		Aquired CDN Address: Android/sales/s100
+		Acquired CDN Address: Android/sales/s100
 		Starting HTTP PUT for: Android/sales/s100
 			HTTP PUT Successful:Android/sales/s100
 	Fetching CDN endpoint for Android/sales/s200
-		Aquired CDN Address: Android/sales/s200
+		Acquired CDN Address: Android/sales/s200
 		Starting HTTP PUT for: Android/sales/s200
 			HTTP PUT Successful:Android/sales/s200
 	Fetching CDN endpoint for Android/sales/gm100
-		Aquired CDN Address: Android/sales/gm100
+		Acquired CDN Address: Android/sales/gm100
 		Starting HTTP PUT for: Android/sales/gm100
 			HTTP PUT Successful:Android/sales/gm100
+UB_Uploader.exe ended successfully!

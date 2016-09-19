@@ -44,12 +44,12 @@ public class StoreDisplayItem : MonoBehaviour {
 		//For now disable uses:
 		Savings.gameObject.SetActive (false);
 
-		if (cItem.VirtualCurrencyPrices.ContainsKey ("Gm")) {
-			currencyKey = "Gm";
+		if (cItem.VirtualCurrencyPrices.ContainsKey ("GM")) {
+			currencyKey = "GM";
 			currencyFormat = "{0}";
 			ItemCurrencyIcon.sprite = CurrencyIcons [1];
-		} else if (cItem.VirtualCurrencyPrices.ContainsKey ("G")) {
-			currencyKey = "G";
+		} else if (cItem.VirtualCurrencyPrices.ContainsKey ("AU")) {
+			currencyKey = "AU";
 			currencyFormat = "{0}";
 			ItemCurrencyIcon.sprite = CurrencyIcons [2];
 		}

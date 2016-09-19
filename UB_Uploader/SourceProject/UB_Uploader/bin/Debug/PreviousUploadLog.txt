@@ -1,0 +1,2 @@
+	An unexpected error occurred: Could not find a part of the path 'C:\Users\z-force\Desktop\SourceProject\UB_Uploader\bin\Debug\PlayFabData\TitleSettings.json'.
+UB_Uploader.exe ended with errors. See PreviousUploadLog.txt for details

@@ -133,7 +133,7 @@ handlers.SaveProgress = function(args)
 	var balanceGoldVC = {};
 	balanceGoldVC.PlayFabId = currentPlayerId;
 	balanceGoldVC.CharacterId = args.CurrentPlayerData.characterDetails.CharacterId;
-	balanceGoldVC.VirtualCurrency = "G";
+	balanceGoldVC.VirtualCurrency = "AU";
 	balanceGoldVC.Amount = QuestProgress.GoldCollected;
 
 	server.AddCharacterVirtualCurrency(balanceGoldVC);
@@ -399,7 +399,7 @@ function InitializeNewCharacterData(id, catalogCode)
 	var balanceGoldVC = {};
 	balanceGoldVC.PlayFabId = currentPlayerId;
 	balanceGoldVC.CharacterId = id;
-	balanceGoldVC.VirtualCurrency = "G";
+	balanceGoldVC.VirtualCurrency = "AU";
 	balanceGoldVC.Amount = 0;
 
 	server.AddCharacterVirtualCurrency(balanceGoldVC);
@@ -408,7 +408,7 @@ function InitializeNewCharacterData(id, catalogCode)
 	var balanceGemVC = {};
 	balanceGemVC.PlayFabId = currentPlayerId;
 	balanceGemVC.CharacterId = id;
-	balanceGemVC.VirtualCurrency = "Gm";
+	balanceGemVC.VirtualCurrency = "GM";
 	balanceGemVC.Amount = 0;
 
 	server.AddCharacterVirtualCurrency(balanceGemVC);

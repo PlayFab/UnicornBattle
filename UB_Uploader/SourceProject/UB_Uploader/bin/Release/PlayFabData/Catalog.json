@@ -38,7 +38,7 @@
 	"DisplayName": "Extra Character Slot",
 	"Description": "Adds the ability to save one extra character slot to your account. ",
 	"VirtualCurrencyPrices": {
-		"Gm": 5
+		"GM": 5
 	},
 	"RealCurrencyPrices": {},
 	"Tags": [],
@@ -80,7 +80,7 @@
 			"DT_CrystalContainer"
 		],
 		"VirtualCurrencyContents": {
-			"G": 200
+			"AU": 200
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -93,7 +93,7 @@
 	"DisplayName": "Crystal Key",
 	"Description": "Opens Crystal Containers. Key is consumed when used.",
 	"VirtualCurrencyPrices": {
-		"G": 200
+		"AU": 200
 	},
 	"Tags": [],
 	"CustomData": "{\"usableInCombat\":\"false\",\"icon\":\"WhiteKey\"}",
@@ -120,7 +120,7 @@
 		"ItemContents": [],
 		"ResultTableContents": [],
 		"VirtualCurrencyContents": {
-			"G": 0
+			"AU": 0
 		}
 	},
 	"Bundle": {
@@ -137,7 +137,7 @@
 	"DisplayName": "Small Pile O' Gold",
 	"Description": "A small pile of gold (2500g).",
 	"VirtualCurrencyPrices": {
-		"Gm": 5
+		"GM": 5
 	},
 	"Tags": [],
 	"CustomData": "{\"icon\":\"CoinStackSmall\"}",
@@ -148,7 +148,7 @@
 		"ItemContents": [],
 		"ResultTableContents": [],
 		"VirtualCurrencyContents": {
-			"G": 2500
+			"AU": 2500
 		}
 	},
 	"Bundle": {
@@ -165,7 +165,7 @@
 	"DisplayName": "Three Extra Hearts",
 	"Description": "Gives a character three (3) extra lives. ",
 	"VirtualCurrencyPrices": {
-		"Gm": 1
+		"GM": 1
 	},
 	"Tags": [],
 	"CustomData": "{\"usableInCombat\":\"false\",\"icon\":\"DarkStone_Heart\"}",
@@ -197,7 +197,7 @@
 		"ItemContents": [],
 		"ResultTableContents": [],
 		"VirtualCurrencyContents": {
-			"Gm": 1
+			"GM": 1
 		}
 	},
 	"Bundle": {
@@ -261,7 +261,7 @@
 		"ItemContents": [],
 		"ResultTableContents": [],
 		"VirtualCurrencyContents": {
-			"G": 5000
+			"AU": 5000
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -287,7 +287,7 @@
 		"BundledItems": [],
 		"BundledResultTables": [],
 		"BundledVirtualCurrencies": {
-			"Gm": 5
+			"GM": 5
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -313,7 +313,7 @@
 		"BundledItems": [],
 		"BundledResultTables": [],
 		"BundledVirtualCurrencies": {
-			"Gm": 30
+			"GM": 30
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -339,7 +339,7 @@
 		"BundledItems": [],
 		"BundledResultTables": [],
 		"BundledVirtualCurrencies": {
-			"Gm": 17
+			"GM": 17
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -352,7 +352,7 @@
 	"DisplayName": "Large Health Potion",
 	"Description": "Open Wide!",
 	"VirtualCurrencyPrices": {
-		"G": 1500
+		"AU": 1500
 	},
 	"RealCurrencyPrices": {},
 	"Tags": [],
@@ -370,7 +370,7 @@
 	"DisplayName": "Large Pile O' Gold",
 	"Description": "A chest of 10,000 gold coins.",
 	"VirtualCurrencyPrices": {
-		"Gm": 18
+		"GM": 18
 	},
 	"Tags": [],
 	"CustomData": "{\"icon\":\"CoinStackLarge\"}",
@@ -381,7 +381,7 @@
 		"ItemContents": [],
 		"ResultTableContents": [],
 		"VirtualCurrencyContents": {
-			"G": 10000
+			"AU": 10000
 		}
 	},
 	"Bundle": {
@@ -398,7 +398,7 @@
 	"DisplayName": "Alfalfa Juice",
 	"Description": "Tried and true, Alfalfa Juice! Never leave the stable without some.\n\nRestores a small portion of health to the target.",
 	"VirtualCurrencyPrices": {
-		"G": 400
+		"AU": 400
 	},
 	"Tags": [],
 	"CustomData": "{\"icon\":\"SingleGreenPotion\",\"minLevel\":\"1\",\"usableInBattle\":\"true\",\"modifies\":\"HP\",\"modifyPercent\":\".25\",\"target\":\"self\"}",
@@ -464,7 +464,7 @@
 		"BundledItems": [],
 		"BundledResultTables": [],
 		"BundledVirtualCurrencies": {
-			"Gm": 65
+			"GM": 65
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -490,7 +490,7 @@
 		"BundledItems": [],
 		"BundledResultTables": [],
 		"BundledVirtualCurrencies": {
-			"Gm": 350
+			"GM": 350
 		}
 	},
 	"CanBecomeCharacter": false,
@@ -516,7 +516,7 @@
 		"BundledItems": [],
 		"BundledResultTables": [],
 		"BundledVirtualCurrencies": {
-			"Gm": 750
+			"GM": 750
 		}
 	},
 	"CanBecomeCharacter": false,

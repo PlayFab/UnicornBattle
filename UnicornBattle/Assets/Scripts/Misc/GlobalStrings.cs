@@ -60,7 +60,7 @@ public static class GlobalStrings
     public const string QUEST_SELECTOR_PROMPT = "Select Quest";
 
     // Programatic strings
-    public const string UB_TITLE_ID = "58dd";
+	public const string UB_TITLE_ID = "A5F3";
 	public const string GOOGLE_PLAY_PROJECT_ID = "295754311231";
     public const string FB_PREF_KEY = "LinkedFacebook";
     public const string DEVICE_PREF_KEY = "LastDeviceIdUsed";

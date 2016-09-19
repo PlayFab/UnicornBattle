@@ -318,7 +318,7 @@ namespace UB_Uploader
 
                 vcData.Add(new VirtualCurrencyData()
                 {
-                  CurrencyCode  = "G",
+                  CurrencyCode  = "AU",
                   DisplayName = "Gold",
                   InitialDeposit = 1000,
                   RechargeMax = 0,
@@ -327,7 +327,7 @@ namespace UB_Uploader
 
                 vcData.Add(new VirtualCurrencyData()
                 {
-                  CurrencyCode  = "Gm",
+                  CurrencyCode  = "GM",
                   DisplayName = "Gems",
                   InitialDeposit = 5,
                   RechargeMax = 0,
