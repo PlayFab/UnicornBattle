@@ -140,7 +140,7 @@ public class PromotionController : MonoBehaviour
 			{ "Character_ID", PF_PlayerData.activeCharacter.characterDetails.CharacterId }
 		};
 
-        PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_LevelUp, eventData);
+        PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_SaleClicked, eventData);
     }
 
     public void PlayEvent()
