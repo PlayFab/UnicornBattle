@@ -13,7 +13,8 @@
             Settings = 1,
             Data = 2,
             Help = 3,
-            Logout = 4
+            Tools = 4,
+            Logout = 5
         }
 
         internal static MenuStates _menuState = MenuStates.Sdks;
@@ -31,7 +32,7 @@
             var dataButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             var helpButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             var logoutButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-
+            var toolsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
 
             if (_menuState == MenuStates.Sdks)
             {
@@ -78,6 +79,15 @@
                 helpButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             }
 
+            if (_menuState == MenuStates.Tools)
+            {
+                toolsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
+            }
+            else
+            {
+                toolsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
+            }
+
             GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"), GUILayout.Height(25), GUILayout.ExpandWidth(true));
    
             GUILayout.Space(5);
@@ -101,6 +111,12 @@
                     OnDataClicked();
                 }
 
+                if (GUILayout.Button("TOOLS", toolsButtonStyle, GUILayout.MaxWidth(45)))
+                {
+                    
+                    OnToolsClicked();
+                }
+
             }
 
             if (GUILayout.Button("HELP", helpButtonStyle, GUILayout.MaxWidth(45)))
@@ -120,7 +136,15 @@
             GUILayout.EndHorizontal();
         }
 
+        public static void OnToolsClicked()
+        {
+            _menuState = MenuStates.Tools;
 
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Tools.ToString());
+
+            PlayFabEditorDataService.editorSettings.currentMainMenu = (int)MenuStates.Tools;
+            PlayFabEditorDataService.SaveEditorSettings();
+        }
 
         public static void OnDataClicked()
         {

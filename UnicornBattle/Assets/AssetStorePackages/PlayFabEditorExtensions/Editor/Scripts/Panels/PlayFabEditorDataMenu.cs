@@ -6,16 +6,18 @@
     using System.Collections.Generic;
     using UnityEditor;
     using System.Linq;
+    using EditorModels;
 
     [InitializeOnLoad]
     public class PlayFabEditorDataMenu : Editor
     {
 #region panel variables
         public static TitleDataViewer tdViewer;
+        public static TitleInternalDataViewer tdInternalViewer;
 
         public static MenuComponent menu = null;
 
-        public enum DataMenuStates { TitleData }
+        public enum DataMenuStates { TitleData, TitleDataInternal }
         public static DataMenuStates currentState = DataMenuStates.TitleData;
 
         private static Vector2 scrollPos = Vector2.zero;
@@ -57,6 +59,30 @@
                                 GUILayout.EndScrollView();
                             }
                            
+                        break;
+
+                        case DataMenuStates.TitleDataInternal:
+                            if(tdInternalViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
+                            {
+                                tdInternalViewer = ScriptableObject.CreateInstance<TitleInternalDataViewer>();
+                                foreach(var item in PlayFabEditorDataService.envDetails.titleInternalData)
+                                {
+                                    tdInternalViewer.items.Add(new KvpItem(item.Key, item.Value));
+                                }
+                            }
+                            else if(!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId) ) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
+                            {
+                                if(tdInternalViewer.items.Count == 0)
+                                {
+                                    foreach(var item in PlayFabEditorDataService.envDetails.titleInternalData)
+                                    {
+                                        tdInternalViewer.items.Add(new KvpItem(item.Key, item.Value));
+                                    }
+                                }
+                                scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
+                                tdInternalViewer.Draw();
+                                GUILayout.EndScrollView();
+                            }
                         break;
 
                         default:
@@ -104,7 +130,8 @@
             if ( menu == null)
             {
                 menu = ScriptableObject.CreateInstance<MenuComponent>();
-                menu.RegisterMenuItem("TITLE DATA", OnTitleDataClicked);
+                menu.RegisterMenuItem("TITLE", OnTitleDataClicked);
+                menu.RegisterMenuItem("INTERNAL", OnInternalTitleDataClicked);
             }
         }
 
@@ -127,6 +154,11 @@
         public static void OnTitleDataClicked()
         {
             currentState = DataMenuStates.TitleData;
+        }
+
+        public static void OnInternalTitleDataClicked()
+        {
+            currentState = DataMenuStates.TitleDataInternal;
         }
    }
 #endregion

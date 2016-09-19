@@ -209,16 +209,24 @@ namespace PlayFab.Editor
                     where type.Name == "PlayFabSettings"
                     select type);
 
-                if (playfabSettingsType.ToList().Count > 0)
+                if (playfabSettingsType.ToList().Count > 0 && PlayFabEditorSDKTools.IsInstalled && PlayFabEditorSDKTools.isSdkSupported)
                 {
                     var type = playfabSettingsType.ToList().FirstOrDefault();
                     var props = type.GetProperties();
 
-                    envDetails.selectedTitleId = string.IsNullOrEmpty((string) props.ToList().Find(p => p.Name == "TitleId").GetValue(null, null)) ? envDetails.selectedTitleId : (string) props.ToList().Find(p => p.Name == "TitleId").GetValue(null, null);
-                    envDetails.webRequestType = (PlayFabEditorSettings.WebRequestType)props.ToList().Find(p => p.Name == "RequestType").GetValue(null, null);
-                    envDetails.timeOut = (int) props.ToList().Find(p => p.Name == "RequestTimeout").GetValue(null, null);
-                    envDetails.keepAlive = (bool) props.ToList().Find(p => p.Name == "RequestKeepAlive").GetValue(null, null);
-                    envDetails.compressApiData = (bool)props.ToList().Find(p => p.Name == "CompressApiData").GetValue(null, null);
+                    try
+                    {
+                        envDetails.selectedTitleId = string.IsNullOrEmpty((string) props.ToList().Find(p => p.Name == "TitleId").GetValue(null, null)) ? envDetails.selectedTitleId : (string) props.ToList().Find(p => p.Name == "TitleId").GetValue(null, null);
+                        envDetails.webRequestType = (PlayFabEditorSettings.WebRequestType)props.ToList().Find(p => p.Name == "RequestType").GetValue(null, null);
+                        envDetails.timeOut = (int) props.ToList().Find(p => p.Name == "RequestTimeout").GetValue(null, null);
+                        envDetails.keepAlive = (bool) props.ToList().Find(p => p.Name == "RequestKeepAlive").GetValue(null, null);
+                        envDetails.compressApiData = (bool)props.ToList().Find(p => p.Name == "CompressApiData").GetValue(null, null);
+                    }
+                    catch 
+                    {
+                        // do nothing, this cathes issues in really old sdks; clearly there is something wrong here.
+                        PlayFabEditorSDKTools.isSdkSupported = false;
+                    }
 
 
 
@@ -237,7 +245,7 @@ namespace PlayFab.Editor
                     from type in assembly.GetTypes()
                     where type.Name == "PlayFabSettings"
                     select type);
-                if (playfabSettingsType.ToList().Count > 0)
+                if (playfabSettingsType.ToList().Count > 0 && PlayFabEditorSDKTools.IsInstalled && PlayFabEditorSDKTools.isSdkSupported)
                 {
                     var type = playfabSettingsType.ToList().FirstOrDefault();
                    // var fields = type.GetFields();

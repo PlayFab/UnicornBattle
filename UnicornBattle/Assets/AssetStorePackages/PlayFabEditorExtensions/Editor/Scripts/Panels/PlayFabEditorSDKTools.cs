@@ -63,7 +63,7 @@ namespace PlayFab.Editor
 
 
                 GUILayout.BeginVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                    GUILayout.Label(string.Format("SDK v{0} is installed", string.IsNullOrEmpty(installedSdkVersion) ? "Unknown" : installedSdkVersion), labelStyle, GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+                    GUILayout.Label(string.Format("SDK {0} is installed", string.IsNullOrEmpty(installedSdkVersion) ? "Unknown" : installedSdkVersion), labelStyle, GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
 
                     if(!isObjectFieldActive)
                     {
@@ -72,7 +72,7 @@ namespace PlayFab.Editor
                     }
                     else
                     {
-                    GUILayout.Label("An SDK was detected, but we were unable to find the directory. Drag-and-drop the top-level PlayFab SDK folder below.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
+                        GUILayout.Label("An SDK was detected, but we were unable to find the directory. Drag-and-drop the top-level PlayFab SDK folder below.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
                     }
            
                     GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
@@ -88,67 +88,56 @@ namespace PlayFab.Editor
                     }
 
                     if(isSdkSupported == true && sdkFolder != null)
-                        {
-                            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
+                    {
+                        GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
 
-                                GUILayout.FlexibleSpace();
+                            GUILayout.FlexibleSpace();
 
-                                if (GUILayout.Button("REMOVE SDK", PlayFabEditorHelper.uiStyle.GetStyle("textButton"), GUILayout.MinHeight(32), GUILayout.MinWidth(200)))
-                                {
-                                    RemoveSDK();
-                                }
+                            if (GUILayout.Button("REMOVE SDK", PlayFabEditorHelper.uiStyle.GetStyle("textButton"), GUILayout.MinHeight(32), GUILayout.MinWidth(200)))
+                            {
+                                RemoveSDK();
+                            }
 
-                                GUILayout.FlexibleSpace();
-                            GUILayout.EndHorizontal(); 
-                        }
+                            GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal(); 
+                    }
                 
                 GUILayout.EndVertical();
 
                 if(sdkFolder != null)
                 {
-
-                  
+               
                     //TODO START BACK HERE...
 
                     GUILayout.BeginVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                        if(installedSdkVersion == "Unknown")
+                        isSdkSupported = false;
+                        string[] versionNumber = !string.IsNullOrEmpty(installedSdkVersion) ? installedSdkVersion.Split('.') : new string[0];                  
+
+                        int numerical = 0;
+                        if(string.IsNullOrEmpty(installedSdkVersion) || versionNumber == null || versionNumber.Length == 0 || (versionNumber.Length > 0 && int.TryParse(versionNumber[0], out numerical) && numerical < 2))
                         {
+                              //older version of the SDK
+                            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));    
+                            GUILayout.Label("Most of the Editor Extensions depend on SDK versions >2.0. Consider upgrading to the get most features.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
+                            GUILayout.EndHorizontal();
+
                             GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-                            GUILayout.Label("We were unable to determine what version of SDK is installed.", PlayFabEditorHelper.uiStyle.GetStyle("cGenTxt"), GUILayout.MinHeight(32));
-                            GUILayout.EndHorizontal();    
-                            isSdkSupported = false;
+                            GUILayout.FlexibleSpace();
+                            if (GUILayout.Button("READ THE UPGRADE GUIDE", PlayFabEditorHelper.uiStyle.GetStyle("textButton"), GUILayout.MinHeight(32)))
+                            {
+                                Application.OpenURL("https://github.com/PlayFab/UnitySDK/blob/master/UPGRADE.md");
+                            }
+                            GUILayout.FlexibleSpace();
+                            GUILayout.EndHorizontal();
                         }
-                        else
+                        else if(numerical >= 2)
                         {
-                            isSdkSupported = false;
-                            string[] versionNumber = !string.IsNullOrEmpty(installedSdkVersion) ? installedSdkVersion.Split('.') : null;
-
-                            int numerical = 0;
-                            if(versionNumber.Length > 0 && int.TryParse(versionNumber[0], out numerical) && numerical < 2)
-                            {
-                                  //older version of the SDK
-                                GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));    
-                                GUILayout.Label("Most of the Editor Extensions depend on SDK versions >2.0. Consider upgrading to the get most features.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
-                                GUILayout.EndHorizontal();
-
-                                GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-                                GUILayout.FlexibleSpace();
-                                if (GUILayout.Button("READ THE UPGRADE GUIDE", PlayFabEditorHelper.uiStyle.GetStyle("textButton"), GUILayout.MinHeight(32)))
-                                {
-                                    Application.OpenURL("https://github.com/PlayFab/UnitySDK/blob/master/UPGRADE.md");
-                                }
-                                GUILayout.FlexibleSpace();
-                                GUILayout.EndHorizontal();
-                            }
-                            else if(numerical >= 2)
-                            {
-                                isSdkSupported = true;
-                            }
+                            isSdkSupported = true;
                         }
 
                         GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
 
-                        if(ShowSDKUpgrade())
+                        if(ShowSDKUpgrade() && isSdkSupported)
                         {
                             GUILayout.FlexibleSpace();
                             if (GUILayout.Button("Upgrade to " + latestSdkVersion, PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32)))
@@ -171,7 +160,7 @@ namespace PlayFab.Editor
                     GUILayout.EndVertical();
                   }
                
-                if(string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId))
+                if(isSdkSupported && string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId))
                 {
                     GUILayout.BeginVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
                         GUILayout.Label("Before making PlayFab API calls, the SDK must be configured to your PlayFab Title.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
@@ -197,9 +186,6 @@ namespace PlayFab.Editor
 
                     GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
-
-
-               
 
             }
             else

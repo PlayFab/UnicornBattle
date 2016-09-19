@@ -147,9 +147,81 @@ namespace PlayFab.Editor.EditorModels
     {
     }
 
+    public class CloudScriptFile
+    {
+        /// <summary>
+        /// Name of the javascript file. These names are not used internally by the server, they are only for developer organizational purposes.
+        /// </summary>
+        public string Filename { get; set;}
+        /// <summary>
+        /// Contents of the Cloud Script javascript. Must be string-escaped javascript.
+        /// </summary>
+        public string FileContents { get; set;}
+    }
 
+    public class UpdateCloudScriptRequest
+    {
+        /// <summary>
+        /// List of Cloud Script files to upload to create the new revision. Must have at least one file.
+        /// </summary>
+        public List<CloudScriptFile> Files { get; set; }
+        /// <summary>
+        /// Immediately publish the new revision
+        /// </summary>
+        public bool Publish { get; set;}
+        /// <summary>
+        /// PlayFab user ID of the developer initiating the request.
+        /// </summary>
+        public string DeveloperPlayFabId { get; set; }
+    }
 
+    public class UpdateCloudScriptResult
+    {
+        /// <summary>
+        /// Cloud Script version updated
+        /// </summary>
+        public int Version { get; set;}
+        /// <summary>
+        /// New revision number created
+        /// </summary>
+        public int Revision { get; set;}
+    }
 
+    public class GetCloudScriptRevisionRequest
+    {
+        /// <summary>
+        /// Version number. If left null, defaults to the latest version
+        /// </summary>
+        public int? Version { get; set;}
+        /// <summary>
+        /// Revision number. If left null, defaults to the latest revision
+        /// </summary>
+        public int? Revision { get; set;}
+    }
+
+    public class GetCloudScriptRevisionResult
+    {
+        /// <summary>
+        /// Version number.
+        /// </summary>
+        public int Version { get; set;}
+        /// <summary>
+        /// Revision number.
+        /// </summary>
+        public int Revision { get; set;}
+        /// <summary>
+        /// Time this revision was created
+        /// </summary>
+        public System.DateTime CreatedAt { get; set;}
+        /// <summary>
+        /// List of Cloud Script files in this revision.
+        /// </summary>
+        public List<CloudScriptFile> Files { get; set;}
+        /// <summary>
+        /// True if this is the currently published revision
+        /// </summary>
+        public bool IsPublished { get; set;}
+    }
 
 
     public class PlayFabError
@@ -441,8 +513,11 @@ namespace PlayFab.Editor.EditorModels
         public string selectedTitleId { get; set; }
         public string developerSecretKey { get; set; }
         public Dictionary<string, string> titleData { get; set; }
+        public Dictionary<string, string> titleInternalData { get; set; }
+        public Dictionary<string, string> installedPackages { get; set; } //TODO store a package manifest here (used to uninstall a specific package)
         public string sdkPath { get; set; }
         public string edexPath { get; set; }
+        public string localCloudScriptPath { get; set; }
 
         public PlayFabEditorSettings.WebRequestType webRequestType { get; set; }
         public bool compressApiData { get; set; }
@@ -452,6 +527,8 @@ namespace PlayFab.Editor.EditorModels
         public PlayFab_DeveloperEnvironmentDetails()
         {
             titleData = new Dictionary<string, string>();
+            titleInternalData = new Dictionary<string, string>();
+            installedPackages = new Dictionary<string, string>();
         }
     }
 
@@ -463,7 +540,6 @@ namespace PlayFab.Editor.EditorModels
        public string latestEdExVersion { get; set; }
        public System.DateTime lastSdkVersionCheck { get; set; }
        public System.DateTime lastEdExVersionCheck { get; set; }
-      
     }
 
     public class StudioDisplaySet
@@ -477,6 +553,47 @@ namespace PlayFab.Editor.EditorModels
     {
         public PlayFab.Editor.EditorModels.Title Title;
         public bool isCollapsed = true;
+    }
+
+    public class KvpItem
+    {
+        public string Key;
+        public string Value;
+
+        public string _prvKey;
+        public string _prvValue;
+
+        public bool isDirty;
+
+        public KvpItem(string k, string v)
+        {
+            this.Key = k;
+            this.Value = v;
+
+            this._prvKey = k;
+            this._prvValue = v;
+        }
+
+        public void CleanItem()
+        {
+            _prvKey = Key;
+            _prvValue = Value;
+            isDirty = false;
+        }
+
+        public void DataEditedCheck()
+        {
+            if(Key != _prvKey || Value != _prvValue)
+            {
+                this.isDirty = true;
+            }
+            else
+            {
+               
+            }
+        }
+
+
     }
     #endregion
 

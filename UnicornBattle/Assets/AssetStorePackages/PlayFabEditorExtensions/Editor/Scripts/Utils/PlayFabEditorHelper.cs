@@ -13,21 +13,26 @@ namespace PlayFab.Editor
     {
         #region EDITOR_STRINGS
         public static string EDEX_NAME = "PlayFab_EditorExtensions";
-        public static string EDEX_VERSION = "0.0.99";
+        public static string EDEX_VERSION = "0.0.993";
+        public static string EDEX_ROOT =  Application.dataPath + "/PlayFabEditorExtensions/Editor";
         public static string DEV_API_ENDPOINT = "https://editor.playfabapi.com";
         public static string TITLE_ENDPOINT = ".playfabapi.com";
         public static string GAMEMANAGER_URL = "https://developer.playfab.com";
         public static string PLAYFAB_ASSEMBLY = "PlayFabSettings";
         public static string PLAYFAB_EDEX_MAINFILE = "PlayFabEditor.cs";
         public static string SDK_DOWNLOAD_PATH = "/Resources/PlayFabUnitySdk.unitypackage";
-        public static string EDEX_DOWNLOAD_PATH = "/Resources/PlayFabUnityEditorExtensions.unitypackage";
+        public static string EDEX_UPGRADE_PATH = "/Resources/PlayFabUnityEditorExtensions.unitypackage";
+        public static string EDEX_PACKAGES_PATH = "/Resources/MostRecentPackage.unitypackage";
+
+        public static string CLOUDSCRIPT_FILENAME = ".CloudScript.js";  //prefixed with a '.' to exclude this code from Unity's compiler
+        public static string CLOUDSCRIPT_PATH = EDEX_ROOT + "/Resources/" + CLOUDSCRIPT_FILENAME;
         public static string VAR_REQUEST_TIMING = "PLAYFAB_REQUEST_TIMING";
 
         public static string ADMIN_API = "ENABLE_PLAYFABADMIN_API";
         public static string SERVER_API = "ENABLE_PLAYFABSERVER_API";
         public static string CLIENT_API = "DISABLE_PLAYFABCLIENT_API";
         public static string DEBUG_REQUEST_TIMING = "PLAYFAB_REQUEST_TIMING";
-        public static string EDITOR_ROOT =  Application.dataPath + "/PlayFabEditorExtensions/Editor";
+
         public static string DEFAULT_SDK_LOCATION = "Assets/PlayFabSdk";
         public static string STUDIO_OVERRIDE = "_OVERRIDE_";
 
@@ -53,8 +58,8 @@ namespace PlayFab.Editor
 
                 try
                 {
-                    EDITOR_ROOT = PlayFabEditorDataService.envDetails.edexPath ?? EDITOR_ROOT;
-                    rootFiles = Directory.GetDirectories(EDITOR_ROOT);
+                    EDEX_ROOT = PlayFabEditorDataService.envDetails.edexPath ?? EDEX_ROOT;
+                    rootFiles = Directory.GetDirectories(EDEX_ROOT);
 
                     uiStyle = GetUiStyle();
                 }
@@ -71,8 +76,8 @@ namespace PlayFab.Editor
                         if(movedRootFiles.Length > 0)
                         {
                             relocatedEdEx = true;
-                            EDITOR_ROOT = movedRootFiles[0].Substring(0, movedRootFiles[0].IndexOf(PLAYFAB_EDEX_MAINFILE)-1);
-                            PlayFabEditorDataService.envDetails.edexPath = EDITOR_ROOT;
+                            EDEX_ROOT = movedRootFiles[0].Substring(0, movedRootFiles[0].IndexOf(PLAYFAB_EDEX_MAINFILE)-1);
+                            PlayFabEditorDataService.envDetails.edexPath = EDEX_ROOT;
                             PlayFabEditorDataService.SaveEnvDetails();
 
                             uiStyle = GetUiStyle();
@@ -84,12 +89,12 @@ namespace PlayFab.Editor
                 {
                     if(relocatedEdEx && rootFiles.Length == 0)
                     {
-                        Debug.Log(string.Format("Found new EdEx root: {0}", EDITOR_ROOT));
+                        Debug.Log(string.Format("Found new EdEx root: {0}", EDEX_ROOT));
                     }
                     else if(rootFiles.Length == 0)
                     {
                         Debug.Log("Could not relocate the PlayFab Editor Extension");
-                        EDITOR_ROOT = string.Empty;
+                        EDEX_ROOT = string.Empty;
                     }
                 }
             }
@@ -100,7 +105,7 @@ namespace PlayFab.Editor
         {
             if(uiStyle == null)
             {
-                var relRoot = EDITOR_ROOT.Substring(EDITOR_ROOT.IndexOf("Assets/"));
+                var relRoot = EDEX_ROOT.Substring(EDEX_ROOT.IndexOf("Assets/"));
                 return (GUISkin)AssetDatabase.LoadAssetAtPath(relRoot+ "/UI/PlayFabStyles.guiskin", typeof(GUISkin));
             }
             else
