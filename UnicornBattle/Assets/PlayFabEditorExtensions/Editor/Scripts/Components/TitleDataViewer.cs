@@ -1,15 +1,14 @@
-﻿
-
-namespace PlayFab.Editor {
+﻿namespace PlayFab.Editor
+{
     using System;
     using UnityEngine;
     using UnityEditor;
     using System.Collections.Generic;
-    using PlayFab.Editor.EditorModels;
+    using EditorModels;
 
-    public class TitleInternalDataViewer : Editor {
+    public class TitleDataViewer : Editor {
         public List<KvpItem> items;
-        public static TitleInternalDataEditor tdEditor;
+        public static TitleDataEditor tdEditor;
         public string displayTitle = "";
         public Vector2 scrollPos = Vector2.zero;
         private bool showSave = false;
@@ -18,7 +17,7 @@ namespace PlayFab.Editor {
         public void Draw()
         {
             EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                GUILayout.Label("Internal TitleData provides Key-Value storage available only to Admin & Server API sets. This is useful for storing configuration data that should be hidden from players.", PlayFabEditorHelper.uiStyle.GetStyle("genTxt"));
+                GUILayout.Label("TitleData provides Key-Value storage available to all API sets. TitleData is designed to store game-wide configuration data.", PlayFabEditorHelper.uiStyle.GetStyle("genTxt"));
             GUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
@@ -53,8 +52,12 @@ namespace PlayFab.Editor {
                         if(items[z].Value != null)
                         {
 
+                            //GUIContent c1 = new GUIContent(items[z].Value);
+                            //Rect r1 = GUILayoutUtility.GetRect(c1, EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).GetStyle("TextArea"));
+
                         var keyStyle = this.items[z].isDirty ?  PlayFabEditorHelper.uiStyle.GetStyle("listKey_dirty") :PlayFabEditorHelper.uiStyle.GetStyle("listKey");
                         var valStyle = this.items[z].isDirty ?  PlayFabEditorHelper.uiStyle.GetStyle("listValue_dirty") : PlayFabEditorHelper.uiStyle.GetStyle("listValue");
+                            //var h = style.CalcHeight(c1, valueInputBoxWidth);
 
 
                         EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
@@ -69,8 +72,15 @@ namespace PlayFab.Editor {
 
                         if(GUILayout.Button("EDIT",  PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxHeight(19), GUILayout.MinWidth(35)))
                             {
+                                if(tdEditor == null)
+                                {
+                                    tdEditor = EditorWindow.GetWindow<TitleDataEditor>();
+                                    tdEditor.titleContent = new GUIContent("Title Data");
+                                    tdEditor.minSize = new Vector2(300,400);
+                                }
+
                                 tdEditor.LoadData(items[z].Key, items[z].Value);
-                                TitleInternalDataEditor.ShowWindow(tdEditor);
+                                tdEditor.Show();
                             } 
                         if(GUILayout.Button("X",  PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxHeight(19), GUILayout.MinWidth(20)))
                             {
@@ -83,7 +93,7 @@ namespace PlayFab.Editor {
                     }
 
 
-                GUILayout.EndScrollView();
+                GUILayout.EndScrollView();//EditorGUILayout.EndVertical();
 
                 if(showSave)
                 {
@@ -91,12 +101,17 @@ namespace PlayFab.Editor {
                     GUILayout.FlexibleSpace();
                     if(GUILayout.Button("SAVE", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(200)))
                         {
+                            //BaseUiAnimationController.StartAlphaFade(1, 0, listDisplay);
                             SaveRecords();
                         }
                     GUILayout.FlexibleSpace();
                     EditorGUILayout.EndHorizontal();
                 }
             }
+
+
+            // draw code here.
+           // base.PostDraw();
         }
 
 
@@ -107,6 +122,8 @@ namespace PlayFab.Editor {
 
         public void RefreshRecords()
         {
+            //BaseUiAnimationController.StartAlphaFade(1, 0, listDisplay);
+
             Action<PlayFab.Editor.EditorModels.GetTitleDataResult> cb = (result) => {
                 
                 items.Clear();
@@ -116,12 +133,12 @@ namespace PlayFab.Editor {
                     items.Add(new KvpItem(kvp.Key, kvp.Value));
                 }
 
-                PlayFabEditorDataService.envDetails.titleInternalData = result.Data;
+                PlayFabEditorDataService.envDetails.titleData = result.Data;
                 PlayFabEditorDataService.SaveEnvDetails();
 
             };
 
-            PlayFabEditorApi.GetTitleInternalData(cb, PlayFabEditorHelper.SharedErrorCallback); 
+            PlayFabEditorApi.GetTitleData(cb, PlayFabEditorHelper.SharedErrorCallback); 
         }
 
         public void SaveRecords()
@@ -140,7 +157,7 @@ namespace PlayFab.Editor {
 
             if(dirtyItems.Count > 0)
             {
-                PlayFabEditorApi.SetTitleInternalData(dirtyItems, (result) => 
+                PlayFabEditorApi.SetTitleData(dirtyItems, (result) => 
                 {
                     foreach(var item in items)
                     {
@@ -152,25 +169,23 @@ namespace PlayFab.Editor {
 
 
 
-        public TitleInternalDataViewer(List<KvpItem> i = null)
+        public TitleDataViewer(List<KvpItem> i = null)
         {
             this.items = i ?? new List<KvpItem>();
         }
 
-        public TitleInternalDataViewer()
+        public TitleDataViewer()
         {
             this.items = new List<KvpItem>();
         }
 
-        public void OnEnable()
+        public void OnDestroy()
         {
-            if(tdEditor == null)
-            {
-                tdEditor = ScriptableObject.CreateInstance<TitleInternalDataEditor>();
-            }
+            tdEditor = null;
         }
-
     }
-   
+
+
+  
 }
 

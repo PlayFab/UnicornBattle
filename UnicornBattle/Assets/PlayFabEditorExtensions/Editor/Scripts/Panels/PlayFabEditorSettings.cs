@@ -15,8 +15,8 @@ namespace PlayFab.Editor
         public enum SubMenuStates
         {
             StandardSettings,
-            ApiSettings,
             TitleSettings,
+            ApiSettings,
             Packages
         }
 
@@ -28,7 +28,7 @@ namespace PlayFab.Editor
 
         internal static List<string> buildTargets;
 
-        private static SubMenuStates _subMenuState = SubMenuStates.StandardSettings;
+        public static SubMenuComponent menu = null;
 
         private static string[] titleOptions;
         private static string[] studioOptions;
@@ -106,75 +106,31 @@ namespace PlayFab.Editor
         {
             SetSettingsProperties();
 
-            var apiSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-            var standardSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-            var titleSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-            var packagesButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-
-            if (_subMenuState == SubMenuStates.StandardSettings)
+            if(PlayFabEditorDataService.isDataLoaded)
             {
-                standardSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
-            }
-            else
-            {
-                standardSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-            }
-
-            if (_subMenuState == SubMenuStates.ApiSettings)
-            {
-                apiSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
-            }
-            else
-            {
-                apiSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-            }
-
-            if (_subMenuState == SubMenuStates.TitleSettings)
-            {
-                titleSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
-            }
-            else
-            {
-                titleSettingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
-            }
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"), GUILayout.ExpandWidth(true));
-
-            if (GUILayout.Button("PROJECT", standardSettingsButtonStyle))
-            {
-                OnStandardSetttingsClicked();
-            }
-            if (GUILayout.Button("STUDIOS", titleSettingsButtonStyle))
-            {
-                OnTitleSettingsClicked();
-            }
-
-            if (GUILayout.Button("API", apiSettingsButtonStyle))
-            {
-                OnApiSettingsClicked();
-            }
-
-            if (GUILayout.Button("PACKAGES", packagesButtonStyle, GUILayout.MinWidth(70) ))
-            {
-                OnPackagesClicked();
-            }
-
-            GUILayout.EndHorizontal();
-
-            switch (_subMenuState)
-            {
-                case SubMenuStates.StandardSettings:
-                    DrawStandardSettingsSubPanel();
-                    break;
-                case SubMenuStates.ApiSettings:
-                    DrawApiSubPanel();
-                    break;
-                 case SubMenuStates.TitleSettings:
-                    DrawTitleSettingsSubPanel();
-                    break;
-                 case SubMenuStates.Packages:
-                    DrawPackagesSubPanel();
-                    break;
+                if(menu != null)
+                {
+                    menu.DrawMenu();
+                    switch ((SubMenuStates)PlayFabEditorDataService.editorSettings.currentSubMenu)
+                    {
+                        case SubMenuStates.StandardSettings:
+                            DrawStandardSettingsSubPanel();
+                            break;
+                        case SubMenuStates.ApiSettings:
+                            DrawApiSubPanel();
+                            break;
+                         case SubMenuStates.TitleSettings:
+                            DrawTitleSettingsSubPanel();
+                            break;
+                         case SubMenuStates.Packages:
+                            DrawPackagesSubPanel();
+                            break;
+                    }
+                }
+                else
+                {
+                    RegisterMenu();
+                }
             }
         }
 
@@ -434,12 +390,14 @@ namespace PlayFab.Editor
                     {
                         GUILayout.Space(labelWidth - fwl.fieldWidth);
                         PlayFabEditorPackageManager.AndroidPushPlugin = EditorGUILayout.Toggle(PlayFabEditorPackageManager.AndroidPushPlugin, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"));
-
+                    }
+                    GUILayout.Space(5);
+                    GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
                         if(GUILayout.Button("VIEW GUIDE", PlayFabEditorHelper.uiStyle.GetStyle("Button")))
                         {
-                            Application.OpenURL("https://github.com/PlayFab/UnitySDK/tree/master/PluginsSource/UnityAndroidPluginSource");
+                    Application.OpenURL("https://github.com/PlayFab/UnitySDK/tree/master/PluginsSource/UnityAndroidPluginSource#playfab-push-notification-plugin");
                         }
-                    }
+                    GUILayout.EndHorizontal();
                 GUILayout.EndScrollView();
             }
         }
@@ -650,25 +608,36 @@ namespace PlayFab.Editor
                 
         }
 
+        public static void RegisterMenu()
+        {
+            if ( menu == null)
+            {
+                menu = ScriptableObject.CreateInstance<SubMenuComponent>();
+                menu.RegisterMenuItem("PROJECT", OnStandardSetttingsClicked);
+                menu.RegisterMenuItem("STUDIOS", OnTitleSettingsClicked);
+                menu.RegisterMenuItem("API", OnApiSettingsClicked);
+                menu.RegisterMenuItem("PACKAGES", OnPackagesClicked);
+            }
+        }
 
         private static void OnPackagesClicked()
         {
-            _subMenuState = SubMenuStates.Packages;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, SubMenuStates.Packages.ToString(), ""+(int)SubMenuStates.Packages);
         }
 
         private static void OnApiSettingsClicked()
         {
-            _subMenuState = SubMenuStates.ApiSettings;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, SubMenuStates.ApiSettings.ToString(), ""+(int)SubMenuStates.ApiSettings);
         }
 
         private static void OnStandardSetttingsClicked()
         {
-            _subMenuState = SubMenuStates.StandardSettings;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, SubMenuStates.StandardSettings.ToString(), ""+(int)SubMenuStates.StandardSettings);
         }
 
         private static void OnTitleSettingsClicked()
         {
-            _subMenuState = SubMenuStates.TitleSettings;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, SubMenuStates.TitleSettings.ToString(), ""+(int)SubMenuStates.TitleSettings);
         }
 
 
@@ -802,7 +771,6 @@ namespace PlayFab.Editor
                 case PlayFabEditor.EdExStates.OnMenuItemClicked:
                     if(status == "Settings")
                     {  
-                        _subMenuState = SubMenuStates.StandardSettings;
                         _isSettingsSet = false;
                         studioOptions = null;
                         SetSettingsProperties();

@@ -8,7 +8,7 @@
     using System.Linq;
 
     //[InitializeOnLoad]
-    public class MenuComponent : Editor {
+    public class SubMenuComponent : Editor {
 
         Dictionary<string, MenuItemContainer> items = new Dictionary<string, MenuItemContainer>();
         GUIStyle selectedStyle;
@@ -25,7 +25,11 @@
 
                 foreach(var item in items)
                 {
-                    if (GUILayout.Button(item.Value.displayName, item.Value.isSelected ? selectedStyle : defaultStyle))
+                    var styleToUse = item.Value.isSelected ? selectedStyle : defaultStyle;
+                    var content = new GUIContent(item.Value.displayName);   
+                    var size = styleToUse.CalcSize(content);
+                         
+                    if (GUILayout.Button(item.Value.displayName, styleToUse, GUILayout.Width(size.x + 1)))
                     {
                         OnMenuItemClicked(item.Key);
                     }
@@ -37,7 +41,19 @@
         {
             if(!items.ContainsKey(n))
             {
-                items.Add(n, new MenuItemContainer(){ displayName = n, method = m, isSelected = items.Count == 0 ? true : false });
+                bool selectState = false;
+                int activeSubmenu = PlayFabEditorDataService.editorSettings.currentSubMenu;
+                if(items.Count == 0 && activeSubmenu == 0)
+                {
+                    selectState = true;
+                }
+                else if (activeSubmenu == items.Count)
+                {
+                    // this is the menu being redrawn while also not being on the first menu tab
+                    selectState = true;
+                }
+
+                items.Add(n, new MenuItemContainer(){ displayName = n, method = m, isSelected = selectState });
             }
             else
             {
@@ -48,7 +64,6 @@
 
         private void OnMenuItemClicked(string key)
         {
-           // PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, key);
             if(items.ContainsKey(key))
             {
                 DeselectAll();
@@ -68,7 +83,27 @@
             }  
         }
 
-       
+        public SubMenuComponent()
+        {
+            if(!PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
+            {
+                PlayFabEditor.EdExStateUpdate += StateUpdateHandler;
+            }
+        }
+
+        void StateUpdateHandler(PlayFabEditor.EdExStates state, string status, string json)
+        {
+            switch(state)
+            {
+                case PlayFabEditor.EdExStates.OnMenuItemClicked:
+                    DeselectAll();
+                    if(items != null && items.Count > 0)
+                    {
+                        items.First().Value.isSelected = true;
+                    }
+                break;
+           }
+        }
     }
 
 

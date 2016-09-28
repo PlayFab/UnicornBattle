@@ -15,7 +15,7 @@
         public static TitleDataViewer tdViewer;
         public static TitleInternalDataViewer tdInternalViewer;
 
-        public static MenuComponent menu = null;
+        public static SubMenuComponent menu = null;
 
         public enum DataMenuStates { TitleData, TitleDataInternal }
         public static DataMenuStates currentState = DataMenuStates.TitleData;
@@ -34,7 +34,7 @@
                 {
                     menu.DrawMenu();
 
-                    switch(currentState)
+                    switch((DataMenuStates)PlayFabEditorDataService.editorSettings.currentSubMenu)
                     {
                         case DataMenuStates.TitleData:
                             if(tdViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
@@ -129,7 +129,7 @@
         {
             if ( menu == null)
             {
-                menu = ScriptableObject.CreateInstance<MenuComponent>();
+                menu = ScriptableObject.CreateInstance<SubMenuComponent>();
                 menu.RegisterMenuItem("TITLE", OnTitleDataClicked);
                 menu.RegisterMenuItem("INTERNAL", OnInternalTitleDataClicked);
             }
@@ -153,12 +153,15 @@
 
         public static void OnTitleDataClicked()
         {
-            currentState = DataMenuStates.TitleData;
+           
+            //currentState = DataMenuStates.TitleData;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleData.ToString(), ""+(int)DataMenuStates.TitleData);
         }
 
         public static void OnInternalTitleDataClicked()
         {
-            currentState = DataMenuStates.TitleDataInternal;
+            //currentState = DataMenuStates.TitleDataInternal;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleDataInternal.ToString(), ""+(int)DataMenuStates.TitleDataInternal);
         }
    }
 #endregion

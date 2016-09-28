@@ -6,26 +6,12 @@
 
 
     public class TitleDataEditor : EditorWindow {
-        public static TitleDataEditor myInstance;
-        public static TitleDataEditor myWindow;
 
         public string key = string.Empty;
         public string Value = string.Empty;
 
         public string displayTitle = "";
-        public Vector2 scrollPos = Vector2.zero;
-
-
-        public static void  ShowWindow (TitleDataEditor tdInstance) {
-           // myInstance tdInstance;
-            myInstance = tdInstance;
-         
-            myWindow = EditorWindow.GetWindow<TitleDataEditor>();
-            myWindow.key = tdInstance.key;
-            myWindow.Value = string.IsNullOrEmpty(tdInstance.Value) ? "ENTER A VALUE" : tdInstance.Value;
-
-            myWindow.Show();
-        }
+        public Vector2 scrollPos = Vector2.zero; 
         
         void OnGUI () {
             // The actual window code goes here

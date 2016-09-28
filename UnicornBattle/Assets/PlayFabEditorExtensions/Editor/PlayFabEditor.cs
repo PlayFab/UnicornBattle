@@ -14,7 +14,7 @@ namespace PlayFab.Editor
 
 #region EdEx Variables
         // vars for the plugin-wide event system
-        public enum EdExStates { OnEnable, OnDisable, OnLogin, OnLogout, OnMenuItemClicked,  OnHttpReq, OnHttpRes, OnError, OnSuccess, OnWarning, OnDataLoaded  } //OnSubmenuItemClicked, OnWaitBegin, OnWaitEnd,
+        public enum EdExStates { OnEnable, OnDisable, OnLogin, OnLogout, OnMenuItemClicked, OnSubmenuItemClicked, OnHttpReq, OnHttpRes, OnError, OnSuccess, OnWarning, OnDataLoaded  } //OnWaitBegin, OnWaitEnd,
 
         public delegate void PlayFabEdExStateHandler(EdExStates state, string status, string misc);
         public static event PlayFabEdExStateHandler EdExStateUpdate;
@@ -36,7 +36,7 @@ namespace PlayFab.Editor
             if (window == null)
             {
                 window = this;
-                window.minSize = new Vector2(300, 0);
+                window.minSize = new Vector2(320, 0);
             }
 
             if(!IsEventHandlerRegistered(StateUpdateHandler))
@@ -319,7 +319,19 @@ namespace PlayFab.Editor
             {
                 case EdExStates.OnMenuItemClicked:
                     //Debug.Log(string.Format("MenuItem: {0} Clicked", status));
+                    PlayFabEditorDataService.editorSettings.currentSubMenu = 0;
+                    PlayFabEditorDataService.SaveEditorSettings();
                 break;
+
+                case EdExStates.OnSubmenuItemClicked:
+                    int parsed;
+                    if(Int32.TryParse(json, out parsed))
+                    {
+                        PlayFabEditorDataService.editorSettings.currentSubMenu = parsed;
+                        PlayFabEditorDataService.SaveEditorSettings();
+                    }
+                break;
+
 
                 case EdExStates.OnHttpReq:
                     object temp;

@@ -535,6 +535,8 @@ namespace PlayFab.Editor.EditorModels
     public class PlayFab_EditorSettings
     {
        public int currentMainMenu { get; set; }
+       public int currentSubMenu { get; set; }
+
        public bool isEdExShown { get; set; }
        public string latestSdkVersion { get; set; }
        public string latestEdExVersion { get; set; }

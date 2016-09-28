@@ -64,7 +64,7 @@ public class StoreDisplayItem : MonoBehaviour {
 			uint salePrice;
 			cItem.VirtualCurrencyPrices.TryGetValue(currencyKey, out salePrice);
 			
-			if(salePrice < msrpPrice && currencyKey != "RM")
+			if(salePrice < msrpPrice)
 			{
 				// VC only, not adjusting RM prices yet.
 				float percent = (((float)msrpPrice - (float)salePrice)/(float)msrpPrice);

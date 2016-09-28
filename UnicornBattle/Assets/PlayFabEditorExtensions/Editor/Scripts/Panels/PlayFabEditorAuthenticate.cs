@@ -104,7 +104,15 @@ namespace PlayFab.Editor
                 
 
             GUILayout.BeginVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-            GUILayout.Label("Our editor extension provides an easy way to manage the PlayFab SDK. \n\nExisting users may LOG IN using their developer account. \n\nNew users must CREATE AN ACCOUNT.", PlayFabEditorHelper.uiStyle.GetStyle("cGenTxt"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+
+            EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("VIEW README", PlayFabEditorHelper.uiStyle.GetStyle("textButton")))
+                {
+                    Application.OpenURL("https://github.com/PlayFab/UnityEditorExtensions#setup");
+                }
+                GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
 
 
 
