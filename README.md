@@ -47,6 +47,17 @@ See the [Back-end Guide](https://github.com/PlayFab/UnicornBattle/wiki/1-Unicorn
 ![UB_Uploader](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/UB_Uploader.png "UB_Uploader")
 
 ####Client Setup:
+There are two ways to setup the Unicorn Battle client. You can download the Unity source code, compile it yourself, and test the game that way. Or, you can download and install our precompiled Unicorn Battle app directly from the Google Play store for Android.
+
+#####Download from Google Play:
+  1. Go to the [Unicorn Battle App](https://play.google.com/store/apps/details?id=com.playfab.unicornbattle&hl=en) on the Google Play store, and install it on your Android phone.
+  2. Run the game, but do not yet press Play.
+  3. Click the Settings button in the bottom left corner.
+  4. Choose "Set Title ID" and enter your own custom title ID from above. This will tell the game to connect to your custom back end. Accept the new title ID.
+  5. Press the red "back arrow" in the bottom left corner to return to the main menu.
+  6. You may now press "Play Unicorn Battle" to start your game. If you have your browser open to the Game Manager for your Unicorn Battle title, you should see your phone connect in the PlayStream debugger. That's how you know it's working!
+  
+#####Compile and run in Unity yourself
 The [Unicorn Battle Client](/UnicornBattle/ "Unity Project") was built with iOS and Android targets using Unity3d 5.3.4f. Testing within the Unity editor, on web or desktop works, but not all features are available. This game was designed to be viewed in 16:9 aspect ratio, but most common ratios should display reasonably well. 
 
 Prior to running Unicorn Battle you will need to set your TitleId in GlobalStrings.cs. This is the same value you used when setting up the back-end.
