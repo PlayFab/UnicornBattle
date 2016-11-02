@@ -53,7 +53,9 @@ There are two ways to setup the Unicorn Battle client. You can download the Unit
   1. Go to the [Unicorn Battle App](https://play.google.com/store/apps/details?id=com.playfab.unicornbattle&hl=en) on the Google Play store, and install it on your Android phone.
   2. Run the game, but do not yet press Play.
   3. Click the Settings button in the bottom left corner.
+![UB Login](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/Login.png "Unicorn Battle Login")
   4. Choose "Set Title ID" and enter your own custom title ID from above. This will tell the game to connect to your custom back end. Accept the new title ID.
+![Set Title ID](https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/UB_set-title-id.png "Set Title ID")
   5. Press the red "back arrow" in the bottom left corner to return to the main menu.
   6. You may now press "Play Unicorn Battle" to start your game. If you have your browser open to the Game Manager for your Unicorn Battle title, you should see your phone connect in the PlayStream debugger. That's how you know it's working!
   
