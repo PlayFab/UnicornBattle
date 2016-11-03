@@ -219,12 +219,13 @@ namespace UB_Uploader
                 LogToFile("\tAn error occurred deserializing the CloudScript.js file.", ConsoleColor.Red);
                 return false;
             }
-            List<CloudScriptFile> files = new List<CloudScriptFile>();
-            files.Add(new CloudScriptFile()
-            {
-                Filename = "CloudScript.js",
-                FileContents = parsedFile
-            });
+            var files = new List<CloudScriptFile> {
+                new CloudScriptFile
+                {
+                    Filename = "CloudScript.js",
+                    FileContents = parsedFile
+                }
+            };
 
             var request = new UpdateCloudScriptRequest()
             {
@@ -340,11 +341,14 @@ namespace UB_Uploader
             }
             for (var z = 0; z < catalogItems.Count; z++)
             {
-                if ((catalogItems[z].Bundle != null && catalogItems[z].Bundle.BundledResultTables != null && catalogItems[z].Bundle.BundledResultTables.Count > 0) || (catalogItems[z].Container != null && catalogItems[z].Container.ResultTableContents != null && catalogItems[z].Container.ResultTableContents.Count > 0))
+                if (catalogItems[z].Bundle != null || catalogItems[z].Container != null)
                 {
-                    var strip = catalogItems[z];
-                    var clone = CloneCatalogItemAndStripTables(ref strip);
-                    reUploadList.Add(clone);
+                    var original = catalogItems[z];
+                    var strippedClone = CloneCatalogItemAndStripTables(original);
+
+                    reUploadList.Add(original);
+                    catalogItems.Remove(original);
+                    catalogItems.Add(strippedClone);
                 }
             }
 
@@ -495,7 +499,7 @@ namespace UB_Uploader
             return contents;
         }
 
-        static CatalogItem CloneCatalogItemAndStripTables(ref CatalogItem strip)
+        static CatalogItem CloneCatalogItemAndStripTables(CatalogItem strip)
         {
             if (strip == null)
                 return null;
