@@ -243,17 +243,6 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Retrieves the details of all title-specific statistics for the user
-        /// </summary>
-        [Obsolete("Use 'GetPlayerStatistics' instead", true)]
-        public static void GetUserStatistics(GetUserStatisticsRequest request, Action<GetUserStatisticsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null)
-        {
-            if (PlayFabSettings.DeveloperSecretKey == null) throw new Exception("Must have PlayFabSettings.DeveloperSecretKey set to call this method");
-
-            PlayFabHttp.MakeApiCall("/Server/GetUserStatistics", request, AuthType.DevSecretKey, resultCallback, errorCallback, customData);
-        }
-
-        /// <summary>
         /// Updates the values of the specified title-specific statistics for the user
         /// </summary>
         public static void UpdatePlayerStatistics(UpdatePlayerStatisticsRequest request, Action<UpdatePlayerStatisticsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null)
@@ -324,17 +313,6 @@ namespace PlayFab
         }
 
         /// <summary>
-        /// Updates the values of the specified title-specific statistics for the user. By default, clients are not permitted to update statistics. Developers may override this setting in the Game Manager > Settings > API Features.
-        /// </summary>
-        [Obsolete("Use 'UpdatePlayerStatistics' instead", true)]
-        public static void UpdateUserStatistics(UpdateUserStatisticsRequest request, Action<UpdateUserStatisticsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null)
-        {
-            if (PlayFabSettings.DeveloperSecretKey == null) throw new Exception("Must have PlayFabSettings.DeveloperSecretKey set to call this method");
-
-            PlayFabHttp.MakeApiCall("/Server/UpdateUserStatistics", request, AuthType.DevSecretKey, resultCallback, errorCallback, customData);
-        }
-
-        /// <summary>
         /// Retrieves the specified version of the title's catalog of virtual goods, including all defined properties
         /// </summary>
         public static void GetCatalogItems(GetCatalogItemsRequest request, Action<GetCatalogItemsResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null)
@@ -352,6 +330,16 @@ namespace PlayFab
             if (PlayFabSettings.DeveloperSecretKey == null) throw new Exception("Must have PlayFabSettings.DeveloperSecretKey set to call this method");
 
             PlayFabHttp.MakeApiCall("/Server/GetPublisherData", request, AuthType.DevSecretKey, resultCallback, errorCallback, customData);
+        }
+
+        /// <summary>
+        /// Retrieves the current server time
+        /// </summary>
+        public static void GetTime(GetTimeRequest request, Action<GetTimeResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null)
+        {
+            if (PlayFabSettings.DeveloperSecretKey == null) throw new Exception("Must have PlayFabSettings.DeveloperSecretKey set to call this method");
+
+            PlayFabHttp.MakeApiCall("/Server/GetTime", request, AuthType.DevSecretKey, resultCallback, errorCallback, customData);
         }
 
         /// <summary>
@@ -752,17 +740,6 @@ namespace PlayFab
             if (PlayFabSettings.DeveloperSecretKey == null) throw new Exception("Must have PlayFabSettings.DeveloperSecretKey set to call this method");
 
             PlayFabHttp.MakeApiCall("/Server/AwardSteamAchievement", request, AuthType.DevSecretKey, resultCallback, errorCallback, customData);
-        }
-
-        /// <summary>
-        /// Logs a custom analytics event
-        /// </summary>
-        [Obsolete("Use 'WritePlayerEvent' instead", true)]
-        public static void LogEvent(LogEventRequest request, Action<LogEventResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null)
-        {
-            if (PlayFabSettings.DeveloperSecretKey == null) throw new Exception("Must have PlayFabSettings.DeveloperSecretKey set to call this method");
-
-            PlayFabHttp.MakeApiCall("/Server/LogEvent", request, AuthType.DevSecretKey, resultCallback, errorCallback, customData);
         }
 
         /// <summary>

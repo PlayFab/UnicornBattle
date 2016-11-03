@@ -1,11 +1,9 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 public class SettingsCanvasController : Singleton<SettingsCanvasController> {
 	protected SettingsCanvasController () {} // guarantee this will be always a singleton only - can't use the constructor!
@@ -62,13 +60,13 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController> {
 
 	void UpdateSettingsMenuButtons()
 	{
-		string levelName = SceneManager.GetActiveScene().name;
-		SceneToSettingsMapping activeSettings = this.settingsByScene.Find((zz) => { return zz.sceneName.Contains(levelName); });
+		var levelName = SceneManager.GetActiveScene().name;
+		var activeSettings = this.settingsByScene.Find((zz) => { return zz.sceneName.Contains(levelName); });
 		if(activeSettings != null)
 		{
 			foreach(var button in settingsButtons)
 			{
-				SettingButtonTypes sceneObject = activeSettings.buttons.Find((zz) => { return button.buttonType == zz; });
+				var sceneObject = activeSettings.buttons.Find((zz) => { return button.buttonType == zz; });
 				//Debug.Log(sceneObject.ToString());
 				if(sceneObject != SettingButtonTypes.none)
 				{

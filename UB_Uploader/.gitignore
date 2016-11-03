@@ -1,0 +1,24 @@
+# ===================================== #
+# Visual Studio / MonoDevelop generated #
+# ===================================== #
+[Tt]emp/
+[Oo]bj/
+[Bb]uild
+[Bb]uilds
+[Ee]xported[Oo]bj/
+*.userprefs
+*.pidb
+*.suo
+*.user
+*.unityproj
+*.booproj
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store*
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+[Tt]humbs.db 

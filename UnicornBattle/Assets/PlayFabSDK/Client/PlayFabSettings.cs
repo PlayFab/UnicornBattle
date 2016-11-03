@@ -8,11 +8,12 @@ namespace PlayFab
 {
     public static partial class PlayFabSettings
     {
-        //Client only
-        internal static string LogicServerUrl = null; // Deprecated
-        public static string AdvertisingIdType = null; // Set this to the appropriate AD_TYPE_X constant below
+        public const string AD_TYPE_IDFA = "Idfa";
+        public const string AD_TYPE_ANDROID_ID = "Adid";
+
+        public static string AdvertisingIdType = null; // Set this to the appropriate AD_TYPE_X constant above
         public static string AdvertisingIdValue = null;
-        public static string PlayerId = string.Empty;
+        public static bool DisableAdvertising = false;
     }
 }
 #endif

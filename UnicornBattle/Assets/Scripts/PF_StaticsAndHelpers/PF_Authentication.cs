@@ -394,7 +394,6 @@ public class PF_Authentication {
 	/// <param name="result">Result object returned from PlayFab server</param>
 	private static void OnLoginResult(PlayFab.ClientModels.LoginResult result) //LoginResult
 	{	
-		PlayFabSettings.PlayerId = result.PlayFabId;
 		PF_PlayerData.PlayerId = result.PlayFabId;
 		
 		#if UNITY_ANDROID && !UNITY_EDITOR
