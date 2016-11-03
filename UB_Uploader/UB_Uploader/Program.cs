@@ -16,6 +16,7 @@ namespace UB_Uploader
         private static bool hitErrors;
 
         // data file locations
+        private const string currencyPath = "./PlayFabData/Currency.json";
         private const string titleSettingsPath = "./PlayFabData/TitleSettings.json";
         private const string titleDataPath = "./PlayFabData/TitleData.json";
         private const string catalogPath = "./PlayFabData/Catalog.json";
@@ -270,7 +271,6 @@ namespace UB_Uploader
 
             LogToFile("Uploading Title Data Keys & Values...");
             var parsedFile = ParseFile(titleDataPath);
-
             var titleDataDict = JsonWrapper.DeserializeObject<Dictionary<string, string>>(parsedFile);
 
             foreach (var kvp in titleDataDict)
@@ -302,33 +302,8 @@ namespace UB_Uploader
         private static bool UploadVc()
         {
             LogToFile("Uploading Virtual Currency Settings...");
-            var vcData = new List<VirtualCurrencyData> {
-                new VirtualCurrencyData
-                {
-                    CurrencyCode = "AU",
-                    DisplayName = "Gold",
-                    InitialDeposit = 1000,
-                    RechargeMax = 0,
-                    RechargeRate = 0
-                },
-                new VirtualCurrencyData
-                {
-                    CurrencyCode = "GM",
-                    DisplayName = "Gems",
-                    InitialDeposit = 5,
-                    RechargeMax = 0,
-                    RechargeRate = 0
-                },
-                new VirtualCurrencyData
-                {
-                    CurrencyCode = "HT",
-                    DisplayName = "Hearts",
-                    InitialDeposit = 5,
-                    RechargeMax = 5,
-                    RechargeRate = 24
-                }
-            };
-
+            var parsedFile = ParseFile(currencyPath);
+            var vcData = JsonWrapper.DeserializeObject<List<VirtualCurrencyData>>(parsedFile);
             var request = new AddVirtualCurrencyTypesRequest
             {
                 VirtualCurrencies = vcData

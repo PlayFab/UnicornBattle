@@ -1,0 +1,19 @@
+[{
+	"CurrencyCode": "AU",
+	"DisplayName": "Gold",
+	"InitialDeposit": 1000,
+	"RechargeRate": 0,
+	"RechargeMax": 0
+}, {
+	"CurrencyCode": "GM",
+	"DisplayName": "Gems",
+	"InitialDeposit": 5,
+	"RechargeRate": 0,
+	"RechargeMax": 0
+}, {
+	"CurrencyCode": "HT",
+	"DisplayName": "Hearts",
+	"InitialDeposit": 5,
+	"RechargeRate": 24,
+	"RechargeMax": 5
+}]

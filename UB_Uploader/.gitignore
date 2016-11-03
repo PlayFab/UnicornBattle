@@ -1,6 +1,3 @@
-# ===================================== #
-# Visual Studio / MonoDevelop generated #
-# ===================================== #
 [Tt]emp/
 [Oo]bj/
 [Bb]uild
@@ -12,9 +9,8 @@
 *.user
 *.unityproj
 *.booproj
-# ============ #
-# OS generated #
-# ============ #
+PreviousUploadLog.txt
+
 .DS_Store*
 ._*
 .Spotlight-V100
