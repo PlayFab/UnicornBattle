@@ -1,7 +1,7 @@
 #Introducing Unicorn Battle
 This repository is the home of Unicorn Battle (UB), PlayFab's open-source, end-to-end demo project. UB is a complete game sporting dynamic gameplay, driven by PlayFab's back-end technology, showcasing how to build modern live-game systems. 
 
-[[https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/SplashScreen_01.png]]
+![Splash Screen][https://github.com/PlayFab/UnicornBattle/wiki/Assets/Images/SplashScreen_01.png "Splash Screen"]
 
 ##Key Features
   * **Unified Player Profile** - Accounts uses Device ID &/or Facebook Authentication
