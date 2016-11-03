@@ -12,7 +12,7 @@ namespace UB_Uploader
     public static class Program
     {
         // shared variables
-        private const string defaultCatalog = "CharacterClasses";
+        private static string defaultCatalog = null; // Determined by TitleSettings.json
         private static bool hitErrors;
 
         // data file locations
@@ -253,10 +253,12 @@ namespace UB_Uploader
 
             if (titleSettings != null &&
                 titleSettings.TryGetValue("TitleId", out PlayFabSettings.TitleId) &&
-                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.DeveloperSecretKey))
+                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.DeveloperSecretKey) &&
+                titleSettings.TryGetValue("CatalogName", out defaultCatalog))
             {
                 LogToFile(string.Format("Setting Destination TitleId to:{0}", PlayFabSettings.TitleId));
                 LogToFile(string.Format("Setting DeveloperSecretKey to:{0}", PlayFabSettings.DeveloperSecretKey));
+                LogToFile(string.Format("Setting defaultCatalog name to:{0}", defaultCatalog));
                 return true;
             }
 
