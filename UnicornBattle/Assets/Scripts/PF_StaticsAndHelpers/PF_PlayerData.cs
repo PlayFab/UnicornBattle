@@ -27,7 +27,7 @@ public static class PF_PlayerData
     public static Dictionary<string, int> userStatistics = new Dictionary<string, int>();
 
     //aggregation of player characters
-    public static List<PlayFab.ClientModels.CharacterResult> playerCharacters = new List<PlayFab.ClientModels.CharacterResult>();
+    public static List<CharacterResult> playerCharacters = new List<CharacterResult>();
     public static Dictionary<string, UB_CharacterData> playerCharacterData = new Dictionary<string, UB_CharacterData>();
     public static Dictionary<string, List<string>> characterAchievements = new Dictionary<string, List<string>>();
     public static Dictionary<string, Dictionary<string, int>> characterStatistics = new Dictionary<string, Dictionary<string, int>>();
@@ -113,7 +113,7 @@ public static class PF_PlayerData
 
                     if (!inventoryByCategory.ContainsKey(item.ItemId))
                     {
-                        CatalogItem catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
+                        var catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
                         List<ItemInstance> items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
 
                         try
@@ -191,14 +191,14 @@ public static class PF_PlayerData
 
     public static void UpdateUserStatistics(Dictionary<string, int> updates)
     {
-        UpdatePlayerStatisticsRequest request = new UpdatePlayerStatisticsRequest();
+        var request = new UpdatePlayerStatisticsRequest();
         request.Statistics = new List<StatisticUpdate>();
 
         foreach (var eachUpdate in updates) // Copy the stats from the inputs to the request
         {
             int eachStat;
             userStatistics.TryGetValue(eachUpdate.Key, out eachStat);
-            request.Statistics.Add(new StatisticUpdate() { StatisticName = eachUpdate.Key, Value = eachUpdate.Value }); // Send the value to the server
+            request.Statistics.Add(new StatisticUpdate { StatisticName = eachUpdate.Key, Value = eachUpdate.Value }); // Send the value to the server
             userStatistics[eachUpdate.Key] = eachStat + eachUpdate.Value; // Update the local cache so that future updates are using correct values
         }
 
@@ -220,14 +220,14 @@ public static class PF_PlayerData
     #region User Account APIs
     public static void GetUserAccountInfo()
     {
-        GetPlayerCombinedInfoRequest request = new GetPlayerCombinedInfoRequest();
-        request.InfoRequestParameters = new GetPlayerCombinedInfoRequestParams() { GetUserData = true, GetUserReadOnlyData = true, GetUserInventory = true, GetUserVirtualCurrency = true, GetUserAccountInfo = true, GetPlayerStatistics = true };
+        var request = new GetPlayerCombinedInfoRequest();
+        request.InfoRequestParameters = new GetPlayerCombinedInfoRequestParams { GetUserData = true, GetUserReadOnlyData = true, GetUserInventory = true, GetUserVirtualCurrency = true, GetUserAccountInfo = true, GetPlayerStatistics = true };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetAccountInfo);
         PlayFabClientAPI.GetPlayerCombinedInfo(request, OnGetUserAccountInfoSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    public static void OnGetUserAccountInfoSuccess(GetPlayerCombinedInfoResult result)
+    private static void OnGetUserAccountInfoSuccess(GetPlayerCombinedInfoResult result)
     {
         playerInventory = result.InfoResultPayload.UserInventory;
         accountInfo = result.InfoResultPayload.AccountInfo;
@@ -236,21 +236,21 @@ public static class PF_PlayerData
         {
             if (result.InfoResultPayload.UserData["IsRegisteredForPush"].Value == "1")
             {
-                PF_PlayerData.isRegisteredForPush = true;
+                isRegisteredForPush = true;
             }
             else
             {
-                PF_PlayerData.isRegisteredForPush = false;
+                isRegisteredForPush = false;
             }
         }
         else
         {
-            PF_PlayerData.isRegisteredForPush = false;
+            isRegisteredForPush = false;
         }
 
         if (result.InfoResultPayload.UserData.ContainsKey("ShowAccountOptionsOnLogin") && result.InfoResultPayload.UserData["ShowAccountOptionsOnLogin"].Value == "0")
         {
-            PF_PlayerData.showAccountOptionsOnLogin = false;
+            showAccountOptionsOnLogin = false;
         }
         else //if (PF_Authentication.hasLoggedInOnce == false) 
         {
@@ -260,7 +260,7 @@ public static class PF_PlayerData
 
         if (result.InfoResultPayload.UserReadOnlyData.ContainsKey("RedeemedOffers"))
         {
-            PF_PlayerData.RedeemedOffers = PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
+            RedeemedOffers = PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
         }
 
         inventoryByCategory.Clear();
@@ -307,7 +307,7 @@ public static class PF_PlayerData
                             }
                         }
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Debug.LogWarning(item.ItemId + " -- " + e.Message);
                         continue;
@@ -475,7 +475,7 @@ public static class PF_PlayerData
         PlayFabClientAPI.ExecuteCloudScript(request, OnGetCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    public static void OnGetCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
+    private static void OnGetCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
     {
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
@@ -514,7 +514,7 @@ public static class PF_PlayerData
         }
     }
 
-    public static void OnUpdateCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
+    private static void OnUpdateCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
     {
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
@@ -556,7 +556,7 @@ public static class PF_PlayerData
             {
                 if (!characterInvByCategory.ContainsKey(item.ItemId))
                 {
-                    CatalogItem catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
+                    var catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
                     List<ItemInstance> items = new List<ItemInstance>(characterInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
 
                     try
@@ -586,7 +586,7 @@ public static class PF_PlayerData
                             }
                         }
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Debug.LogWarning(item.ItemId + " -- " + e.Message);
                         continue;
@@ -598,12 +598,12 @@ public static class PF_PlayerData
 
     public static void GetPlayerCharacters()
     {
-        ListUsersCharactersRequest request = new ListUsersCharactersRequest();
+        var request = new ListUsersCharactersRequest();
 
         PlayFabClientAPI.GetAllUsersCharacters(request, OnGetPlayerCharactersSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    public static void OnGetPlayerCharactersSuccess(ListUsersCharactersResult result)
+    private static void OnGetPlayerCharactersSuccess(ListUsersCharactersResult result)
     {
         playerCharacters = result.Characters;
 
@@ -612,13 +612,13 @@ public static class PF_PlayerData
 
     public static void CreateNewCharacter(string name, UB_ClassDetail details)
     {
-        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+        var request = new ExecuteCloudScriptRequest();
         request.FunctionName = "CreateCharacter";
         request.FunctionParameter = new { catalogCode = details.CatalogCode, characterName = name };
         PlayFabClientAPI.ExecuteCloudScript(request, OnCreateNewCharacterSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    public static void OnCreateNewCharacterSuccess(ExecuteCloudScriptResult result)
+    private static void OnCreateNewCharacterSuccess(ExecuteCloudScriptResult result)
     {
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
@@ -637,7 +637,7 @@ public static class PF_PlayerData
     {
         Action callback = () =>
         {
-            ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+            var request = new ExecuteCloudScriptRequest();
             request.FunctionName = "DeleteCharacter";
             request.FunctionParameter = new { characterId = cid };
             PlayFabClientAPI.ExecuteCloudScript(request, OnDeleteCharacterSuccess, PF_Bridge.PlayFabErrorCallback);
@@ -646,7 +646,7 @@ public static class PF_PlayerData
         callback();
     }
 
-    public static void OnDeleteCharacterSuccess(ExecuteCloudScriptResult result)
+    private static void OnDeleteCharacterSuccess(ExecuteCloudScriptResult result)
     {
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
@@ -663,9 +663,9 @@ public static class PF_PlayerData
 
     public static void UpdateActiveCharacterData()
     {
-        string id = activeCharacter.characterDetails.CharacterId;
+        var id = activeCharacter.characterDetails.CharacterId;
         UB_CharacterData cData;
-        PF_PlayerData.playerCharacterData.TryGetValue(id, out cData);
+        playerCharacterData.TryGetValue(id, out cData);
 
         if (cData != null)
         {
@@ -769,7 +769,7 @@ public static class PF_PlayerData
         if (onlyRemoveInstance == true)
         {
             // this offer has already been rewarded, need to remove from the player's invenetory.
-            ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+            var request = new ExecuteCloudScriptRequest();
             request.FunctionName = "RemoveOfferItem";
             request.FunctionParameter = new { PFID = PlayerId, InstanceToRemove = instanceToRemove };
 
@@ -822,9 +822,9 @@ public static class PF_PlayerData
     public static void SubtractLifeFromPlayer()
     {
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ExecuteCloudScript);
-        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+        var request = new ExecuteCloudScriptRequest();
         request.FunctionName = "SubtractLife";
-        request.FunctionParameter = new { CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId };
+        request.FunctionParameter = new { CharacterId = activeCharacter.characterDetails.CharacterId };
         PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
         {
             if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
@@ -941,10 +941,10 @@ public static class PF_PlayerData
 
     public static void UnlinkFBAccount(UnityAction calback = null)
     {
-        UnlinkFacebookAccountRequest request = new UnlinkFacebookAccountRequest();
+        var request = new UnlinkFacebookAccountRequest();
         PlayFabClientAPI.UnlinkFacebookAccount(request, (UnlinkFacebookAccountResult result) =>
                                                {
-                                                   PF_PlayerData.accountInfo.FacebookInfo = null;
+                                                   accountInfo.FacebookInfo = null;
                                                    if (calback != null)
                                                    {
                                                        Debug.Log("Unlinked Account.");
@@ -971,7 +971,7 @@ public static class PF_PlayerData
 			if(token != null)
 			{
 				RegisterForIOSPushNotificationRequest request = new RegisterForIOSPushNotificationRequest();
-				request.DeviceToken = System.BitConverter.ToString(token).Replace("-", "").ToLower();
+				request.DeviceToken = BitConverter.ToString(token).Replace("-", "").ToLower();
 				
 				hexToken = request.DeviceToken;
 				Debug.Log (hexToken);
@@ -997,7 +997,7 @@ public static class PF_PlayerData
 			{
 				// success
 				Debug.Log("GCM Init Success");
-				AndroidDevicePushNotificationRegistrationRequest request = new AndroidDevicePushNotificationRegistrationRequest();
+				var request = new AndroidDevicePushNotificationRegistrationRequest();
 				request.DeviceToken = pushToken;
 				
 				DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
@@ -1021,7 +1021,7 @@ public static class PF_PlayerData
 
     public static void TransferItemToPlayer(string sourceId, string instanceId, Action callback = null)
     {
-        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+        var request = new ExecuteCloudScriptRequest();
         request.FunctionName = "TransferItemToPlayer";
         request.FunctionParameter = new { sourceId = sourceId, instanceId = instanceId };
         PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
@@ -1038,7 +1038,7 @@ public static class PF_PlayerData
 
     public static void TransferItemToCharacter(string sourceId, string sourceType, string instanceId, string destId, Action callback = null)
     {
-        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+        var request = new ExecuteCloudScriptRequest();
         request.FunctionName = "TransferItemToCharacter";
         request.FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, instanceId = instanceId };
         PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
@@ -1055,7 +1055,7 @@ public static class PF_PlayerData
 
     public static void TransferVcToPlayer(string sourceId, string cCode, int amount, Action callback = null)
     {
-        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+        var request = new ExecuteCloudScriptRequest();
         request.FunctionName = "TransferVcToPlayer";
         request.FunctionParameter = new { sourceId = sourceId, amount = amount, cCode = cCode };
         PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
@@ -1072,7 +1072,7 @@ public static class PF_PlayerData
 
     public static void TransferVCToCharacter(string sourceId, string sourceType, string cCode, int amount, string destId, Action callback = null)
     {
-        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest();
+        var request = new ExecuteCloudScriptRequest();
         request.FunctionName = "TransferVCToCharacter";
         request.FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, amount = amount, cCode = cCode };
         PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>

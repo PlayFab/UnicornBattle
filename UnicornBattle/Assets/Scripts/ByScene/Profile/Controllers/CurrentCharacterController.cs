@@ -46,10 +46,10 @@ public class CurrentCharacterController : MonoBehaviour {
 			
 			if(PF_PlayerData.characterVirtualCurrency.Count > 0)
 			{
-				if(PF_PlayerData.characterVirtualCurrency.ContainsKey("HT"))
+				if(PF_PlayerData.characterVirtualCurrency.ContainsKey(GlobalStrings.HEART_CURRENCY))
 				{
-					this.livesCount.text = "" + PF_PlayerData.characterVirtualCurrency["HT"];
-/*					if(PF_PlayerData.characterVirtualCurrency["HT"] < 3)
+					this.livesCount.text = "" + PF_PlayerData.characterVirtualCurrency[GlobalStrings.HEART_CURRENCY];
+/*					if(PF_PlayerData.characterVirtualCurrency[GlobalStrings.HEART_CURRENCY] < 3)
 					{
 						TweenScale.Tween(this.heartArt.gameObject, .333f, new Vector3(1,1,1), new Vector3(1.1f,1.1f,1.1f), TweenMain.Style.PingPong, TweenMain.Method.EaseIn, null);
 					}

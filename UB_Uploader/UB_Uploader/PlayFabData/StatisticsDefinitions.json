@@ -14,11 +14,6 @@
  	"VersionChangeInterval": "Never",
  	"AggregationMethod": "Sum"
  }, {
- 	"StatisticName": "what",
- 	"CurrentVersion": 0,
- 	"VersionChangeInterval": "Never",
- 	"AggregationMethod": "Last"
- }, {
  	"StatisticName": "Total_XPGained",
  	"CurrentVersion": 1,
  	"VersionChangeInterval": "Never",
@@ -55,6 +50,11 @@
  	"AggregationMethod": "Sum"
  }, {
  	"StatisticName": "TotalWins",
+ 	"CurrentVersion": 0,
+ 	"VersionChangeInterval": "Never",
+ 	"AggregationMethod": "Sum"
+ }, {
+ 	"StatisticName": "HighestCharacterLevel",
  	"CurrentVersion": 0,
  	"VersionChangeInterval": "Never",
  	"AggregationMethod": "Sum"

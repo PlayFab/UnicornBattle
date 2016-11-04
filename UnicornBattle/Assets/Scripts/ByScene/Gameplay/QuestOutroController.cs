@@ -1,10 +1,7 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.Events;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 public class QuestOutroController : MonoBehaviour {
 	public Image CreepEncountersImage;
@@ -75,7 +72,7 @@ public class QuestOutroController : MonoBehaviour {
 
 	public void OnReturnToHubClick()
 	{
-		if(PF_GamePlay.QuestProgress.isQuestWon == true)
+		if(PF_GamePlay.QuestProgress.isQuestWon)
 		{
 			Dictionary<string, object> eventData = new Dictionary<string, object>()
 			{
@@ -85,7 +82,7 @@ public class QuestOutroController : MonoBehaviour {
 			PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_LevelComplete, eventData);
 		}
 		
-		if(PF_PlayerData.activeCharacter.PlayerVitals.didLevelUp == true)
+		if(PF_PlayerData.activeCharacter.PlayerVitals.didLevelUp)
 		{
 			Dictionary<string, object> eventData = new Dictionary<string, object>()
 			{
@@ -98,7 +95,7 @@ public class QuestOutroController : MonoBehaviour {
 											
 		// Only save if the game has been won
 		// may want to add in some stats for missions failed / deaths	
-		if(PF_GamePlay.QuestProgress.isQuestWon == true)
+		if(PF_GamePlay.QuestProgress.isQuestWon)
 		{		
 			PF_GamePlay.SavePlayerData();
 			SaveStatistics();
@@ -110,7 +107,7 @@ public class QuestOutroController : MonoBehaviour {
 		}
 		
 		float loadingDelay = .5f;
-		if(PF_GamePlay.UseRaidMode == true)
+		if(PF_GamePlay.UseRaidMode)
 		{
 			Dictionary<string, object> eventData = new Dictionary<string, object>()
 			{
@@ -167,15 +164,14 @@ public class QuestOutroController : MonoBehaviour {
 		
 		PF_PlayerData.UpdateCharacterStatistics(PF_PlayerData.activeCharacter.characterDetails.CharacterId, charUpdates);
 
-
         // User Statistics Section
         Dictionary<string, int> userUpdates = new Dictionary<string, int>();
 
         // Special calculation for the HighestCharacterLevel (we're pushing a delta, so we have to determine it)
-        int curLevel = PF_PlayerData.activeCharacter.characterData.CharacterLevel;
-        int savedLevel = 0;
+        var curLevel = PF_PlayerData.activeCharacter.characterData.CharacterLevel;
+        int savedLevel;
         PF_PlayerData.userStatistics.TryGetValue("HighestCharacterLevel", out savedLevel);
-        int levelUpdate = (Math.Max(curLevel, savedLevel) - savedLevel);
+        var levelUpdate = (Math.Max(curLevel, savedLevel) - savedLevel);
 
         userUpdates.Add("Total_DamageDone", damageDone);
         userUpdates.Add("Total_EncountersCompleted", PF_GamePlay.QuestProgress.CompletedEncounters.Count);
@@ -202,7 +198,7 @@ public class QuestOutroController : MonoBehaviour {
 			this.HeroEncountersText.text = string.Format("x{0}", PF_GamePlay.QuestProgress.HeroRescues);
 			this.LivesLostText.text = string.Format("- {0}", PF_GamePlay.QuestProgress.Deaths);
 			
-			if(PF_GamePlay.QuestProgress.isQuestWon == true)
+			if(PF_GamePlay.QuestProgress.isQuestWon)
 			{
 				PF_GamePlay.IntroPane(this.WinGraphics.gameObject, .333f, null); 
 				PF_GamePlay.OutroPane(this.LoseGraphics.gameObject, .01f, null); 
@@ -227,11 +223,11 @@ public class QuestOutroController : MonoBehaviour {
 			this.QuestIcon.overrideSprite = PF_GamePlay.ActiveQuest.levelIcon;
 			this.QuestName.text =  PF_GamePlay.ActiveQuest.levelName;
 			
-			int balance = 0;
-			this.LivesRemaining.text = string.Format("{0}", PF_PlayerData.characterVirtualCurrency.TryGetValue("HT", out balance) ? balance : -1);
+			int balance;
+			this.LivesRemaining.text = string.Format("{0}", PF_PlayerData.characterVirtualCurrency.TryGetValue(GlobalStrings.HEART_CURRENCY, out balance) ? balance : -1);
 			
-			string nextLevelStr = string.Format("{0}", PF_PlayerData.activeCharacter.characterData.CharacterLevel+1);
-			if(PF_GameData.CharacterLevelRamp.ContainsKey(nextLevelStr) && PF_GamePlay.QuestProgress.isQuestWon == true)
+			var nextLevelStr = string.Format("{0}", PF_PlayerData.activeCharacter.characterData.CharacterLevel+1);
+			if(PF_GameData.CharacterLevelRamp.ContainsKey(nextLevelStr) && PF_GamePlay.QuestProgress != null && PF_GamePlay.QuestProgress.isQuestWon)
 			{
 				this.XpBar.maxValue = PF_GameData.CharacterLevelRamp[nextLevelStr];
 				StartCoroutine(this.XpBar.UpdateBarWithCallback(PF_PlayerData.activeCharacter.characterData.ExpThisLevel + PF_GamePlay.QuestProgress.XpCollected, false, this.EvaluateLevelUp));
@@ -277,23 +273,19 @@ public class QuestOutroController : MonoBehaviour {
 	{
 		//Debug.Log("Try Again not implemented");
 		int hearts;
-		PF_PlayerData.characterVirtualCurrency.TryGetValue("HT", out hearts);
+		PF_PlayerData.characterVirtualCurrency.TryGetValue(GlobalStrings.HEART_CURRENCY, out hearts);
 		if(hearts > 0)
 		{
-			// decrement HT currency
-			hearts -= 1;
-			PF_PlayerData.characterVirtualCurrency["HT"] = hearts;
+            // decrement HEART_CURRENCY
+            hearts -= 1;
+			PF_PlayerData.characterVirtualCurrency[GlobalStrings.HEART_CURRENCY] = hearts;
 			PF_PlayerData.SubtractLifeFromPlayer();
 			// will need to trigger Cloud Script to tick this on the server side
 			
 			PF_PlayerData.activeCharacter.RefillVitals();
 			
-			
 			PF_GamePlay.OutroPane(this.gameObject, .333f, null);
             GameplayController.RaiseGameplayEvent(GlobalStrings.PLAYER_RESPAWN_EVENT, PF_GamePlay.GameplayEventTypes.EnemyTurnEnds);    
-			
-			
-			
 		}
 	}
 	
@@ -307,5 +299,4 @@ public class QuestOutroController : MonoBehaviour {
 		Debug.Log("Buy More Lives not implemented");
 		//throw an error?
 	}
-		
 }

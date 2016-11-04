@@ -60,13 +60,18 @@ public static class GlobalStrings
     public const string QUEST_SELECTOR_PROMPT = "Select Quest";
 
     // Programatic strings
-	public const string UB_TITLE_ID = "A5F3";
-	public const string GOOGLE_PLAY_PROJECT_ID = "295754311231";
+    public const string PrimaryCatalogName = "CharacterClasses";
+    public static readonly List<string> InitTitleKeys = new List<string> { "Classes", "Spells", "StartingCharacterSlots", "MinimumInterstitialWait", "CharacterLevelRamp", "Levels", "Achievements", "Sales", "Events", "Offers", "CommunityWebsite", "StandardStores", "AndroidPushSenderId" };
+    public const string DEFAULT_UB_TITLE_ID = "A5F3";
+	public const string DEFAULT_ANDROID_PUSH_SENDER_ID = "295754311231";
     public const string FB_PREF_KEY = "LinkedFacebook";
     public const string DEVICE_PREF_KEY = "LastDeviceIdUsed";
     public const string ENCOUNTER_CREEP = "Creep";
     public const string ENCOUNTER_STORE = "Store";
     public const string ENCOUNTER_HERO = "Hero";
+    public const string GOLD_CURRENCY = "AU";
+    public const string GEM_CURRENCY = "GM";
+    public const string HEART_CURRENCY = "HT";
 
     // Events
     public const string QUEST_START_EVENT = "Starting Quest";

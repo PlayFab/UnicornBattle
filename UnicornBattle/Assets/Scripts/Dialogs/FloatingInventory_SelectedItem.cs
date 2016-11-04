@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,8 +62,8 @@ public class FloatingInventory_SelectedItem : MonoBehaviour {
 			{
 				this.UseAction.gameObject.SetActive(true);
 			}
-			
-			this.UnlockAction.gameObject.SetActive(false);
+
+            this.UnlockAction.gameObject.SetActive(false);
 			this.totalUses.text = string.Format(" x{0}", item.category.totalUses > item.category.count ? item.category.totalUses : item.category.count );
 			this.totalUses.gameObject.SetActive(true);
 		}
@@ -71,9 +71,7 @@ public class FloatingInventory_SelectedItem : MonoBehaviour {
 		{
 			this.totalUses.gameObject.SetActive(false);
 			this.UseAction.gameObject.SetActive(false);
-			this.UnlockAction.gameObject.SetActive(false);
+            this.UnlockAction.gameObject.SetActive(false);
 		}
-		
-
 	}
 }

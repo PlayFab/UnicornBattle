@@ -5,7 +5,7 @@ using PlayFab;
 
 namespace PlayFab
 {
-    public class PlayFabAndroidPlugin
+    public static class PlayFabAndroidPlugin
     {
         private static bool Initted = false;
 
@@ -14,9 +14,9 @@ namespace PlayFab
 		private static AndroidJavaClass PlayServicesUtils;
 #endif
 
-        public static void Init(string SenderID)
+        public static void Init(string senderId)
         {
-            Debug.LogFormat("SenderID: {0}", SenderID);
+            Debug.LogFormat("senderId: {0}", senderId);
             if (Initted)
             {
                 Debug.LogFormat("Android has already been initialized");
@@ -32,7 +32,7 @@ namespace PlayFab
 #if UNITY_5 || UNITY_5_1
 				applicationName = Application.productName;
 #endif
-			var staticParams = new object[] { SenderID , applicationName};
+			var staticParams = new object[] { senderId , applicationName};
 			
             AndroidPlugin.CallStatic("initGCM", staticParams);
 
@@ -70,7 +70,7 @@ namespace PlayFab
 #endif
     }
 
-    public class PlayFabGoogleCloudMessaging
+    public static class PlayFabGoogleCloudMessaging
     {
         #region Events
         public delegate void GCMRegisterReady(bool status);

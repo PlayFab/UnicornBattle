@@ -1,13 +1,10 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.Events;
+using PlayFab.ClientModels;
 using System.Collections;
 using System.Collections.Generic;
-
-using PlayFab;
-using PlayFab.ClientModels;
-using PlayFab.Json;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 	public Slider uiSlider;
@@ -74,8 +71,8 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 		
 		if(controller.selectedItem.Container != null)
 		{
-			string id = controller.selectedItem.Container.KeyItemId;
-			CatalogItem keyReference = PF_GameData.catalogItems.Find((i) => { return i.ItemId == id; } );
+			var id = controller.selectedItem.Container.KeyItemId;
+			var keyReference = PF_GameData.catalogItems.Find(eachItem => { return eachItem.ItemId == id; } );
 			
 			
 			if(keyReference != null)
@@ -118,7 +115,7 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 	
 	public void CheckUnlock()
 	{
-		string item = this.controller.selectedItem.ItemId;
+		var item = this.controller.selectedItem.ItemId;
 		
 		if(controller.UnpackToPlayer)
 		{
@@ -126,7 +123,7 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler {
 		}
 		else
 		{
-			string character = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
+			var character = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
 			PF_GameData.TryOpenContainer(item, character, this.afterUnlock);
 		}
 	}

@@ -90,7 +90,7 @@ namespace UB_Uploader
             if (!UploadVc())
                 return false;
 
-            List<CatalogItem> reUploadList = new List<CatalogItem>();
+            var reUploadList = new List<CatalogItem>();
             if (!UploadCatalog(ref reUploadList))
                 return false;
 
@@ -484,7 +484,10 @@ namespace UB_Uploader
             {
                 foreach (var kvp in err.ErrorDetails)
                 {
-                    details += (kvp.Value + "\n");
+                    details += (kvp.Key + ": ");
+                    foreach (var eachIssue in kvp.Value)
+                        details += (eachIssue + ", ");
+                    details += "\n";
                 }
             }
 

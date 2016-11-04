@@ -190,7 +190,7 @@ public class PlayerUIEffectsController : MonoBehaviour {
 			//this.ManaBar.maxValue = PF_PlayerData.activeCharacter.PlayerVitals.Mana;;
 			
 			//StartCoroutine(this.ManaBar.UpdateBar(PF_PlayerData.activeCharacter.PlayerVitals.Mana));
-			this.LivesCount.text = "" + PF_PlayerData.characterVirtualCurrency["HT"];
+			this.LivesCount.text = "" + PF_PlayerData.characterVirtualCurrency[GlobalStrings.HEART_CURRENCY];
 			this.PlayerLevel.text = "" + PF_PlayerData.activeCharacter.characterData.CharacterLevel;
 			
 			this.PlayerName.text = PF_PlayerData.activeCharacter.characterDetails.CharacterName;
