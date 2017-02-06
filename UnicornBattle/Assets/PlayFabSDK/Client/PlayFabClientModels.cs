@@ -164,7 +164,7 @@ namespace PlayFab.ClientModels
         /// <summary>
         /// The android advertising id. This field is deprecated in favor of Adid for clarity.
         /// </summary>
-        [Obsolete("Use 'Adid' instead", false)]
+        [Obsolete("Use 'Adid' instead", true)]
         public string Android_Id;
         /// <summary>
         /// The adid for this device.
@@ -307,7 +307,7 @@ namespace PlayFab.ClientModels
         /// </summary>
         public bool IsLimitedEdition;
         /// <summary>
-        /// BETA: If IsLImitedEdition is true, then this determines amount of the item initially available. Note that this fieldis ignored if the catalog item already existed in this catalog, or the field is less than 1.
+        /// If the item has IsLImitedEdition set to true, and this is the first time this ItemId has been defined as a limited edition item, this value determines the total number of instances to allocate for the title. Once this limit has been reached, no more instances of this ItemId can be created, and attempts to purchase or grant it will return a Result of false for that ItemId. If the item has already been defined to have a limited edition count, or if this value is less than zero, it will be ignored.
         /// </summary>
         public int InitialLimitedEditionCount;
     }
@@ -337,7 +337,7 @@ namespace PlayFab.ClientModels
         /// </summary>
         public uint? UsageCount;
         /// <summary>
-        /// duration in seconds for how long the item will remain in the player inventory - once elapsed, the item will be removed
+        /// duration in seconds for how long the item will remain in the player inventory - once elapsed, the item will be removed (recommended minimum value is 5 seconds, as lower values can cause the item to expire before operations depending on this item's details have completed)
         /// </summary>
         public uint? UsagePeriod;
         /// <summary>
@@ -933,6 +933,14 @@ namespace PlayFab.ClientModels
         /// last heartbeat of the game server instance, used in external game server provider mode
         /// </summary>
         public DateTime? LastHeartbeat;
+        /// <summary>
+        /// IP address of the server
+        /// </summary>
+        public string ServerHostname;
+        /// <summary>
+        /// port number to use for non-http communications with the server
+        /// </summary>
+        public int? ServerPort;
     }
 
     public enum GameInstanceState
@@ -1005,7 +1013,7 @@ namespace PlayFab.ClientModels
         /// </summary>
         public string Email;
         /// <summary>
-        /// Title-specific username for the account to find (if no Email is set).
+        /// Title-specific username for the account to find (if no Email is set). Note that if the non-unique Title Display Names option is enabled for the title, attempts to look up users by Title Display Name will always return AccountNotFound.
         /// </summary>
         public string TitleDisplayName;
     }
@@ -1419,7 +1427,7 @@ namespace PlayFab.ClientModels
         /// </summary>
         public bool GetUserData;
         /// <summary>
-        /// Specific keys to search for in the custom data. Leave null to get all keys. Has no effect if UserDataKeys is false
+        /// Specific keys to search for in the custom data. Leave null to get all keys. Has no effect if GetUserData is false
         /// </summary>
         public List<string> UserDataKeys;
         /// <summary>
@@ -1964,96 +1972,6 @@ namespace PlayFab.ClientModels
     }
 
     [Serializable]
-    public class GetUserCombinedInfoRequest : PlayFabRequestCommon
-    {
-        /// <summary>
-        /// Unique PlayFab identifier of the user whose info is being requested. Optional, defaults to the authenticated user if no other lookup identifier set.
-        /// </summary>
-        public string PlayFabId;
-        /// <summary>
-        /// PlayFab Username for the account to find (if no PlayFabId is specified).
-        /// </summary>
-        public string Username;
-        /// <summary>
-        /// User email address for the account to find (if no Username is specified).
-        /// </summary>
-        public string Email;
-        /// <summary>
-        /// Title-specific username for the account to find (if no Email is set).
-        /// </summary>
-        public string TitleDisplayName;
-        /// <summary>
-        /// If set to false, account info will not be returned. Defaults to true.
-        /// </summary>
-        public bool? GetAccountInfo;
-        /// <summary>
-        /// If set to false, inventory will not be returned. Defaults to true. Inventory will never be returned for users other than yourself.
-        /// </summary>
-        public bool? GetInventory;
-        /// <summary>
-        /// If set to false, virtual currency balances will not be returned. Defaults to true. Currency balances will never be returned for users other than yourself.
-        /// </summary>
-        public bool? GetVirtualCurrency;
-        /// <summary>
-        /// If set to false, custom user data will not be returned. Defaults to true.
-        /// </summary>
-        public bool? GetUserData;
-        /// <summary>
-        /// User custom data keys to return. If set to null, all keys will be returned. For users other than yourself, only public data will be returned.
-        /// </summary>
-        public List<string> UserDataKeys;
-        /// <summary>
-        /// If set to false, read-only user data will not be returned. Defaults to true.
-        /// </summary>
-        public bool? GetReadOnlyData;
-        /// <summary>
-        /// User read-only custom data keys to return. If set to null, all keys will be returned. For users other than yourself, only public data will be returned.
-        /// </summary>
-        public List<string> ReadOnlyDataKeys;
-    }
-
-    [Serializable]
-    public class GetUserCombinedInfoResult : PlayFabResultCommon
-    {
-        /// <summary>
-        /// Unique PlayFab identifier of the owner of the combined info.
-        /// </summary>
-        public string PlayFabId;
-        /// <summary>
-        /// Account information for the user.
-        /// </summary>
-        public UserAccountInfo AccountInfo;
-        /// <summary>
-        /// Array of inventory items in the user's current inventory.
-        /// </summary>
-        public List<ItemInstance> Inventory;
-        /// <summary>
-        /// Array of virtual currency balance(s) belonging to the user.
-        /// </summary>
-        public Dictionary<string,int> VirtualCurrency;
-        /// <summary>
-        /// Array of remaining times and timestamps for virtual currencies.
-        /// </summary>
-        public Dictionary<string,VirtualCurrencyRechargeTime> VirtualCurrencyRechargeTimes;
-        /// <summary>
-        /// User specific custom data.
-        /// </summary>
-        public Dictionary<string,UserDataRecord> Data;
-        /// <summary>
-        /// The version of the UserData that was returned.
-        /// </summary>
-        public uint DataVersion;
-        /// <summary>
-        /// User specific read-only data.
-        /// </summary>
-        public Dictionary<string,UserDataRecord> ReadOnlyData;
-        /// <summary>
-        /// The version of the Read-Only UserData that was returned.
-        /// </summary>
-        public uint ReadOnlyDataVersion;
-    }
-
-    [Serializable]
     public class GetUserDataRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -2338,8 +2256,13 @@ namespace PlayFab.ClientModels
     public class LinkGoogleAccountRequest : PlayFabRequestCommon
     {
         /// <summary>
-        /// Unique token (https://developers.google.com/android/reference/com/google/android/gms/auth/GoogleAuthUtil#public-methods) from Google Play for the user.
+        /// Server authentication code obtained on the client by calling getServerAuthCode() (https://developers.google.com/identity/sign-in/android/offline-access) from Google Play for the user.
         /// </summary>
+        public string ServerAuthCode;
+        /// <summary>
+        /// OAuth 2.0 access token obtained on the client by calling the getAccessToken() Google client API.
+        /// </summary>
+        [Obsolete("Use 'ServerAuthCode' instead", false)]
         public string AccessToken;
         /// <summary>
         /// If another user is already linked to the account, unlink the other user and re-link.
@@ -2604,8 +2527,13 @@ namespace PlayFab.ClientModels
         /// </summary>
         public string TitleId;
         /// <summary>
-        /// Unique token (https://developers.google.com/android/reference/com/google/android/gms/auth/GoogleAuthUtil#public-methods) from Google Play for the user.
+        /// OAuth 2.0 server authentication code obtained on the client by calling the getServerAuthCode() (https://developers.google.com/identity/sign-in/android/offline-access) Google client API.
         /// </summary>
+        public string ServerAuthCode;
+        /// <summary>
+        /// OAuth 2.0 access token obtained on the client by calling the getAccessToken() Google client API.
+        /// </summary>
+        [Obsolete("Use 'ServerAuthCode' instead", false)]
         public string AccessToken;
         /// <summary>
         /// Automatically create a PlayFab account if one is not currently linked to this Google account.
@@ -2848,6 +2776,16 @@ namespace PlayFab.ClientModels
         public int Balance;
     }
 
+    /// <summary>
+    /// Identifier by either name or ID. Note that a name may change due to renaming, or reused after being deleted. ID is immutable and unique.
+    /// </summary>
+    [Serializable]
+    public class NameIdentifier
+    {
+        public string Name;
+        public string Id;
+    }
+
     [Serializable]
     public class OpenTradeRequest : PlayFabRequestCommon
     {
@@ -3060,6 +2998,10 @@ namespace PlayFab.ClientModels
         /// Catalog version of the coupon. If null, uses the default catalog
         /// </summary>
         public string CatalogVersion;
+        /// <summary>
+        /// Optional identifier for the Character that should receive the item. If null, item is added to the player
+        /// </summary>
+        public string CharacterId;
     }
 
     [Serializable]
@@ -4428,7 +4370,7 @@ namespace PlayFab.ClientModels
     public class WriteEventResponse : PlayFabResultCommon
     {
         /// <summary>
-        /// The unique identifier of the event. This can be used to retrieve the event's properties using the GetEvent API. The values of this identifier consist of ASCII characters and are not constrained to any particular format.
+        /// The unique identifier of the event. The values of this identifier consist of ASCII characters and are not constrained to any particular format.
         /// </summary>
         public string EventId;
     }

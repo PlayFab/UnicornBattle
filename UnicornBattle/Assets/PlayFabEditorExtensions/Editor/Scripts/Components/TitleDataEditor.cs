@@ -1,44 +1,41 @@
-﻿namespace PlayFab.Editor
+using UnityEditor;
+using UnityEngine;
+
+namespace PlayFab.PfEditor
 {
-    using UnityEditor;
-    using UnityEngine;
-    using System.Collections;
-
-
-    public class TitleDataEditor : EditorWindow {
-
+    public class TitleDataEditor : UnityEditor.EditorWindow
+    {
         public string key = string.Empty;
         public string Value = string.Empty;
+        public Vector2 scrollPos = Vector2.zero;
 
-        public string displayTitle = "";
-        public Vector2 scrollPos = Vector2.zero; 
-        
-        void OnGUI () {
+        void OnGUI()
+        {
             // The actual window code goes here
             EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                GUILayout.Label(string.Format("Editing: {0}", key), PlayFabEditorHelper.uiStyle.GetStyle("orTitle"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+            GUILayout.Label(string.Format("Editing: {0}", key), PlayFabEditorHelper.uiStyle.GetStyle("orTitle"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
             EditorGUILayout.EndHorizontal();
 
             scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                Value = GUILayout.TextArea(Value, PlayFabEditorHelper.uiStyle.GetStyle("editTxt"));
+            Value = GUILayout.TextArea(Value, PlayFabEditorHelper.uiStyle.GetStyle("editTxt"));
             GUILayout.EndScrollView();
 
 
             EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
             GUILayout.FlexibleSpace();
-            if(GUILayout.Button("SAVE",  PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(200)))
+            if (GUILayout.Button("SAVE", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(200)))
+            {
+                for (int z = 0; z < PlayFabEditorDataMenu.tdViewer.items.Count; z++)
                 {
-                    for(int z = 0; z < PlayFabEditorDataMenu.tdViewer.items.Count; z++)
+                    if (PlayFabEditorDataMenu.tdViewer.items[z].Key == key)
                     {
-                        if(PlayFabEditorDataMenu.tdViewer.items[z].Key == key)
-                        {
-                            PlayFabEditorDataMenu.tdViewer.items[z].Value = Value;
-                            PlayFabEditorDataMenu.tdViewer.items[z].isDirty = true;
-                        }
+                        PlayFabEditorDataMenu.tdViewer.items[z].Value = Value;
+                        PlayFabEditorDataMenu.tdViewer.items[z].isDirty = true;
                     }
-                    Close();
-
                 }
+                Close();
+
+            }
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 

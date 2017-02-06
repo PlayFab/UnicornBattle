@@ -58,7 +58,7 @@ public class PlayFabLoginController : MonoBehaviour {
 	
 	public void ToggleDevRegisterFields()
 	{
-		if(this.loginGroup.gameObject.activeSelf == true)
+		if(this.loginGroup.gameObject.activeSelf)
 		{
 			this.loginGroup.gameObject.SetActive(false);
 			this.registerGroup.gameObject.SetActive(true);

@@ -386,7 +386,7 @@ public class PlayerUIEffectsController : MonoBehaviour {
 				var first = obj.inventory.FirstOrDefault();
 				if(first != null)
 				{
-					var attributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string,string>>(obj.catalogRef.CustomData);
+					var attributes = JsonWrapper.DeserializeObject<Dictionary<string,string>>(obj.catalogRef.CustomData);
 					if(attributes.ContainsKey("modifies") && attributes.ContainsKey("modifyPercent") && attributes.ContainsKey("target"))
 					{
 						if( string.Equals(attributes["target"], "self"))

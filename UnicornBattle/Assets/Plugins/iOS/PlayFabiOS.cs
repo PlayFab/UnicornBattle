@@ -7,7 +7,6 @@ namespace PlayFab
 {
     public static class PlayFabiOSPlugin
     {
-
 #if UNITY_IOS && !DISABLE_IDFA
         [DllImport("__Internal")]
         public static extern string getIdfa();
@@ -18,6 +17,5 @@ namespace PlayFab
 
         public static bool getAdvertisingDisabled() { return true; }
 #endif
-        
     }
 }

@@ -144,7 +144,7 @@ public class TurnController : MonoBehaviour {
 	public void CompleteEncounter(bool useEvade = false)
 	{
 		// was evasion / flee used?
-		if(useEvade == true)
+		if(useEvade)
 		{
 			//TODO evasion check to see if evasion passes
 			CycleNextEncounter();

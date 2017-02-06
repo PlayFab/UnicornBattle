@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
 using Facebook.Unity;
-using Facebook.MiniJSON;
+using PlayFab.Json;
 
 public class FacebookHelperClass
 {
@@ -25,7 +25,7 @@ public class FacebookHelperClass
 
     public static string DeserializePictureURLString(string response)
     {
-        Dictionary<string, FB_PhotoResponse> result = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, FB_PhotoResponse>>(response);
+        Dictionary<string, FB_PhotoResponse> result = JsonWrapper.DeserializeObject<Dictionary<string, FB_PhotoResponse>>(response);
         FB_PhotoResponse urlH;
 
         if (result.TryGetValue("data", out urlH))

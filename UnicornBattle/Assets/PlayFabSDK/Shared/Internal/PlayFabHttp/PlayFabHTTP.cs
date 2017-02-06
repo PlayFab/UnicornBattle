@@ -131,13 +131,6 @@ namespace PlayFab.Internal
         /// <summary>
         /// Internal method for Make API Calls
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="apiEndpoint"></param>
-        /// <param name="request"></param>
-        /// <param name="authType"></param>
-        /// <param name="resultCallback"></param>
-        /// <param name="errorCallback"></param>
-        /// <param name="customData"></param>
         protected internal static void MakeApiCall<TResult>(string apiEndpoint,
             PlayFabRequestCommon request, AuthType authType, Action<TResult> resultCallback,
             Action<PlayFabError> errorCallback, object customData = null, bool allowQueueing = false)
@@ -146,23 +139,25 @@ namespace PlayFab.Internal
             InitializeHttp();
             SendEvent(apiEndpoint, request, null, ApiProcessingEventType.Pre);
 
-            var reqContainer = new CallRequestContainer();
+            var reqContainer = new CallRequestContainer
+            {
+                ApiEndpoint = apiEndpoint,
+                FullUrl = PlayFabSettings.GetFullUrl(apiEndpoint),
+                CustomData = customData,
+                Payload = Encoding.UTF8.GetBytes(JsonWrapper.SerializeObject(request)),
+                AuthKey = authType,
+                ApiRequest = request,
+                ErrorCallback = errorCallback,
+            };
 #if PLAYFAB_REQUEST_TIMING
             reqContainer.Timing.StartTimeUtc = DateTime.UtcNow;
             reqContainer.Timing.ApiEndpoint = apiEndpoint;
 #endif
-            reqContainer.ApiEndpoint = apiEndpoint;
-            reqContainer.FullUrl = PlayFabSettings.GetFullUrl(apiEndpoint);
-            reqContainer.CustomData = customData;
-            reqContainer.Payload = Encoding.UTF8.GetBytes(JsonWrapper.SerializeObject(request, PlayFabUtil.ApiSerializerStrategy));
-            reqContainer.AuthKey = authType;
-            reqContainer.ApiRequest = request;
-            reqContainer.ErrorCallback = errorCallback;
 
             // These closures preserve the TResult generic information in a way that's safe for all the devices
             reqContainer.DeserializeResultJson = () =>
             {
-                reqContainer.ApiResult = JsonWrapper.DeserializeObject<TResult>(reqContainer.JsonResponse, PlayFabUtil.ApiSerializerStrategy);
+                reqContainer.ApiResult = JsonWrapper.DeserializeObject<TResult>(reqContainer.JsonResponse);
             };
             reqContainer.InvokeSuccessCallback = () =>
             {
@@ -263,7 +258,7 @@ namespace PlayFab.Internal
             try
             {
                 // Deserialize the error
-                errorDict = JsonWrapper.DeserializeObject<JsonObject>(json, PlayFabUtil.ApiSerializerStrategy);
+                errorDict = JsonWrapper.DeserializeObject<JsonObject>(json);
             }
             catch (Exception) { /* Unusual, but shouldn't actually matter */ }
             try

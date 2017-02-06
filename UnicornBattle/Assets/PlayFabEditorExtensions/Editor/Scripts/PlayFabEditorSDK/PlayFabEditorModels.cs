@@ -1,31 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 
-namespace PlayFab.Editor.EditorModels
+namespace PlayFab.PfEditor.EditorModels
 {
-
-
-    public class DownloadSDKRequest
-    {
-        
-    }
-
-    public class DownloadSDKResponse
-    {
-        public byte[] data;
-    }
-
-    public class GetSDKVersionsRequest { }
-
-    public class GetSDKVersionsResponse
-    {
-        public string description;
-        public Dictionary<string, string> sdkVersion;
-        public Dictionary<string, string> links;
-    }
-
     public class RegisterAccountRequest
     {
         public string Email { get; set; }
@@ -48,7 +24,6 @@ namespace PlayFab.Editor.EditorModels
         public string DeveloperToolProductName { get; set; }
         public string DeveloperToolProductVersion { get; set; }
     }
-
 
     public class LoginResult
     {
@@ -116,7 +91,7 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// Specific keys to search for in the title data (leave null to get all keys)
         /// </summary>
-        public List<string> Keys { get; set;}
+        public List<string> Keys { get; set; }
     }
 
     //[Serializable]
@@ -125,7 +100,7 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// a dictionary object of key / value pairs
         /// </summary>
-        public Dictionary<string,string> Data { get; set;}
+        public Dictionary<string, string> Data { get; set; }
     }
 
 
@@ -135,11 +110,11 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// key we want to set a value on (note, this is additive - will only replace an existing key's value if they are the same name.) Keys are trimmed of whitespace. Keys may not begin with the '!' character.
         /// </summary>
-        public string Key { get; set;}
+        public string Key { get; set; }
         /// <summary>
         /// new value to set. Set to null to remove a value
         /// </summary>
-        public string Value { get; set;}
+        public string Value { get; set; }
     }
 
     //[Serializable]
@@ -152,11 +127,11 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// Name of the javascript file. These names are not used internally by the server, they are only for developer organizational purposes.
         /// </summary>
-        public string Filename { get; set;}
+        public string Filename { get; set; }
         /// <summary>
         /// Contents of the Cloud Script javascript. Must be string-escaped javascript.
         /// </summary>
-        public string FileContents { get; set;}
+        public string FileContents { get; set; }
     }
 
     public class UpdateCloudScriptRequest
@@ -168,7 +143,7 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// Immediately publish the new revision
         /// </summary>
-        public bool Publish { get; set;}
+        public bool Publish { get; set; }
         /// <summary>
         /// PlayFab user ID of the developer initiating the request.
         /// </summary>
@@ -180,11 +155,11 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// Cloud Script version updated
         /// </summary>
-        public int Version { get; set;}
+        public int Version { get; set; }
         /// <summary>
         /// New revision number created
         /// </summary>
-        public int Revision { get; set;}
+        public int Revision { get; set; }
     }
 
     public class GetCloudScriptRevisionRequest
@@ -192,11 +167,11 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// Version number. If left null, defaults to the latest version
         /// </summary>
-        public int? Version { get; set;}
+        public int? Version { get; set; }
         /// <summary>
         /// Revision number. If left null, defaults to the latest revision
         /// </summary>
-        public int? Revision { get; set;}
+        public int? Revision { get; set; }
     }
 
     public class GetCloudScriptRevisionResult
@@ -204,31 +179,30 @@ namespace PlayFab.Editor.EditorModels
         /// <summary>
         /// Version number.
         /// </summary>
-        public int Version { get; set;}
+        public int Version { get; set; }
         /// <summary>
         /// Revision number.
         /// </summary>
-        public int Revision { get; set;}
+        public int Revision { get; set; }
         /// <summary>
         /// Time this revision was created
         /// </summary>
-        public System.DateTime CreatedAt { get; set;}
+        public System.DateTime CreatedAt { get; set; }
         /// <summary>
         /// List of Cloud Script files in this revision.
         /// </summary>
-        public List<CloudScriptFile> Files { get; set;}
+        public List<CloudScriptFile> Files { get; set; }
         /// <summary>
         /// True if this is the currently published revision
         /// </summary>
-        public bool IsPublished { get; set;}
+        public bool IsPublished { get; set; }
     }
-
-
+    
     public class PlayFabError
     {
         public int HttpCode;
         public string HttpStatus;
-        public PlayFab.Editor.EditorModels.PlayFabErrorCode Error;
+        public PlayFabErrorCode Error;
         public string ErrorMessage;
         public Dictionary<string, List<string>> ErrorDetails;
         public object CustomData;
@@ -249,8 +223,7 @@ namespace PlayFab.Editor.EditorModels
             return string.Format("PlayFabError({0}, {1}, {2} {3}", Error, ErrorMessage, HttpCode, HttpStatus) + (sb.Length > 0 ? " - Details: " + sb.ToString() + ")" : ")");
         }
     }
-
-
+    
     public class HttpResponseObject
     {
         public int code;
@@ -490,16 +463,15 @@ namespace PlayFab.Editor.EditorModels
         TwoFactorAuthenticationTokenRequired = 1246
     }
 
-
     #region Misc UI Models
     public class PlayFab_DeveloperAccountDetails
     {
         public string email { get; set; }
         public string devToken { get; set; }
-        public List<EditorModels.Studio> studios { get; set; }
+        public Studio[] studios { get; set; }
         public PlayFab_DeveloperAccountDetails()
         {
-            studios = new List<EditorModels.Studio>();
+            studios = null; // Null means not fetched, empty is a possible return result from GetStudios
         }
     }
 
@@ -534,26 +506,26 @@ namespace PlayFab.Editor.EditorModels
 
     public class PlayFab_EditorSettings
     {
-       public int currentMainMenu { get; set; }
-       public int currentSubMenu { get; set; }
+        public int currentMainMenu { get; set; }
+        public int currentSubMenu { get; set; }
 
-       public bool isEdExShown { get; set; }
-       public string latestSdkVersion { get; set; }
-       public string latestEdExVersion { get; set; }
-       public System.DateTime lastSdkVersionCheck { get; set; }
-       public System.DateTime lastEdExVersionCheck { get; set; }
+        public bool isEdExShown { get; set; }
+        public string latestSdkVersion { get; set; }
+        public string latestEdExVersion { get; set; }
+        public System.DateTime lastSdkVersionCheck { get; set; }
+        public System.DateTime lastEdExVersionCheck { get; set; }
     }
 
     public class StudioDisplaySet
     {
-        public PlayFab.Editor.EditorModels.Studio Studio;
+        public PlayFab.PfEditor.EditorModels.Studio Studio;
         public bool isCollapsed = true;
         public Dictionary<string, TitleDisplaySet> titleFoldOutStates = new Dictionary<string, TitleDisplaySet>();
     }
 
     public class TitleDisplaySet
     {
-        public PlayFab.Editor.EditorModels.Title Title;
+        public PlayFab.PfEditor.EditorModels.Title Title;
         public bool isCollapsed = true;
     }
 
@@ -585,19 +557,17 @@ namespace PlayFab.Editor.EditorModels
 
         public void DataEditedCheck()
         {
-            if(Key != _prvKey || Value != _prvValue)
+            if (Key != _prvKey || Value != _prvValue)
             {
                 this.isDirty = true;
             }
             else
             {
-               
+
             }
         }
 
 
     }
     #endregion
-
-
 }

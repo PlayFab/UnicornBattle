@@ -1,12 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using UnityEngine;
+﻿using PlayFab.PfEditor.EditorModels;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
-using PlayFab.Editor.EditorModels;
+using UnityEngine;
 
-namespace PlayFab.Editor
+namespace PlayFab.PfEditor
 {
     public class PlayFabEditorToolsMenu : UnityEditor.Editor
     {
@@ -123,7 +122,7 @@ namespace PlayFab.Editor
 
                 try
                 {
-                    System.IO.File.WriteAllText(csPath, result.Files.First().FileContents);
+                    File.WriteAllText(csPath, result.Files[0].FileContents);
                     Debug.Log("CloudScript uploaded successfully!");
                     PlayFabEditorDataService.envDetails.localCloudScriptPath = csPath;
                     PlayFabEditorDataService.SaveEnvDetails();
@@ -136,12 +135,9 @@ namespace PlayFab.Editor
 
             }, PlayFabEditorHelper.SharedErrorCallback);
         }
-
-
-
+        
         public static void SelectLocalFile()
         {
-            
             string starterPath = File.Exists(PlayFabEditorDataService.envDetails.localCloudScriptPath) ? Application.dataPath : PlayFabEditorDataService.envDetails.localCloudScriptPath; 
             string cloudScriptPath =string.Empty;
 

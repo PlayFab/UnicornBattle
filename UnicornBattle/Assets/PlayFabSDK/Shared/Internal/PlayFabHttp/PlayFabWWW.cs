@@ -48,7 +48,7 @@ namespace PlayFab.Internal
 
                 using (var stream = new MemoryStream())
                 {
-                    using (GZipStream zipstream = new GZipStream(stream, CompressionMode.Compress, CompressionLevel.BestCompression))
+                    using (var zipstream = new GZipStream(stream, CompressionMode.Compress, CompressionLevel.BestCompression))
                     {
                         zipstream.Write(reqContainer.Payload, 0, reqContainer.Payload.Length);
                     }
@@ -72,12 +72,12 @@ namespace PlayFab.Internal
 #if PLAYFAB_REQUEST_TIMING
                     var startTime = DateTime.UtcNow;
 #endif
-                    var httpResult = JsonWrapper.DeserializeObject<HttpResponseObject>(response, PlayFabUtil.ApiSerializerStrategy);
+                    var httpResult = JsonWrapper.DeserializeObject<HttpResponseObject>(response);
 
                     if (httpResult.code == 200)
                     {
                         // We have a good response from the server
-                        reqContainer.JsonResponse = JsonWrapper.SerializeObject(httpResult.data, PlayFabUtil.ApiSerializerStrategy);
+                        reqContainer.JsonResponse = JsonWrapper.SerializeObject(httpResult.data);
                         reqContainer.DeserializeResultJson();
                         reqContainer.ApiResult.Request = reqContainer.ApiRequest;
                         reqContainer.ApiResult.CustomData = reqContainer.CustomData;
@@ -187,7 +187,7 @@ namespace PlayFab.Internal
                                     output.Write(buffer, 0, read);
                                 }
                                 output.Seek(0, SeekOrigin.Begin);
-                                var streamReader = new System.IO.StreamReader(output);
+                                var streamReader = new StreamReader(output);
                                 var jsonResponse = streamReader.ReadToEnd();
                                 //Debug.Log(jsonResponse);
                                 wwwSuccessCallback(jsonResponse);

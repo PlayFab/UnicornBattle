@@ -278,7 +278,7 @@ public class LevelPicker : MonoBehaviour {
 	public void ToggleRaidMode()
 	{
 		PF_GamePlay.UseRaidMode = !PF_GamePlay.UseRaidMode;
-		if (PF_GamePlay.UseRaidMode == true) {
+		if (PF_GamePlay.UseRaidMode) {
 			this.RaidMode.GetComponent<Image> ().overrideSprite = this.checkBoxChecked;
 		} else {
 			this.RaidMode.GetComponent<Image> ().overrideSprite = this.checkBox;
@@ -289,7 +289,7 @@ public class LevelPicker : MonoBehaviour {
 	{
 		PF_GamePlay.isHardMode = !PF_GamePlay.isHardMode;
 
-		if (PF_GamePlay.isHardMode == true) {
+		if (PF_GamePlay.isHardMode) {
 			this.HardMode.GetComponent<Image> ().overrideSprite = this.checkBoxChecked;
 		} else {
 			this.HardMode.GetComponent<Image> ().overrideSprite = this.checkBox;
@@ -316,7 +316,7 @@ public class LevelPicker : MonoBehaviour {
 		if (PF_PlayerData.characterStatistics.Count > 0) {
 			if (charStats.ContainsKey(selectedLevel.levelData.StatsPrefix + "Complete")) 
 			{
-				if (PF_GamePlay.isHardMode == true) 
+				if (PF_GamePlay.isHardMode) 
 				{
 					this.HardMode.GetComponent<Image> ().overrideSprite = this.checkBoxChecked;
 				}
@@ -470,7 +470,7 @@ public class LevelPicker : MonoBehaviour {
 			LevelItemClicked(this.levelItems[0]);
 		}
 		
-		if (PF_GamePlay.UseRaidMode == true) {
+		if (PF_GamePlay.UseRaidMode) {
 			this.RaidMode.GetComponent<Image> ().overrideSprite = this.checkBoxChecked;
 		} else {
 			this.RaidMode.GetComponent<Image> ().overrideSprite = this.checkBox;

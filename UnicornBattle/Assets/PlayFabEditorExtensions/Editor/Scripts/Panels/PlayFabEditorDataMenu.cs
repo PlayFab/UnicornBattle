@@ -1,17 +1,13 @@
-﻿namespace PlayFab.Editor
-{
-    using System;
-    using UnityEngine;
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEditor;
-    using System.Linq;
-    using EditorModels;
+using PlayFab.PfEditor.EditorModels;
+using UnityEditor;
+using UnityEngine;
 
+namespace PlayFab.PfEditor
+{
     [InitializeOnLoad]
-    public class PlayFabEditorDataMenu : Editor
+    public class PlayFabEditorDataMenu : UnityEditor.Editor
     {
-#region panel variables
+        #region panel variables
         public static TitleDataViewer tdViewer;
         public static TitleInternalDataViewer tdInternalViewer;
 
@@ -22,34 +18,33 @@
 
         private static Vector2 scrollPos = Vector2.zero;
 
-#endregion
+        #endregion
 
-
-#region draw calls
+        #region draw calls
         public static void DrawDataPanel()
         {
-            if(PlayFabEditorDataService.isDataLoaded)
+            if (PlayFabEditorDataService.isDataLoaded)
             {
-                if(menu != null)
+                if (menu != null)
                 {
                     menu.DrawMenu();
 
-                    switch((DataMenuStates)PlayFabEditorDataService.editorSettings.currentSubMenu)
+                    switch ((DataMenuStates)PlayFabEditorDataService.editorSettings.currentSubMenu)
                     {
                         case DataMenuStates.TitleData:
-                            if(tdViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
+                            if (tdViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
                             {
                                 tdViewer = ScriptableObject.CreateInstance<TitleDataViewer>();
-                                foreach(var item in PlayFabEditorDataService.envDetails.titleData)
+                                foreach (var item in PlayFabEditorDataService.envDetails.titleData)
                                 {
                                     tdViewer.items.Add(new KvpItem(item.Key, item.Value));
                                 }
                             }
-                            else if(!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId) ) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
+                            else if (!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
                             {
-                                if(tdViewer.items.Count == 0)
+                                if (tdViewer.items.Count == 0)
                                 {
-                                    foreach(var item in PlayFabEditorDataService.envDetails.titleData)
+                                    foreach (var item in PlayFabEditorDataService.envDetails.titleData)
                                     {
                                         tdViewer.items.Add(new KvpItem(item.Key, item.Value));
                                     }
@@ -58,23 +53,23 @@
                                 tdViewer.Draw();
                                 GUILayout.EndScrollView();
                             }
-                           
-                        break;
+
+                            break;
 
                         case DataMenuStates.TitleDataInternal:
-                            if(tdInternalViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
+                            if (tdInternalViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
                             {
                                 tdInternalViewer = ScriptableObject.CreateInstance<TitleInternalDataViewer>();
-                                foreach(var item in PlayFabEditorDataService.envDetails.titleInternalData)
+                                foreach (var item in PlayFabEditorDataService.envDetails.titleInternalData)
                                 {
                                     tdInternalViewer.items.Add(new KvpItem(item.Key, item.Value));
                                 }
                             }
-                            else if(!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId) ) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
+                            else if (!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
                             {
-                                if(tdInternalViewer.items.Count == 0)
+                                if (tdInternalViewer.items.Count == 0)
                                 {
-                                    foreach(var item in PlayFabEditorDataService.envDetails.titleInternalData)
+                                    foreach (var item in PlayFabEditorDataService.envDetails.titleInternalData)
                                     {
                                         tdInternalViewer.items.Add(new KvpItem(item.Key, item.Value));
                                     }
@@ -83,14 +78,14 @@
                                 tdInternalViewer.Draw();
                                 GUILayout.EndScrollView();
                             }
-                        break;
+                            break;
 
                         default:
                             EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                                GUILayout.Label("Coming Soon!", PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+                            GUILayout.Label("Coming Soon!", PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
                             GUILayout.EndHorizontal();
-                        break;
-                       
+                            break;
+
                     }
                 }
                 else
@@ -100,13 +95,12 @@
             }
 
         }
-#endregion
+        #endregion
 
-
-#region unity loops
+        #region unity loops
         static PlayFabEditorDataMenu()
         {
-            if(!PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
+            if (!PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
             {
                 PlayFabEditor.EdExStateUpdate += StateUpdateHandler;
             }
@@ -116,18 +110,17 @@
 
         public void OnDestroy()
         {
-            if(PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
+            if (PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
             {
                 PlayFabEditor.EdExStateUpdate -= StateUpdateHandler;
             }
         }
-#endregion
+        #endregion
 
-
-#region menu and helper methods
+        #region menu and helper methods
         public static void RegisterMenu()
         {
-            if ( menu == null)
+            if (menu == null)
             {
                 menu = ScriptableObject.CreateInstance<SubMenuComponent>();
                 menu.RegisterMenuItem("TITLE", OnTitleDataClicked);
@@ -137,32 +130,32 @@
 
         public static void StateUpdateHandler(PlayFabEditor.EdExStates state, string status, string json)
         {
-            switch(state)
+            switch (state)
             {
                 case PlayFabEditor.EdExStates.OnMenuItemClicked:
                     // do things here
-                break;
+                    break;
                 case PlayFabEditor.EdExStates.OnLogout:
-                    if(tdViewer != null)
+                    if (tdViewer != null)
                     {
                         tdViewer.items.Clear();
                     }
-                break;
+                    break;
             }
         }
 
         public static void OnTitleDataClicked()
         {
-           
+
             //currentState = DataMenuStates.TitleData;
-            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleData.ToString(), ""+(int)DataMenuStates.TitleData);
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleData.ToString(), "" + (int)DataMenuStates.TitleData);
         }
 
         public static void OnInternalTitleDataClicked()
         {
             //currentState = DataMenuStates.TitleDataInternal;
-            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleDataInternal.ToString(), ""+(int)DataMenuStates.TitleDataInternal);
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleDataInternal.ToString(), "" + (int)DataMenuStates.TitleDataInternal);
         }
-   }
-#endregion
+    }
+    #endregion
 }

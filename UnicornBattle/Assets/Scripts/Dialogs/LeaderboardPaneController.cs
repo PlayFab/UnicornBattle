@@ -55,13 +55,26 @@ public class LeaderboardPaneController : MonoBehaviour {
 //		this.StatisticFilter.GetComponentInChildren<Text>().text = this.StandAloneStatistics[0];
 //		
 		// this is all fairly hacky, and should be smoothed over.
-		UpdateTop10LB(this.PlayerLevelStats[0]);
-		UpdateFriendsLB(this.PlayerLevelStats[0]);
-		
+
+
+		var adStat = this.PlayerLevelStats.Find((val) => { return val == "Total_AdsWatched"; });
+
+		if(!string.IsNullOrEmpty(adStat))
+		{
+			UpdateTop10LB(adStat);
+			UpdateFriendsLB(adStat);
+
+			this.StatisticFilter.GetComponentInChildren<Text>().text = adStat;
+		}
+		else
+		{
+			UpdateTop10LB(this.PlayerLevelStats[0]);
+			UpdateFriendsLB(this.PlayerLevelStats[0]);
+
+			this.StatisticFilter.GetComponentInChildren<Text>().text = this.PlayerLevelStats[0];
+		}
 		UpdateFriendList();
-		//UpdateMyRank(this.PlayerLevelStats[0]);
-		
-		this.StatisticFilter.GetComponentInChildren<Text>().text = this.PlayerLevelStats[0];
+
 	}
 	
 
@@ -141,7 +154,7 @@ public class LeaderboardPaneController : MonoBehaviour {
 			{
 				PF_PlayerData.AddFriend(input, (PF_PlayerData.AddFriendMethod) response, (bool result) =>
 				{
-					if(result == true)
+					if(result)
 					{
 						Dictionary<string, object> eventData = new Dictionary<string, object>();
 						// no real data to be sent with this event, just sending an empty dict for now...

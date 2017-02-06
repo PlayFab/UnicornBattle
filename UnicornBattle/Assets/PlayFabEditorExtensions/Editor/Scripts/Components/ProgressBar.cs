@@ -1,17 +1,16 @@
-﻿using PlayFab.Editor.EditorModels;
 using UnityEditor;
 using UnityEngine;
 
-namespace PlayFab.Editor
+namespace PlayFab.PfEditor
 {
-public class ProgressBar
+    public class ProgressBar
     {
         public enum ProgressBarStates { off = 0, on = 1, spin = 2, error = 3, warning = 4, success = 5 }
         public static ProgressBarStates currentProgressBarState = ProgressBarStates.off;
 
         public static float progress = 0;
-        private static UnityEngine.GUIStyle pbarStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarFg");
-        private static UnityEngine.GUIStyle pbarBgStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarBg");
+        private static GUIStyle pbarStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarFg");
+        private static GUIStyle pbarBgStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarBg");
 
         private static float progressWidth = 0;
         private static float animationSpeed = 1f;
@@ -23,15 +22,13 @@ public class ProgressBar
 
         public static void UpdateState(ProgressBarStates state)
         {
-            if(currentProgressBarState == ProgressBarStates.off && state != ProgressBarStates.off)
+            if (currentProgressBarState == ProgressBarStates.off && state != ProgressBarStates.off)
             {
                 stTime = (float)EditorApplication.timeSinceStartup;
                 endTime = stTime + animationSpeed;
             }
 
-
-           currentProgressBarState = state;
-
+            currentProgressBarState = state;
         }
 
         //not a good way to do this right now.
@@ -40,12 +37,10 @@ public class ProgressBar
             progress = p;
         }
 
-
-
         public static void Draw()
-        {   
+        {
             pbarBgStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarBg");
-            if(currentProgressBarState == ProgressBarStates.off)
+            if (currentProgressBarState == ProgressBarStates.off)
             {
                 stTime = 0;
                 endTime = 0;
@@ -58,19 +53,19 @@ public class ProgressBar
                 pbarBgStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarClear");
                 //return;
             }
-            else if(EditorWindow.focusedWindow != PlayFabEditor.window)
+            else if (EditorWindow.focusedWindow != PlayFabEditor.window)
             {
                 // pause draw while we are in the bg
                 return;
             }
-            else if(currentProgressBarState == ProgressBarStates.success)
+            else if (currentProgressBarState == ProgressBarStates.success)
             {
-                if((float)EditorApplication.timeSinceStartup - stTime < animationSpeed)
+                if ((float)EditorApplication.timeSinceStartup - stTime < animationSpeed)
                 {
                     progressWidth = EditorGUIUtility.currentViewWidth;
                     pbarStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarSuccess");
                 }
-                else if(PlayFabEditor.blockingRequests.Count > 0)
+                else if (PlayFabEditor.blockingRequests.Count > 0)
                 {
                     UpdateState(ProgressBarStates.spin);
                 }
@@ -79,14 +74,14 @@ public class ProgressBar
                     UpdateState(ProgressBarStates.off);
                 }
             }
-            else if(currentProgressBarState == ProgressBarStates.warning)
+            else if (currentProgressBarState == ProgressBarStates.warning)
             {
-                if((float)EditorApplication.timeSinceStartup - stTime < animationSpeed)
+                if ((float)EditorApplication.timeSinceStartup - stTime < animationSpeed)
                 {
                     progressWidth = EditorGUIUtility.currentViewWidth;
                     pbarStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarWarn");
                 }
-                else if(PlayFabEditor.blockingRequests.Count > 0)
+                else if (PlayFabEditor.blockingRequests.Count > 0)
                 {
                     UpdateState(ProgressBarStates.spin);
                 }
@@ -95,14 +90,14 @@ public class ProgressBar
                     UpdateState(ProgressBarStates.off);
                 }
             }
-            else if(currentProgressBarState == ProgressBarStates.error)
+            else if (currentProgressBarState == ProgressBarStates.error)
             {
-                if((float)EditorApplication.timeSinceStartup - stTime < animationSpeed)
+                if ((float)EditorApplication.timeSinceStartup - stTime < animationSpeed)
                 {
                     progressWidth = EditorGUIUtility.currentViewWidth;
                     pbarStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarError");
                 }
-                else if(PlayFabEditor.blockingRequests.Count > 0)
+                else if (PlayFabEditor.blockingRequests.Count > 0)
                 {
                     UpdateState(ProgressBarStates.spin);
                 }
@@ -113,25 +108,25 @@ public class ProgressBar
             }
             else
             {
-               
-                if( (float)EditorApplication.timeSinceStartup - lastUpdateTime > tickRate)
+
+                if ((float)EditorApplication.timeSinceStartup - lastUpdateTime > tickRate)
                 {
                     lastUpdateTime = (float)EditorApplication.timeSinceStartup;
                     pbarStyle = PlayFabEditorHelper.uiStyle.GetStyle("progressBarFg");
 
-                    if(currentProgressBarState == ProgressBarStates.on)
+                    if (currentProgressBarState == ProgressBarStates.on)
                     {
                         progressWidth = EditorGUIUtility.currentViewWidth * progress;
                     }
-                    else if(currentProgressBarState == ProgressBarStates.spin)
+                    else if (currentProgressBarState == ProgressBarStates.spin)
                     {
                         var currentTime = (float)EditorApplication.timeSinceStartup;
-                        if(currentTime < endTime && !isReveresed)
-                        { 
-                            UpdateProgress((currentTime - stTime) / animationSpeed);  
+                        if (currentTime < endTime && !isReveresed)
+                        {
+                            UpdateProgress((currentTime - stTime) / animationSpeed);
                             progressWidth = EditorGUIUtility.currentViewWidth * progress;
                         }
-                        else if(currentTime < endTime && isReveresed)
+                        else if (currentTime < endTime && isReveresed)
                         {
                             UpdateProgress((currentTime - stTime) / animationSpeed);
                             progressWidth = EditorGUIUtility.currentViewWidth - EditorGUIUtility.currentViewWidth * progress;
@@ -144,17 +139,16 @@ public class ProgressBar
                         }
                     }
                 }
-            
+
             }
 
             GUILayout.BeginHorizontal(pbarBgStyle);
-                if(isReveresed)
-                {
-                    GUILayout.FlexibleSpace();
-                }
-                GUILayout.Label("", pbarStyle, GUILayout.Width(progressWidth));
+            if (isReveresed)
+            {
+                GUILayout.FlexibleSpace();
+            }
+            GUILayout.Label("", pbarStyle, GUILayout.Width(progressWidth));
             GUILayout.EndHorizontal();
         }
-
     }
 }

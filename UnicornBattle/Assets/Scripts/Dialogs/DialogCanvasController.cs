@@ -16,7 +16,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public Transform overlayTint;
     public ErrorPromptController errorPrompt;
-    // public Transform contextPrompt;
     public ConfirmationPromptController confirmPrompt;
     public LoadingPromptController loadingPrompt;
     public TextInputPrompController textInputPrompt;
@@ -72,11 +71,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     private List<OutgoingAPICounter> waitingOnRequests = new List<OutgoingAPICounter>();
 
     //Coroutine to manage the 10 second timeout.
-    private Coroutine timeOutCallback;
+    private Coroutine _timeOutCallback;
     private float timeOutLength = 10f;
-
-
-    //public str
 
     void OnEnable()
     {
@@ -97,11 +93,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         RaiseSelectorPromptRequest += HandleSelectorPromptRequest;
         RaiseSocialRequest += HandleSocialRequest;
         RaiseOfferRequest += HandleOfferPromptRequest;
-
-    }
-
-    void HandleRaiseOfferRequest()
-    {
 
     }
 
@@ -128,8 +119,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     void HandleOfferPromptRequest()
     {
-        this.offerPrompt.gameObject.SetActive(true);
-        this.offerPrompt.Init();
+        offerPrompt.gameObject.SetActive(true);
+        offerPrompt.Init();
     }
 
     public static void RequestOfferPrompt()
@@ -143,8 +134,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     void HandleSocialRequest()
     {
-        this.socialPrompt.gameObject.SetActive(true);
-        this.socialPrompt.Init();
+        socialPrompt.gameObject.SetActive(true);
+        socialPrompt.Init();
     }
 
     public static void RequestSocialPrompt()
@@ -157,8 +148,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     void HandleSelectorPromptRequest(string title, List<string> options, UnityAction<int> responseCallback)
     {
-        this.selectorPrompt.gameObject.SetActive(true);
-        this.selectorPrompt.InitSelector(title, options, responseCallback);
+        selectorPrompt.gameObject.SetActive(true);
+        selectorPrompt.InitSelector(title, options, responseCallback);
     }
 
     public static void RequestSelectorPrompt(string title, List<string> options, UnityAction<int> responseCallback)
@@ -179,8 +170,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     void HandleRaiseAccountSettingsRequest()
     {
-        this.accountSettingsPrompt.gameObject.SetActive(true);
-        this.accountSettingsPrompt.Init();
+        accountSettingsPrompt.gameObject.SetActive(true);
+        accountSettingsPrompt.Init();
     }
 
 
@@ -199,7 +190,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         {
             // ENABLE THIS AFTER WE HAVE A CONSISTENT WAY TO HIDE TINTS
             //ShowTint();
-            this.floatingInvPrompt.Init(callback, filter, enableTransUi, displayMode);
+            floatingInvPrompt.Init(callback, filter, enableTransUi, displayMode);
         };
 
         if (displayMode == FloatingInventoryController.InventoryMode.Character)
@@ -210,9 +201,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         {
             PF_PlayerData.GetUserInventory(afterGetInventory);
         }
-
     }
-
 
     public static void RequestItemViewer(List<string> items, bool unpackToPlayer = false)
     {
@@ -227,11 +216,11 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         //		UnityAction<List<StoreItem>> afterGetStoreItems = (List<StoreItem> resultSet) => 
         //		{
         //			ShowTint();
-        //			this.floatingStorePrompt.InitiateStore(storeID, resultSet);
+        //			floatingStorePrompt.InitiateStore(storeID, resultSet);
         //		};
         //		PF_GamePlay.RetrieveStoreItems (storeID, afterGetStoreItems);
 
-        this.itemViewerPrompt.InitiateViewer(items, unpackToPlayer);
+        itemViewerPrompt.InitiateViewer(items, unpackToPlayer);
 
     }
 
@@ -249,29 +238,9 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         {
             // ENABLE THIS AFTER WE HAVE A CONSISTENT WAY TO HIDE TINTS
             //ShowTint();
-            this.floatingStorePrompt.InitiateStore(storeId, resultSet);
+            floatingStorePrompt.InitiateStore(storeId, resultSet);
         };
         PF_GamePlay.RetrieveStoreItems(storeId, afterGetStoreItems);
-
-    }
-
-    void OnGUI()
-    {
-        /*		if (GUI.Button (new Rect(5, 200, 150, 50), "Test Selector")) 
-                {
-                    UnityAction<int> afterSelect = ( int  response) => 
-                    {
-                        Debug.Log("" + response);
-                    };
-                    List<string> options = new List<string>()
-                    {
-                        "Gold",
-                        "Gems",
-                        "Potions",
-                        "Sale Items"
-                    };
-                    DialogCanvasController.RaiseSelectorPromptRequest(options, afterSelect);
-                } */
 
     }
 
@@ -285,9 +254,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public void HandleInterstitialRequest()
     {
-        this.interstitialPrompt.ShowInterstitial();
+        interstitialPrompt.ShowInterstitial();
     }
-
 
     public static void RequestTextInputPrompt(string title, string message, Action<string> responseCallback, string defaultValue = null)
     {
@@ -299,8 +267,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public void HandleTextInputRequest(string title, string message, Action<string> responseCallback, string defaultValue)
     {
-        //this.ShowTint();
-        this.textInputPrompt.ShowTextInputPrompt(title, message, responseCallback, defaultValue);
+        //ShowTint();
+        textInputPrompt.ShowTextInputPrompt(title, message, responseCallback, defaultValue);
     }
 
 
@@ -314,8 +282,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public void HandleConfirmationPromptRequest(string title, string message, Action<bool> responseCallback)
     {
-        //this.ShowTint();
-        this.confirmPrompt.ShowConfirmationPrompt(title, message, responseCallback, this.HideTint);
+        //ShowTint();
+        confirmPrompt.ShowConfirmationPrompt(title, message, responseCallback, HideTint);
     }
 
 
@@ -329,22 +297,22 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public void HandleLoadingPromptRequest(PlayFabAPIMethods method)
     {
-        if (this.waitingOnRequests.Count == 0)
+        if (waitingOnRequests.Count == 0)
         {
             //ShowTint();
-            this.loadingPrompt.RaiseLoadingPrompt();
+            loadingPrompt.RaiseLoadingPrompt();
         }
-        this.waitingOnRequests.Add(new OutgoingAPICounter() { method = method, outgoingGameTime = Time.time });
+        waitingOnRequests.Add(new OutgoingAPICounter { method = method, outgoingGameTime = Time.time });
 
-        if (this.timeOutCallback == null)
+        if (_timeOutCallback == null)
         {
-            this.timeOutCallback = StartCoroutine(OutgoingApiTimeoutCallback());
+            _timeOutCallback = StartCoroutine(OutgoingApiTimeoutCallback());
         }
     }
 
     public void CloseLoadingPrompt(PlayFabAPIMethods method)
     {
-        List<OutgoingAPICounter> waiting = this.waitingOnRequests.FindAll((i) => { return i.method == method; });
+        List<OutgoingAPICounter> waiting = waitingOnRequests.FindAll((i) => { return i.method == method; });
 
         OutgoingAPICounter itemToRemove = null;
 
@@ -365,31 +333,17 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
         if (itemToRemove != null)
         {
-            this.waitingOnRequests.Remove(itemToRemove);
+            waitingOnRequests.Remove(itemToRemove);
             HideTint();
-            this.loadingPrompt.CloseLoadingPrompt();
+            loadingPrompt.CloseLoadingPrompt();
         }
     }
 
     public void CloseLoadingPromptAfterError()
     {
-        this.waitingOnRequests.Clear();
-        this.loadingPrompt.CloseLoadingPrompt();
-
-        //		if(this.timeOutCallback != null)
-        //		{
-        //			StopCoroutine(this.timeOutCallback);
-        //		}
+        waitingOnRequests.Clear();
+        loadingPrompt.CloseLoadingPrompt();
     }
-
-
-
-    //	public delegate void PlayFabErrorHandler(string details, PlayFabAPIMethods method);
-    //	public static event PlayFabErrorHandler OnPlayFabCallbackError;
-    //	
-    //	// called after a successful API callback (useful for stopping the spinner)
-    //	public delegate void CallbackSuccess(string details, PlayFabAPIMethods method);
-    //	public static event CallbackSuccess OnPlayfabCallbackSuccess;
 
     void HandleOnLoginSuccess(string message, MessageDisplayStyle style)
     {
@@ -401,15 +355,14 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         HandleCallbackError(message, PlayFabAPIMethods.GenericLogin, style);
     }
 
-
     public void HandleCallbackError(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
         switch (style)
         {
             case MessageDisplayStyle.error:
-                string errorMessage = string.Format("CALLBACK ERROR: {0}: {1}", method, details);
+                var errorMessage = string.Format("CALLBACK ERROR: {0}: {1}", method, details);
                 //ShowTint();
-                this.errorPrompt.RaiseErrorDialog(errorMessage);
+                errorPrompt.RaiseErrorDialog(errorMessage);
                 CloseLoadingPromptAfterError();
                 break;
 
@@ -417,9 +370,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
                 CloseLoadingPrompt(method);
                 Debug.Log(string.Format("CALLBACK ERROR: {0}: {1}", method, details));
                 break;
-
         }
-
     }
 
     public void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
@@ -442,70 +393,51 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public void OpenDialogsMenu()
     {
-        // THIS BREAKS IF THE GO IS DISABLED!!!
-
-        //Tween.Tween(this.menuOverlayPanel.gameObject, .001f, Quaternion.Euler(0,0,0) , Quaternion.Euler(0,0,15f), TweenMain.Style.PingPong, TweenMain.Method.EaseIn, null);
-
-
-        //new Vector3(Screen.width/2, Screen.height/2, 0)
-        //ShowTint();
-        //TweenPos.Tween(this.menuOverlayPanel.gameObject, .001f, this.menuOverlayPanel.transform.position, new Vector3(0, Screen.height, 0), TweenMain.Style.Once, TweenMain.Method.Linear, null, Space.World);
-        //TweenScale.Tween(this.menuOverlayPanel.gameObject, .001f, new Vector3(1,1,1), new Vector3(0,0,0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-        //TweenPos.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(0, Screen.height, 0), new Vector3(Screen.width/2, Screen.height/2, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null, Space.World);
-        //TweenScale.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(0,0,0), new Vector3(1,1,1), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-
         ToggleOpenCloseButtons();
     }
 
     // NEED TO MAKE THIS A COROUTINE
     public void CloseDialogsMenu()
     {
-        //TweenPos.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(Screen.width/2, Screen.height/2, 0), new Vector3(0, Screen.height, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null, Space.World);
-        //TweenScale.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(1,1,1), new Vector3(0,0,0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-
         HideTint();
         ToggleOpenCloseButtons();
-
     }
 
     public void CloseErrorDialog()
     {
-        this.errorPrompt.CloseErrorDialog();
+        errorPrompt.CloseErrorDialog();
         HideTint();
-
     }
 
     public void ToggleOpenCloseButtons()
     {
-        if (this.showOpenCloseButton)
+        if (showOpenCloseButton)
         {
-            if (this.openDialogsButton.gameObject.activeSelf)
+            if (openDialogsButton.gameObject.activeSelf)
             {
-                this.openDialogsButton.gameObject.SetActive(false);
-                this.closeDialogsButton.gameObject.SetActive(true);
+                openDialogsButton.gameObject.SetActive(false);
+                closeDialogsButton.gameObject.SetActive(true);
             }
             else
             {
-                this.openDialogsButton.gameObject.SetActive(true);
-                this.closeDialogsButton.gameObject.SetActive(false);
+                openDialogsButton.gameObject.SetActive(true);
+                closeDialogsButton.gameObject.SetActive(false);
             }
         }
     }
 
-
-
     //Loading time-out co-routine management code
     private IEnumerator OutgoingApiTimeoutCallback()
     {
-        while (this.waitingOnRequests.Count > 0)
+        while (waitingOnRequests.Count > 0)
         {
-            for (var z = 0; z < this.waitingOnRequests.Count; z++)
+            for (var z = 0; z < waitingOnRequests.Count; z++)
             {
-                if (Time.time > (this.waitingOnRequests[z].outgoingGameTime + this.timeOutLength))
+                if (Time.time > (waitingOnRequests[z].outgoingGameTime + timeOutLength))
                 {
                     // time has elapsed for this request, until we can handle this more specifically, we can only reload the scene, and hope for the best.
-                    var capturedDetails = this.waitingOnRequests[z].method;
-                    PF_Bridge.RaiseCallbackError(string.Format("API Call: {0} Timed out after {1} seconds.", capturedDetails, this.timeOutLength), this.waitingOnRequests[z].method, MessageDisplayStyle.error);
+                    var capturedDetails = waitingOnRequests[z].method;
+                    PF_Bridge.RaiseCallbackError(string.Format("API Call: {0} Timed out after {1} seconds.", capturedDetails, timeOutLength), waitingOnRequests[z].method, MessageDisplayStyle.error);
 
                     Action<bool> afterConfirmation = response =>
                     {
@@ -527,7 +459,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         }
 
         // outgoing request queue empty
-        this.timeOutCallback = null;
+        _timeOutCallback = null;
         yield break;
     }
 }

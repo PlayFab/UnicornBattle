@@ -1,5 +1,5 @@
-﻿namespace PlayFab.Editor.Json
-{ 
+namespace PlayFab.PfEditor.Json
+{
     public interface ISerializer
     {
         T DeserializeObject<T>(string json);
@@ -9,7 +9,6 @@
         string SerializeObject(object json);
         string SerializeObject(object json, object jsonSerializerStrategy);
     }
-
 
     public class JsonWrapper
     {
@@ -51,7 +50,7 @@
     }
 
     public class SimpleJsonInstance : ISerializer
-    { 
+    {
         public T DeserializeObject<T>(string json)
         {
             return PlayFabSimpleJson.DeserializeObject<T>(json);

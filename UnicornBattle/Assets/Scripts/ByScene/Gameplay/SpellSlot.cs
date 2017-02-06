@@ -66,11 +66,11 @@ public class SpellSlot : MonoBehaviour {
 			this.cdTurns--;
 		}
 		
-		if(this.cdTurns == 0 && this.isOnCD == true)
+		if(this.cdTurns == 0 && this.isOnCD)
 		{
 			DisableCD();
 		}
-		else if(this.isOnCD == true)
+		else if(this.isOnCD)
 		{	
 			this.CooldownText.text = "" + this.cdTurns;
 		}

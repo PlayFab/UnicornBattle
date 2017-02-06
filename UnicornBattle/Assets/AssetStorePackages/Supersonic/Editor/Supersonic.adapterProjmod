@@ -1,0 +1,45 @@
+{
+  "group": "Supersonic",
+  
+  "files": [
+	 "Plugins/ios/Supersonic/Supersonic/Supersonic.framework"
+	   ],
+  
+  "libs": [
+    "libz.dylib"
+  ],
+  
+  "librarysearchpaths": [],
+  
+  "frameworks": [
+  "Foundation.framework",
+  "AVFoundation.framework",
+  "CoreMedia.framework",	
+  "CoreVideo.framework",
+  "QuartzCore.framework",
+  "SystemConfiguration.framework",
+  "CoreGraphics.framework",
+  "CFNetwork.framework",
+  "MobileCoreServices.framework",
+  "StoreKit.framework",
+  "AdSupport.framework",
+  "CoreLocation.framework",
+  "CoreTelephony.framework",
+  "Security.framework",
+  "WebKit.framework"
+  ],
+  
+    "frameworksearchpaths": [
+    "Plugins/iOS/Supersonic/Supersonic/"
+  ],
+
+ "headerpaths": [
+
+  ],
+  "folders": [
+
+  ],	
+  "excludes": [],
+  
+  "linkers": ["-ObjC"]
+}

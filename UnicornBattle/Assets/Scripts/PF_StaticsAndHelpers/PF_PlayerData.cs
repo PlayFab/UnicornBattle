@@ -1,6 +1,7 @@
 using Facebook.Unity;
 using PlayFab;
 using PlayFab.ClientModels;
+using PlayFab.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,6 @@ using UnityEngine.Events;
 /// </summary>
 public static class PF_PlayerData
 {
-
     // Player Level Data:
     public static string PlayerId = string.Empty;
     public static bool showAccountOptionsOnLogin = true;
@@ -40,7 +40,6 @@ public static class PF_PlayerData
     public static List<FriendInfo> playerFriends = new List<FriendInfo>();
 
     public static Dictionary<string, UB_AwardedOffer> pendingOffers = new Dictionary<string, UB_AwardedOffer>();
-    public static List<string> remainingOfferGUIDs = new List<string>();
 
     public static List<ItemInstance> OfferContainers = new List<ItemInstance>();
     public static List<string> RedeemedOffers = new List<string>();
@@ -124,7 +123,7 @@ public static class PF_PlayerData
                                 // here we can process the custom data and apply the propper treatment (eg assign icons)
                                 if (catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
                                 {
-                                    Dictionary<string, string> customAttributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+                                    Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
                                     if (customAttributes.ContainsKey("icon"))
                                     {
                                         customIcon = customAttributes["icon"];
@@ -260,7 +259,7 @@ public static class PF_PlayerData
 
         if (result.InfoResultPayload.UserReadOnlyData.ContainsKey("RedeemedOffers"))
         {
-            RedeemedOffers = PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
+            RedeemedOffers = JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
         }
 
         inventoryByCategory.Clear();
@@ -288,7 +287,7 @@ public static class PF_PlayerData
                             // here we can process the custom data and apply the propper treatment (eg assign icons)
                             if (catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
                             {
-                                Dictionary<string, string> customAttributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+                                Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
                                 if (customAttributes.ContainsKey("icon"))
                                 {
                                     customIcon = customAttributes["icon"];
@@ -404,13 +403,13 @@ public static class PF_PlayerData
 
                 if (result.Data.ContainsKey("Achievements"))
                 {
-                    characterAchievements.Add(result.CharacterId, PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
+                    characterAchievements.Add(result.CharacterId, JsonWrapper.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
                 }
 
 
                 if (result.Data.ContainsKey("CharacterData"))
                 {
-                    playerCharacterData.Add(result.CharacterId, PlayFab.Json.JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
+                    playerCharacterData.Add(result.CharacterId, JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
                     remainingCallbacks--;
                     if (remainingCallbacks == 0)
                     {
@@ -436,7 +435,7 @@ public static class PF_PlayerData
                                                   {
                                                       if (result.Data.ContainsKey("CharacterData"))
                                                       {
-                                                          playerCharacterData[result.CharacterId] = PlayFab.Json.JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
+                                                          playerCharacterData[result.CharacterId] = JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
 
                                                           PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
                                                       }
@@ -480,7 +479,7 @@ public static class PF_PlayerData
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
 
-        characterStatistics = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(result.FunctionResult.ToString());
+        characterStatistics = JsonWrapper.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(result.FunctionResult.ToString());
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterStatistics, MessageDisplayStyle.none);
     }
 
@@ -567,7 +566,7 @@ public static class PF_PlayerData
                             // here we can process the custom data and apply the propper treatment (eg assign icons)
                             if (catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
                             {
-                                Dictionary<string, string> customAttributes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+                                Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
                                 if (customAttributes.ContainsKey("icon"))
                                 {
                                     customIcon = customAttributes["icon"];
@@ -766,7 +765,7 @@ public static class PF_PlayerData
     #region misc
     public static void RedeemItemOffer(CatalogItem offer, string instanceToRemove, UnityAction<string> callback = null, bool onlyRemoveInstance = false)
     {
-        if (onlyRemoveInstance == true)
+        if (onlyRemoveInstance)
         {
             // this offer has already been rewarded, need to remove from the player's invenetory.
             var request = new ExecuteCloudScriptRequest();
@@ -875,7 +874,7 @@ public static class PF_PlayerData
                                                              PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
                                                              Action<bool> afterConfirm = (bool response) =>
                                                                  {
-                                                                     if (response == true)
+                                                                     if (response)
                                                                      {
                                                                          request.ForceLink = true;
 
@@ -993,29 +992,29 @@ public static class PF_PlayerData
 #endif
 
 #if UNITY_ANDROID
-			if(!string.IsNullOrEmpty(pushToken))
-			{
-				// success
-				Debug.Log("GCM Init Success");
-				var request = new AndroidDevicePushNotificationRegistrationRequest();
-				request.DeviceToken = pushToken;
-				
-				DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
-				PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, (AndroidDevicePushNotificationRegistrationResult result) => 
-				                                                           {
-					if(callback != null)
-					{
-						callback();
-					}
-					PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RegisterForPush, MessageDisplayStyle.none);
-				}, PF_Bridge.PlayFabErrorCallback);
-				
-			}
-			else
-			{
-				// error happened
-				Debug.Log("Push Token was null or empty: ");
-			}
+        if (!string.IsNullOrEmpty(pushToken))
+        {
+            // success
+            Debug.Log("GCM Init Success");
+            var request = new AndroidDevicePushNotificationRegistrationRequest();
+            request.DeviceToken = pushToken;
+
+            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
+            PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, (AndroidDevicePushNotificationRegistrationResult result) =>
+                                                                       {
+                                                                           if (callback != null)
+                                                                           {
+                                                                               callback();
+                                                                           }
+                                                                           PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RegisterForPush, MessageDisplayStyle.none);
+                                                                       }, PF_Bridge.PlayFabErrorCallback);
+
+        }
+        else
+        {
+            // error happened
+            Debug.Log("Push Token was null or empty: ");
+        }
 #endif
     }
 

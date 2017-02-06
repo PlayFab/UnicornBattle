@@ -1,14 +1,12 @@
-﻿namespace PlayFab.Editor
-{
-    using System;
-    using UnityEngine;
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEditor;
-    using System.Linq;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
+namespace PlayFab.PfEditor
+{
     //[InitializeOnLoad]
-    public class SubMenuComponent : Editor {
+    public class SubMenuComponent : UnityEditor.Editor
+    {
 
         Dictionary<string, MenuItemContainer> items = new Dictionary<string, MenuItemContainer>();
         GUIStyle selectedStyle;
@@ -17,33 +15,33 @@
 
         public void DrawMenu()
         {
-            selectedStyle = selectedStyle == null ? PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected") : selectedStyle;
-            defaultStyle = defaultStyle == null ? PlayFabEditorHelper.uiStyle.GetStyle("textButton") : defaultStyle;
-            bgStyle = bgStyle == null ? PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"): bgStyle;
-            
+            selectedStyle = selectedStyle ?? PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
+            defaultStyle = defaultStyle ?? PlayFabEditorHelper.uiStyle.GetStyle("textButton");
+            bgStyle = bgStyle ?? PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1");
+
             GUILayout.BeginHorizontal(bgStyle, GUILayout.ExpandWidth(true));
 
-                foreach(var item in items)
+            foreach (var item in items)
+            {
+                var styleToUse = item.Value.isSelected ? selectedStyle : defaultStyle;
+                var content = new GUIContent(item.Value.displayName);
+                var size = styleToUse.CalcSize(content);
+
+                if (GUILayout.Button(item.Value.displayName, styleToUse, GUILayout.Width(size.x + 1)))
                 {
-                    var styleToUse = item.Value.isSelected ? selectedStyle : defaultStyle;
-                    var content = new GUIContent(item.Value.displayName);   
-                    var size = styleToUse.CalcSize(content);
-                         
-                    if (GUILayout.Button(item.Value.displayName, styleToUse, GUILayout.Width(size.x + 1)))
-                    {
-                        OnMenuItemClicked(item.Key);
-                    }
+                    OnMenuItemClicked(item.Key);
                 }
+            }
             GUILayout.EndHorizontal();
         }
 
         public void RegisterMenuItem(string n, System.Action m)
         {
-            if(!items.ContainsKey(n))
+            if (!items.ContainsKey(n))
             {
                 bool selectState = false;
                 int activeSubmenu = PlayFabEditorDataService.editorSettings.currentSubMenu;
-                if(items.Count == 0 && activeSubmenu == 0)
+                if (items.Count == 0 && activeSubmenu == 0)
                 {
                     selectState = true;
                 }
@@ -53,7 +51,7 @@
                     selectState = true;
                 }
 
-                items.Add(n, new MenuItemContainer(){ displayName = n, method = m, isSelected = selectState });
+                items.Add(n, new MenuItemContainer() { displayName = n, method = m, isSelected = selectState });
             }
             else
             {
@@ -64,11 +62,11 @@
 
         private void OnMenuItemClicked(string key)
         {
-            if(items.ContainsKey(key))
+            if (items.ContainsKey(key))
             {
                 DeselectAll();
                 items[key].isSelected = true;
-                if(items[key].method != null)
+                if (items[key].method != null)
                 {
                     items[key].method.Invoke();
                 }
@@ -77,15 +75,15 @@
 
         private void DeselectAll()
         {
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 item.Value.isSelected = false;
-            }  
+            }
         }
 
         public SubMenuComponent()
         {
-            if(!PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
+            if (!PlayFabEditor.IsEventHandlerRegistered(StateUpdateHandler))
             {
                 PlayFabEditor.EdExStateUpdate += StateUpdateHandler;
             }
@@ -93,21 +91,20 @@
 
         void StateUpdateHandler(PlayFabEditor.EdExStates state, string status, string json)
         {
-            switch(state)
+            switch (state)
             {
                 case PlayFabEditor.EdExStates.OnMenuItemClicked:
                     DeselectAll();
-                    if(items != null && items.Count > 0)
-                    {
-                        items.First().Value.isSelected = true;
-                    }
-                break;
-           }
+                    if (items != null)
+                        foreach (var each in items)
+                        {
+                            each.Value.isSelected = true;
+                            break;
+                        }
+                    break;
+            }
         }
     }
-
-
-
 
     public class MenuItemContainer
     {

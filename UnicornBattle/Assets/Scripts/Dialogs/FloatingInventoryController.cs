@@ -152,7 +152,7 @@ public class FloatingInventoryController : MonoBehaviour
                 addItem = true;
             }
 
-            if (addItem == true)
+            if (addItem)
             {
                 this.inventory[count].Init();
                 this.inventory[count].SetButton(kvp.Value.icon, kvp.Value);
@@ -318,12 +318,15 @@ public class FloatingInventoryController : MonoBehaviour
     {
         if (this.activeMode == InventoryMode.Character)
         {
+            PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
+
             PF_PlayerData.GetUserInventory();
             DialogCanvasController.RequestInventoryPrompt(null, this.activeFilter, this.showTransUi, FloatingInventoryController.InventoryMode.Character);
         }
         else
         {
             PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
+            PF_PlayerData.GetUserInventory();
             DialogCanvasController.RequestInventoryPrompt(null, this.activeFilter, this.showTransUi, FloatingInventoryController.InventoryMode.Player);
         }
     }
@@ -527,7 +530,7 @@ public class FloatingInventoryController : MonoBehaviour
     void ResetItemTiles()
     {
         this.currentPage = 1;
-        this.pageCount = Mathf.CeilToInt((float)this.itemsToDisplay.Count / (float)this.itemsPerPage);
+        this.pageCount = Mathf.CeilToInt((float)this.itemsToDisplay.Count / (float)this.itemsPerPage) > 0 ? Mathf.CeilToInt((float)this.itemsToDisplay.Count / (float)this.itemsPerPage) : 1;
         this.pageDisplay.text = string.Format("{0} / {1}", this.currentPage, this.pageCount);
         HideSelectedItem();
 

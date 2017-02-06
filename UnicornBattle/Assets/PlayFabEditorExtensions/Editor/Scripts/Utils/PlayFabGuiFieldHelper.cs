@@ -1,9 +1,9 @@
-﻿namespace PlayFab.Editor
-{
-    using System;
-    using UnityEditor;
-    using UnityEngine;
+using System;
+using UnityEditor;
+using UnityEngine;
 
+namespace PlayFab.PfEditor
+{
     //FixedWidthLabel class. Extends IDisposable, so that it can be used with the "using" keyword.
     public class FixedWidthLabel : IDisposable
     {
@@ -17,7 +17,7 @@
             this.fieldWidth = style.CalcSize(label).x + 9 * EditorGUI.indentLevel;
             EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")); // create a new horizontal group
             EditorGUILayout.LabelField(label, style, GUILayout.Width(fieldWidth));
-                //indentation from the left side. It's 9 pixels per indent level
+            // indentation from the left side. It's 9 pixels per indent level
 
             indentReset = new ZeroIndent(); //helper class to have no indentation after the label
         }

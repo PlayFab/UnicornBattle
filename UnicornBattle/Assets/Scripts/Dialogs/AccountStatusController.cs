@@ -95,7 +95,7 @@ public class AccountStatusController : MonoBehaviour
 		
 
 
-			if(PF_PlayerData.showAccountOptionsOnLogin == true)
+			if(PF_PlayerData.showAccountOptionsOnLogin)
 			{
 				this.isShownOnLogin = true;
 				this.showOnLogin.GetComponent<Image>().overrideSprite = this.checkedBox;
@@ -135,7 +135,7 @@ public class AccountStatusController : MonoBehaviour
 				UnityEngine.iOS.NotificationServices.RegisterForNotifications(UnityEngine.iOS.NotificationType.Alert | UnityEngine.iOS.NotificationType.Badge | UnityEngine.iOS.NotificationType.Sound, true);
 			#endif
 			
-			if(PF_PlayerData.isRegisteredForPush == true)
+			if(PF_PlayerData.isRegisteredForPush)
 			{
 				this.isRegisteredForPush = true;
 				this.registerPush.GetComponent<Image> ().overrideSprite = this.checkedBox;
@@ -225,7 +225,7 @@ public class AccountStatusController : MonoBehaviour
 		else 
 		{
 			Action<bool> processResponse = (bool response) => { 
-				if (response == true) 
+				if (response) 
 				{
 					this.changedLoginState = true;
 					this.isRegisteredForPush = false;
@@ -245,7 +245,7 @@ public class AccountStatusController : MonoBehaviour
 	public void ToggleShowOnLogin()
 	{
 		Action<bool> processResponse = (bool response) => { 
-			if (response == true) {
+			if (response) {
 				this.isShownOnLogin = !this.isShownOnLogin;	
 				this.changedLoginState = true;
 
@@ -257,7 +257,7 @@ public class AccountStatusController : MonoBehaviour
 			}
 		};
 
-		if (this.isShownOnLogin == true) 
+		if (this.isShownOnLogin) 
 		{
             DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.TOGGLE_PROMPT, GlobalStrings.TOGGLE_MSG, processResponse);
 		} 
@@ -274,7 +274,7 @@ public class AccountStatusController : MonoBehaviour
 		{
 			Action<bool> afterCheck = (bool response) =>
 			{
-				if(response == true)
+				if(response)
 				{
 					//unlink
 					UnityAction afterUnlink = () =>
@@ -350,7 +350,7 @@ public class AccountStatusController : MonoBehaviour
 	{
 		Action<bool> afterCheck = (bool response) =>
 		{
-			if(response == true)
+			if(response)
 			{
 				var email =  string.IsNullOrEmpty(PF_PlayerData.accountInfo.PrivateInfo.Email) || PF_PlayerData.accountInfo.PrivateInfo.Email.Contains("Pending Refresh") ? this.rc.email.text : PF_PlayerData.accountInfo.PrivateInfo.Email;
 				PF_Authentication.SendAccountRecoveryEmail(email);
@@ -362,13 +362,13 @@ public class AccountStatusController : MonoBehaviour
 
 	public void Continue()
 	{
-		if (changedLoginState == true) 
+		if (changedLoginState) 
 		{
 			PF_PlayerData.showAccountOptionsOnLogin = this.isShownOnLogin;
 			
 			Dictionary<string, string> updates = new Dictionary<string, string>();
-			updates.Add("ShowAccountOptionsOnLogin", this.isShownOnLogin == true ? "1" : "0");
-			updates.Add("IsRegisteredForPush", this.isRegisteredForPush == true ? "1" : "0");
+			updates.Add("ShowAccountOptionsOnLogin", this.isShownOnLogin ? "1" : "0");
+			updates.Add("IsRegisteredForPush", this.isRegisteredForPush ? "1" : "0");
 			
 			PF_PlayerData.UpdateUserData(updates); 	
 		}

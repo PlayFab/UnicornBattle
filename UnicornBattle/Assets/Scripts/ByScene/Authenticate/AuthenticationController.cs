@@ -1,10 +1,8 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.Events;
-using System.Collections.Generic;
-using PlayFab;
 using Facebook.Unity;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class AuthenticationController : MonoBehaviour
 {
@@ -36,20 +34,11 @@ public class AuthenticationController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        if (PlayerPrefs.HasKey("TitleId"))
-        {
-            PlayFabSettings.TitleId = PlayerPrefs.GetString("TitleId");
-        }
-        else
-        {
-            PlayFabSettings.TitleId = GlobalStrings.DEFAULT_UB_TITLE_ID;
-        }
-
-        if (this.useDevLogin == true)
+        if (this.useDevLogin)
         {
             EnableDeveloperMode();
         }
-        else if (PF_Authentication.isLoggedOut == true)
+        else if (PF_Authentication.isLoggedOut)
         {
             EnableUserSelectMode();
         }
@@ -162,7 +151,7 @@ public class AuthenticationController : MonoBehaviour
                    }
                    else
                    {
-                       PF_Authentication.usedManualFacebook = testMode == true ? false : true;
+                       PF_Authentication.usedManualFacebook = testMode ? false : true;
                        PF_Authentication.LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString, true);
                    }
                });

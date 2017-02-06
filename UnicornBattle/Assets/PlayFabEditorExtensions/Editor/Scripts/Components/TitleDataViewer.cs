@@ -1,16 +1,16 @@
-namespace PlayFab.Editor
-{
-    using System;
-    using UnityEngine;
-    using UnityEditor;
-    using System.Collections.Generic;
-    using EditorModels;
+﻿using PlayFab.PfEditor.EditorModels;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
-    public class TitleDataViewer : Editor
+namespace PlayFab.PfEditor
+{
+    public class TitleDataViewer : UnityEditor.Editor
     {
         public List<KvpItem> items;
         public static TitleDataEditor tdEditor;
-        public string displayTitle = "";
         public Vector2 scrollPos = Vector2.zero;
         private bool showSave = false;
 
@@ -60,7 +60,11 @@ namespace PlayFab.Editor
                         var valStyle = this.items[z].isDirty ? PlayFabEditorHelper.uiStyle.GetStyle("listValue_dirty") : PlayFabEditorHelper.uiStyle.GetStyle("listValue");
                         //var h = style.CalcHeight(c1, valueInputBoxWidth);
 
+
                         EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
+
+
+
 
                         items[z].Key = GUILayout.TextField(items[z].Key, keyStyle, GUILayout.Width(keyInputBoxWidth));
 
@@ -106,6 +110,7 @@ namespace PlayFab.Editor
                 }
             }
 
+
             // draw code here.
             // base.PostDraw();
         }
@@ -120,8 +125,9 @@ namespace PlayFab.Editor
         {
             //BaseUiAnimationController.StartAlphaFade(1, 0, listDisplay);
 
-            Action<GetTitleDataResult> cb = (result) =>
+            Action<PlayFab.PfEditor.EditorModels.GetTitleDataResult> cb = (result) =>
             {
+
                 items.Clear();
                 showSave = false;
                 foreach (var kvp in result.Data)
@@ -153,17 +159,59 @@ namespace PlayFab.Editor
 
             if (dirtyItems.Count > 0)
             {
-                PlayFabEditorApi.SetTitleData(dirtyItems, (result) =>
+                float nextSeconds = 1f;
+                foreach (var di in dirtyItems)
                 {
-                    foreach (var item in items)
+                    EditorCoroutine.start(SaveItem(di, nextSeconds));
+                    nextSeconds += 1f;
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*
+                PlayFabEditorApi.SetTitleData(dirtyItems, (result) => 
+                {
+                    foreach(var item in items)
                     {
                         item.CleanItem();
                     }
                 }, PlayFabEditorHelper.SharedErrorCallback);
+                */
+
+                foreach (var item in items)
+                {
+                    item.CleanItem();
+                }
+
             }
         }
 
 
+
+        private IEnumerator SaveItem(KeyValuePair<string, string> dirtyItem, float seconds)
+        {
+            yield return new EditorCoroutine.EditorWaitForSeconds(seconds);
+            //Debug.LogFormat("{0} - Co-Start: {1}", dirtyItem.Key, seconds);
+            var itemToUpdateDic = new Dictionary<string, string> { { dirtyItem.Key, dirtyItem.Value } };
+            PlayFabEditorApi.SetTitleData(itemToUpdateDic, (result) =>
+            {
+                //Do Nothing with the result.
+            }, PlayFabEditorHelper.SharedErrorCallback);
+        }
 
         public TitleDataViewer(List<KvpItem> i = null)
         {
@@ -180,4 +228,8 @@ namespace PlayFab.Editor
             tdEditor = null;
         }
     }
+
+
+
 }
+

@@ -1,19 +1,19 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using PlayFab.Editor.Json;
-using PlayFab.Editor.EditorModels;
+using PlayFab.PfEditor.Json;
+using PlayFab.PfEditor.EditorModels;
 
 #if UNITY_5_4 || UNITY_5_5
-    using UnityEngine.Networking;
+using UnityEngine.Networking;
 #else
     using UnityEngine.Experimental.Networking;
 #endif
 
 
-namespace PlayFab.Editor
+namespace PlayFab.PfEditor
 {
     public class PlayFabEditorHttp : UnityEditor.Editor
     {
@@ -26,11 +26,11 @@ namespace PlayFab.Editor
                 PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnHttpRes, url);
 
                 var fileName = string.Empty;
-                if(url.IndexOf("unity-edex") > -1)
+                if (url.IndexOf("unity-edex") > -1)
                 {
                     fileName = PlayFabEditorHelper.EDEX_UPGRADE_PATH;
                 }
-                else if(url.IndexOf("unity-via-edex") > -1)
+                else if (url.IndexOf("unity-via-edex") > -1)
                 {
                     fileName = PlayFabEditorHelper.SDK_DOWNLOAD_PATH;
                 }
@@ -61,15 +61,15 @@ namespace PlayFab.Editor
             };
 
 
-            if(api.Contains("/Server/") || api.Contains("/Admin/"))
+            if (api.Contains("/Server/") || api.Contains("/Admin/"))
             {
-                if(PlayFabEditorDataService.activeTitle == null || string.IsNullOrEmpty(PlayFabEditorDataService.activeTitle.SecretKey))
+                if (PlayFabEditorDataService.activeTitle == null || string.IsNullOrEmpty(PlayFabEditorDataService.activeTitle.SecretKey))
                 {
                     PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnError, "Must have PlayFabSettings.DeveloperSecretKey set to call this method");
                     return;
                 }
 
-                headers.Add("X-SecretKey", PlayFabEditorDataService.activeTitle.SecretKey);            
+                headers.Add("X-SecretKey", PlayFabEditorDataService.activeTitle.SecretKey);
             }
 
 
@@ -113,7 +113,7 @@ namespace PlayFab.Editor
                 {
                     if (errorCallback != null)
                     {
-                        PlayFab.Editor.EditorModels.PlayFabError playFabError = PlayFabEditorHelper.GeneratePlayFabError(response);
+                        PlayFab.PfEditor.EditorModels.PlayFabError playFabError = PlayFabEditorHelper.GeneratePlayFabError(response);
                         errorCallback(playFabError);
                     }
                     else
@@ -134,7 +134,7 @@ namespace PlayFab.Editor
                 {
                     PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnError, error);
                 }
-            }),www);
+            }), www);
 
         }
 
@@ -149,31 +149,31 @@ namespace PlayFab.Editor
                 List<System.Object> jsonResponse = JsonWrapper.DeserializeObject<List<System.Object>>(response);
 
                 // list seems to come back in ascending order (oldest -> newest)
-                if(jsonResponse != null && jsonResponse.Count > 0)
+                if (jsonResponse != null && jsonResponse.Count > 0)
                 {
-                    JsonObject latestSdkTag = (JsonObject)jsonResponse[jsonResponse.Count -1];
+                    JsonObject latestSdkTag = (JsonObject)jsonResponse[jsonResponse.Count - 1];
 
                     object tag;
-                    if(latestSdkTag.TryGetValue("ref", out tag))
+                    if (latestSdkTag.TryGetValue("ref", out tag))
                     {
-                        if(resultCallback != null)
+                        if (resultCallback != null)
                         {
-                            int startIndex = tag.ToString().LastIndexOf('/')+1;
-                            int length = tag.ToString().Length - startIndex;   
+                            int startIndex = tag.ToString().LastIndexOf('/') + 1;
+                            int length = tag.ToString().Length - startIndex;
                             resultCallback(tag.ToString().Substring(startIndex, length));
                         }
                     }
                     else
                     {
-                        if(resultCallback != null)
+                        if (resultCallback != null)
                         {
                             resultCallback(null);
-                        }  
+                        }
                     }
                     return;
                 }
 
-            }, PlayFabEditorHelper.SharedErrorCallback),www);
+            }, PlayFabEditorHelper.SharedErrorCallback), www);
 
         }
 

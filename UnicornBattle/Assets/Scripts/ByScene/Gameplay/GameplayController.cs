@@ -80,7 +80,7 @@ public class GameplayController : MonoBehaviour {
 		//TODO this needs to set up all the dynamic data for the many components
 		if( (PF_GamePlay.encounters != null && PF_GamePlay.encounters.Count > 0) && (PF_GamePlay.ActiveQuest != null))
 		{ 
-			if(PF_GamePlay.UseRaidMode == true)
+			if(PF_GamePlay.UseRaidMode)
 			{
 				QuestTracker qt = SpoofQuestResults();
 				PF_GamePlay.QuestProgress = qt;
@@ -119,7 +119,7 @@ public class GameplayController : MonoBehaviour {
 			tracker.Deaths = 0;
 		}
 
-		if(PF_GamePlay.isHardMode == true) 
+		if(PF_GamePlay.isHardMode) 
 		{
 			tracker.DamageTaken = Random.Range(880,  2450);
 			tracker.Deaths += Random.value > .6 ? 1 : 0;

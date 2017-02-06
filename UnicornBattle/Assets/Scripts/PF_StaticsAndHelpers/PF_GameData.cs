@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using PlayFab.Json;
 
 public static class PF_GameData
 {
@@ -50,102 +51,44 @@ public static class PF_GameData
         PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
+    private static void ExtractJsonTitleData<T>(Dictionary<string, string> resultData, string titleKey, ref T output)
+    {
+        string json;
+        if (!resultData.TryGetValue(titleKey, out json))
+            Debug.LogError("Failed to load titleData: " + titleKey);
+        try
+        {
+            output = JsonWrapper.DeserializeObject<T>(resultData[titleKey]);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Failed to load titleData: " + titleKey);
+            Debug.LogException(e);
+        }
+    }
+
     private static void OnGetTitleDataSuccess(GetTitleDataResult result)
     {
-        Debug.Log("OnGetTitleDataSuccess");
+        AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
 
-        Debug.Log("OnGetTitleDataSuccess -- Classes");
-        if (result.Data.ContainsKey("Classes"))
-        {
-            Spells = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_SpellDetail>>(result.Data["Spells"]);
-        }
-
-        Debug.Log("OnGetTitleDataSuccess -- Spells");
-        if (result.Data.ContainsKey("Spells"))
-        {
-            Classes = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_ClassDetail>>(result.Data["Classes"]);
-        }
-
-        Debug.Log("OnGetTitleDataSuccess -- StartingCharacterSlots");
-        if (result.Data.ContainsKey("StartingCharacterSlots"))
-        {
-            StartingCharacterSlots = Int32.Parse(result.Data["StartingCharacterSlots"]);
-        }
-
-        Debug.Log("OnGetTitleDataSuccess -- MinimumInterstitialWait");
-        if (result.Data.ContainsKey("MinimumInterstitialWait"))
-        {
-            MinimumInterstitialWait = float.Parse(result.Data["MinimumInterstitialWait"]);
-        }
-
-        Debug.Log("OnGetTitleDataSuccess -- CharacterLevelRamp");
-        if (result.Data.ContainsKey("CharacterLevelRamp"))
-        {
-            CharacterLevelRamp = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, int>>(result.Data["CharacterLevelRamp"]);
-        }
-
-        Debug.Log("OnGetTitleDataSuccess -- Levels");
-        if (result.Data.ContainsKey("Levels"))
-        {
-            Levels = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_LevelData>>(result.Data["Levels"]);
-        }
-
-        if (result.Data.ContainsKey("Achievements"))
-        {
-            Achievements = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_Achievement>>(result.Data["Achievements"]);
-        }
-
-        if (result.Data.ContainsKey("Sales"))
-        {
-            Sales = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_SaleData>>(result.Data["Sales"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
-            Debug.Log("Sale Data Retrieved");
-
-            if (Sales.Count > 0)
-            {
-                DetermineSalesPromotionalTypes();
-            }
-        }
-
-        if (result.Data.ContainsKey("Events"))
-        {
-            Events = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_EventData>>(result.Data["Events"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
-            Debug.Log("Event Data Retrieved");
-            if (Events.Count > 0)
-            {
-                DetermineEventPromotionalTypes();
-            }
-        }
-
-        if (result.Data.ContainsKey("Offers"))
-        {
-            Offers = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_OfferData>>(result.Data["Offers"], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy);
-            Debug.Log("Offer Data Retrieved");
-
-        }
-
+        ExtractJsonTitleData(result.Data, "Classes", ref Classes);
+        ExtractJsonTitleData(result.Data, "Spells", ref Spells);
+        ExtractJsonTitleData(result.Data, "StartingCharacterSlots", ref StartingCharacterSlots);
+        ExtractJsonTitleData(result.Data, "MinimumInterstitialWait", ref MinimumInterstitialWait);
+        ExtractJsonTitleData(result.Data, "CharacterLevelRamp", ref CharacterLevelRamp);
+        ExtractJsonTitleData(result.Data, "Levels", ref Levels);
+        ExtractJsonTitleData(result.Data, "Achievements", ref Achievements);
+        ExtractJsonTitleData(result.Data, "Sales", ref Sales);
+        ExtractJsonTitleData(result.Data, "Events", ref Events);
+        ExtractJsonTitleData(result.Data, "Offers", ref Offers);
+        ExtractJsonTitleData(result.Data, "StandardStores", ref StandardStores);
         if (result.Data.ContainsKey("CommunityWebsite"))
-        {
             CommunityWebsite = result.Data["CommunityWebsite"];
-            Debug.Log("Community Website URL Retrieved");
-
-        }
-        if (result.Data.ContainsKey("StandardStores"))
-        {
-            StandardStores = PlayFab.Json.JsonWrapper.DeserializeObject<List<string>>(result.Data["StandardStores"]);
-            Debug.Log("Standard Stores Retrieved");
-        }
-
-        Debug.Log("OnGetTitleDataSuccess -- AndroidPushSenderId");
         if (result.Data.ContainsKey("AndroidPushSenderId"))
-        {
             AndroidPushSenderId = result.Data["AndroidPushSenderId"];
-        }
-        else
-        {
-            AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
-        }
 
-
+        DetermineSalesPromotionalTypes();
+        DetermineEventPromotionalTypes();
 
         BuildCDNRequests();
         PF_Bridge.RaiseCallbackSuccess("Title Data Loaded", PlayFabAPIMethods.GetTitleData, MessageDisplayStyle.none);
@@ -204,78 +147,65 @@ public static class PF_GameData
 
         UnityAction<bool> afterCDNRequest = (bool response) =>
         {
-            if (response == true)
+            if (response)
             {
                 PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetCDNConent, MessageDisplayStyle.none);
                 Debug.Log("CDN Retrieved!");
             }
 
-            PF_GameData.PromoAssets.Clear();
+            PromoAssets.Clear();
             foreach (var obj in requests)
             {
-                if (obj.IsUnpacked == true)
+                if (obj.IsUnpacked)
                 {
-                    PF_GameData.PromoAssets.Add(obj.Unpacked);
+                    PromoAssets.Add(obj.Unpacked);
                 }
             }
             GameController.Instance.cdnController.isInitalContentUnpacked = true;
         };
 
-        if (GameController.Instance.cdnController.isInitalContentUnpacked == false && GameController.Instance.cdnController.useCDN == true)
+        if (GameController.Instance.cdnController.isInitalContentUnpacked == false && GameController.Instance.cdnController.useCDN)
         {
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCDNConent);
             GameController.Instance.cdnController.KickOffCDNGet(requests, afterCDNRequest);
         }
     }
 
-
     public static void DetermineSalesPromotionalTypes()
     {
-        DateTime today = DateTime.Now;
-        DateTime bounds = today.AddDays(30);
-        foreach (var sale in PF_GameData.Sales)
+        if (Sales.Count == 0)
+            return;
+
+        var today = DateTime.Now;
+        var bounds = today.AddDays(30);
+        foreach (var sale in Sales)
         {
             if ((sale.Value.StartDate <= today && sale.Value.EndDate >= today))
             {
-                // active sale
-
-                if (sale.Value.PromoteWithCarousel == true || sale.Value.PromoteWithInterstitial == true)
-                {
+                if (sale.Value.PromoteWithCarousel || sale.Value.PromoteWithInterstitial)
                     sale.Value.PromoType = PromotionType.Promoted;
-                }
                 else
-                {
                     sale.Value.PromoType = PromotionType.Active;
-                }
             }
 
             if (sale.Value.StartDate > today && sale.Value.StartDate < bounds)
-            {
-                // upcomming sales
                 sale.Value.PromoType = PromotionType.Upcomming;
-                // should be included because we will want to promtote it in our chanels
-
-            }
         }
     }
 
     public static void DetermineEventPromotionalTypes()
     {
-        DateTime today = DateTime.Now;
-        DateTime bounds = today.AddDays(30);
+        if (Events.Count == 0)
+            return;
 
-        foreach (var each in PF_GameData.Events)
+        var today = DateTime.Now;
+        var bounds = today.AddDays(30);
+        foreach (var each in Events)
         {
-
-            if ((each.Value.StartDate <= today && each.Value.EndDate >= today))
-            {
+            if (each.Value.StartDate <= today && each.Value.EndDate >= today)
                 each.Value.PromoType = PromotionType.Promoted;
-            }
-
             if (each.Value.StartDate > today && each.Value.StartDate < bounds)
-            {
                 each.Value.PromoType = PromotionType.Upcomming;
-            }
         }
     }
 
@@ -294,7 +224,7 @@ public static class PF_GameData
             {
                 if (result.Data.ContainsKey(item))
                 {
-                    Encounters.Add(item, PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item], PlayFab.Internal.PlayFabUtil.ApiSerializerStrategy));
+                    Encounters.Add(item, JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
                 }
             }
 
@@ -382,14 +312,14 @@ public static class PF_GameData
 
     public static CatalogItem GetCatalogItemById(string id)
     {
-        return PF_GameData.catalogItems.Find((item) => { return item.ItemId == id; });
+        return catalogItems.Find((item) => { return item.ItemId == id; });
     }
 
 
     public static CatalogItem ConvertStoreItemToCatalogItem(StoreItem si)
     {
         CatalogItem ci = new CatalogItem();
-        CatalogItem reference = PF_GameData.catalogItems.Find((item) => { return item.ItemId == si.ItemId; });
+        CatalogItem reference = catalogItems.Find((item) => { return item.ItemId == si.ItemId; });
 
         if (reference == null)
         {

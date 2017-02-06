@@ -40,7 +40,7 @@ public class Distort : MonoBehaviour {
 				yDistMax = 0;
 				currentLerpTime = 0;
 				playForwards = !playForwards;
-				if(playForwards == true)
+				if(playForwards)
 				{
 					yield break;
 				}
@@ -76,7 +76,7 @@ public class Distort : MonoBehaviour {
 				yDistMax = 0;
 				currentLerpTime = 0;
 				playForwards = !playForwards;
-				if(playForwards == true)
+				if(playForwards)
 				{
 					yield break;
 				}

@@ -62,7 +62,7 @@ public class OfferPromptController : MonoBehaviour {
 			this.OfferName.text = activeItem.DisplayName;
 			this.OfferDesc.text = activeItem.Description;
 			
-			Dictionary<string, string> customData = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(activeItem.CustomData);
+			Dictionary<string, string> customData = JsonWrapper.DeserializeObject<Dictionary<string, string>>(activeItem.CustomData);
 			
 			string itemAwarded = "Random DropTable";
 			customData.TryGetValue("itemAwarded", out itemAwarded);
@@ -72,7 +72,7 @@ public class OfferPromptController : MonoBehaviour {
 			if(customData.ContainsKey("itemAwarded"))
 			{
 				CatalogItem awardItem = PF_GameData.catalogItems.Find((i) => { return i.ItemId == itemAwarded;});
-				Dictionary<string, string> awardCustomData = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(awardItem.CustomData);
+				Dictionary<string, string> awardCustomData = JsonWrapper.DeserializeObject<Dictionary<string, string>>(awardItem.CustomData);
 				
 				awardCustomData.TryGetValue("icon", out awardIcon);
 				this.ItemName.text = awardItem.DisplayName;
@@ -114,7 +114,7 @@ public class OfferPromptController : MonoBehaviour {
 					this.ItemName.text = grantItem.DisplayName;
 					
 					string iconString = string.Empty;
-					Dictionary<string, string> customData = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(grantItem.CustomData);
+					Dictionary<string, string> customData = JsonWrapper.DeserializeObject<Dictionary<string, string>>(grantItem.CustomData);
 					customData.TryGetValue("icon", out iconString);
 					
 					this.ItemIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(iconString);

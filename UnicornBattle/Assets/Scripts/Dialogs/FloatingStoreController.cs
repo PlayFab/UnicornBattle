@@ -83,7 +83,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 			{
                 try
                 {
-					Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(CI.CustomData);
+					Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(CI.CustomData);
                     kvps.TryGetValue("icon", out iconName);
                 }
                 catch (Exception e)
@@ -189,7 +189,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 				string iconName = "Default";
 				if( !string.Equals(CI.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
 				{
-					Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(CI.CustomData);
+					Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(CI.CustomData);
 					kvps.TryGetValue("icon", out iconName);	
 				}
 				Sprite icon = GameController.Instance.iconManager.GetIconById(iconName);	
@@ -234,7 +234,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 			string iconName = "Default";
 			if( !string.Equals(CI.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
 			{
-				Dictionary<string, string> kvps = PlayFab.Json.JsonWrapper.DeserializeObject<Dictionary<string, string>>(CI.CustomData);
+				Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(CI.CustomData);
 				kvps.TryGetValue("icon", out iconName);	
 			}
 			Sprite icon = GameController.Instance.iconManager.GetIconById(iconName);	

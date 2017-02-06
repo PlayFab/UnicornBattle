@@ -1,20 +1,19 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using PlayFab.Editor.Json;
-using PlayFab.Editor.EditorModels;
+using PlayFab.PfEditor.Json;
 
-namespace PlayFab.Editor
+namespace PlayFab.PfEditor
 {
     [InitializeOnLoad]
-    public class PlayFabEditorHelper : UnityEditor.Editor 
+    public class PlayFabEditorHelper : UnityEditor.Editor
     {
         #region EDITOR_STRINGS
         public static string EDEX_NAME = "PlayFab_EditorExtensions";
-        public static string EDEX_VERSION = "0.0.993";
-        public static string EDEX_ROOT =  Application.dataPath + "/PlayFabEditorExtensions/Editor";
+        public static string EDEX_VERSION = "0.0.994";
+        public static string EDEX_ROOT = Application.dataPath + "/PlayFabEditorExtensions/Editor";
         public static string DEV_API_ENDPOINT = "https://editor.playfabapi.com";
         public static string TITLE_ENDPOINT = ".playfabapi.com";
         public static string GAMEMANAGER_URL = "https://developer.playfab.com";
@@ -40,18 +39,14 @@ namespace PlayFab.Editor
 
         public static string EDPREF_INSTALLED = "NewlyInstalled";
 
-        //public static string MSG_SPIN = "{\"useSpinner\":true}";
-        //public static string MSG_BLOCK = "{\"blockUi\":true }";
         #endregion
-            
+
         public static GUISkin uiStyle = GetUiStyle();
-
-
 
         static PlayFabEditorHelper()
         {
             // scan for changes to the editor folder / structure.
-            if(uiStyle == null)
+            if (uiStyle == null)
             {
                 string[] rootFiles = new string[0];
                 bool relocatedEdEx = false;
@@ -66,32 +61,31 @@ namespace PlayFab.Editor
                 catch
                 {
 
-                    if(rootFiles.Length == 0)
+                    if (rootFiles.Length == 0)
                     {
                         // this probably means the editor folder was moved.
                         //see if we can locate the moved root
                         // and reload the assets
 
                         var movedRootFiles = Directory.GetFiles(Application.dataPath, PLAYFAB_EDEX_MAINFILE, SearchOption.AllDirectories);
-                        if(movedRootFiles.Length > 0)
+                        if (movedRootFiles.Length > 0)
                         {
                             relocatedEdEx = true;
-                            EDEX_ROOT = movedRootFiles[0].Substring(0, movedRootFiles[0].IndexOf(PLAYFAB_EDEX_MAINFILE)-1);
+                            EDEX_ROOT = movedRootFiles[0].Substring(0, movedRootFiles[0].IndexOf(PLAYFAB_EDEX_MAINFILE) - 1);
                             PlayFabEditorDataService.envDetails.edexPath = EDEX_ROOT;
                             PlayFabEditorDataService.SaveEnvDetails();
 
                             uiStyle = GetUiStyle();
                         }
-
                     }
                 }
                 finally
                 {
-                    if(relocatedEdEx && rootFiles.Length == 0)
+                    if (relocatedEdEx && rootFiles.Length == 0)
                     {
                         Debug.Log(string.Format("Found new EdEx root: {0}", EDEX_ROOT));
                     }
-                    else if(rootFiles.Length == 0)
+                    else if (rootFiles.Length == 0)
                     {
                         Debug.Log("Could not relocate the PlayFab Editor Extension");
                         EDEX_ROOT = string.Empty;
@@ -100,20 +94,18 @@ namespace PlayFab.Editor
             }
         }
 
-
         public static GUISkin GetUiStyle()
         {
-            if(uiStyle == null)
+            if (uiStyle == null)
             {
                 var relRoot = EDEX_ROOT.Substring(EDEX_ROOT.IndexOf("Assets/"));
-                return (GUISkin)AssetDatabase.LoadAssetAtPath(relRoot+ "/UI/PlayFabStyles.guiskin", typeof(GUISkin));
+                return (GUISkin)AssetDatabase.LoadAssetAtPath(relRoot + "/UI/PlayFabStyles.guiskin", typeof(GUISkin));
             }
             else
             {
                 return uiStyle;
             }
         }
-
 
         public static void SharedErrorCallback(EditorModels.PlayFabError error)
         {
@@ -125,8 +117,7 @@ namespace PlayFab.Editor
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnError, error);
         }
 
-
-        protected internal static PlayFab.Editor.EditorModels.PlayFabError GeneratePlayFabError(string json, object customData = null)
+        protected internal static EditorModels.PlayFabError GeneratePlayFabError(string json, object customData = null)
         {
             JsonObject errorDict = null;
             Dictionary<string, List<string>> errorDetails = null;
@@ -135,31 +126,31 @@ namespace PlayFab.Editor
                 //deserialize the error
                 errorDict = JsonWrapper.DeserializeObject<JsonObject>(json, PlayFabEditorUtil.ApiSerializerStrategy);
 
-                
+
                 if (errorDict.ContainsKey("errorDetails"))
                 {
-                    var ed = JsonWrapper.DeserializeObject<Dictionary<string, List<string>>>( errorDict["errorDetails"].ToString());
+                    var ed = JsonWrapper.DeserializeObject<Dictionary<string, List<string>>>(errorDict["errorDetails"].ToString());
                     errorDetails = ed;
                 }
             }
             catch (Exception e)
             {
-                return new PlayFab.Editor.EditorModels.PlayFabError()
+                return new EditorModels.PlayFabError()
                 {
                     ErrorMessage = e.Message
                 };
             }
 
             //create new error object
-            return new PlayFab.Editor.EditorModels.PlayFabError
+            return new EditorModels.PlayFabError
             {
                 HttpCode = errorDict.ContainsKey("code") ? Convert.ToInt32(errorDict["code"]) : 400,
                 HttpStatus = errorDict.ContainsKey("status")
                     ? (string)errorDict["status"]
                     : "BadRequest",
                 Error = errorDict.ContainsKey("errorCode")
-                    ? (PlayFab.Editor.EditorModels.PlayFabErrorCode)Convert.ToInt32(errorDict["errorCode"])
-                    : PlayFab.Editor.EditorModels.PlayFabErrorCode.ServiceUnavailable,
+                    ? (EditorModels.PlayFabErrorCode)Convert.ToInt32(errorDict["errorCode"])
+                    : EditorModels.PlayFabErrorCode.ServiceUnavailable,
                 ErrorMessage = errorDict.ContainsKey("errorMessage")
                     ? (string)errorDict["errorMessage"]
                     : string.Empty,
@@ -179,7 +170,7 @@ namespace PlayFab.Editor
         /// <returns>Texture2D</returns>
         public static Texture2D MakeTex(int width, int height, Color col)
         {
-            Color[] pix = new Color[width*height];
+            Color[] pix = new Color[width * height];
 
             for (int i = 0; i < pix.Length; i++)
                 pix[i] = col;
@@ -193,7 +184,7 @@ namespace PlayFab.Editor
 
         public static Vector3 GetColorVector(int colorValue)
         {
-            return new Vector3((colorValue/255f), (colorValue/255f), (colorValue/255f));
+            return new Vector3((colorValue / 255f), (colorValue / 255f), (colorValue / 255f));
         }
         #endregion
     }

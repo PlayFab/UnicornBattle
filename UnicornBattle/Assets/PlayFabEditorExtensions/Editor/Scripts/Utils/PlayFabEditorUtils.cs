@@ -1,11 +1,8 @@
-﻿using PlayFab.Editor.Json;
+﻿using PlayFab.PfEditor.Json;
 using System;
-
 using System.Globalization;
-using System.IO;
-using System.Text;
 
-namespace PlayFab.Editor
+namespace PlayFab.PfEditor
 {
     internal static class PlayFabEditorUtil
     {

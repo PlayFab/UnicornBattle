@@ -144,7 +144,8 @@ public static class PF_Bridge
         Client_SaleClicked,
         Client_BattleAborted,
         Client_RegisteredAccount,
-        Client_FriendAdded
+        Client_FriendAdded,
+        Client_AdWatched
     }
 
     /// <summary>

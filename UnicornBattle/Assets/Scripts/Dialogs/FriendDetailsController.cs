@@ -167,7 +167,7 @@ public class FriendDetailsController : MonoBehaviour {
 	
 	public void OnCloseClicked()
 	{
-		if(this.didCustomTagsChange == true)
+		if(this.didCustomTagsChange)
 		{
 			UnityAction afterSetTags = () => 
 			{

@@ -1,11 +1,8 @@
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class CharacterAchievementsController : MonoBehaviour
 {
@@ -25,7 +22,7 @@ public class CharacterAchievementsController : MonoBehaviour
             {
                 while (items.Count < PF_GameData.Achievements.Count)
                 {
-                    AchievementItem achvItem = Instantiate(achievementItemPrefab);
+                    var achvItem = Instantiate(achievementItemPrefab);
                     achvItem.transform.SetParent(this.listView, false);
                     items.Add(achvItem);
 
@@ -61,7 +58,7 @@ public class CharacterAchievementsController : MonoBehaviour
             }
         }
 
-        PF_PlayerData.PlayerClassTypes ponyType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), cPicker.selectedSlot.saved.baseClass.CatalogCode);
+        var ponyType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), cPicker.selectedSlot.saved.baseClass.CatalogCode);
 
         switch ((int)ponyType)
         {
@@ -115,13 +112,13 @@ public class CharacterAchievementsController : MonoBehaviour
             PF_PlayerData.characterStatistics.TryGetValue(charId, out stats);
             if (stats != null)
             {
-                if (achvItem.SingleStat == true)
+                if (achvItem.SingleStat)
                 {
                     return stats.ContainsKey(achvItem.MatchingStatistic) ? stats[achvItem.MatchingStatistic] : 0;
                 }
                 else
                 {
-                    int total = 0;
+                    var total = 0;
                     foreach (var stat in stats)
                     {
                         if (stat.Key.Contains(achvItem.MatchingStatistic))

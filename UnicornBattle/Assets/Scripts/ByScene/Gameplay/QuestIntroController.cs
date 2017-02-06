@@ -42,7 +42,7 @@ public class QuestIntroController : MonoBehaviour {
 		UB_LevelWinConditions conditions = PF_GamePlay.ActiveQuest.levelData.WinConditions;
 		List<string> condionsList = new List<string>();
 		
-		if(conditions.CompleteAllActs == true)
+		if(conditions.CompleteAllActs)
 		{
 			condionsList.Add("Complete All Acts");
 		}

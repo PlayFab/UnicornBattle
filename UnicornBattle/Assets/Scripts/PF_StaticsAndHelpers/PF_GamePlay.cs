@@ -1,5 +1,6 @@
 using PlayFab;
 using PlayFab.ClientModels;
+using PlayFab.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,6 @@ public static class PF_GamePlay
     public static QuestTracker QuestProgress = new QuestTracker();
     public static bool UseRaidMode = true; // TODO default to false - or make it a setting in the player's data
     public static bool isHardMode = false;
-
-    public static List<StoreItem> mostRecentStore = new List<StoreItem>();
 
     // class colors used to colorize UI based on active character.
     public static Color ClassColor1;
@@ -148,7 +147,7 @@ public static class PF_GamePlay
             return;
 
         //Debug.Log(result.ToString());
-        QuestProgress.ItemsGranted = PlayFab.Json.JsonWrapper.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
+        QuestProgress.ItemsGranted = JsonWrapper.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
 
         PF_GamePlay.QuestProgress.areItemsAwarded = true;
 
@@ -187,7 +186,6 @@ public static class PF_GamePlay
     /// <param name="result">Result.</param>
     private static void OnRetrieveStoreItemsSuccess(GetStoreItemsResult result)
     {
-        mostRecentStore = result.Store;
         PF_Bridge.RaiseCallbackSuccess("Store Retrieved", PlayFabAPIMethods.GetStoreItems, MessageDisplayStyle.none);
     }
 

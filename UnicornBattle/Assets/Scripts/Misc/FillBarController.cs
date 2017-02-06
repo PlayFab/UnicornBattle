@@ -46,12 +46,12 @@ public class FillBarController : MonoBehaviour {
 			}
 		} 
 		
-		if(this.useFadeAnimation == true && this.colorFader != null && this.colorFader.enabled == false)
+		if(this.useFadeAnimation && this.colorFader != null && this.colorFader.enabled == false)
 		{
 			this.colorFader.enabled = true;
 			this.colorFader.duration = this.fadeDuration;
 		}
-		else if(this.useFadeAnimation == false && this.colorFader != null && this.colorFader.enabled == true)
+		else if(this.useFadeAnimation == false && this.colorFader != null && this.colorFader.enabled)
 		{
 			this.colorFader.enabled = false;
 		}

@@ -63,11 +63,11 @@ public static class PF_Authentication
     // Kicks off the Facebook login process
     public static void StartFacebookLogin(Action onInit = null)
     {
-        if (FB.IsInitialized == true && onInit == null)
+        if (FB.IsInitialized && onInit == null)
         {
             OnInitComplete();
         }
-        else if (FB.IsInitialized == true)
+        else if (FB.IsInitialized)
         {
             onInit();
         }
@@ -121,7 +121,7 @@ public static class PF_Authentication
     {
         Action<bool> processResponse = (bool response) =>
         {
-            if (response == true && GetDeviceId())
+            if (response && GetDeviceId())
             {
                 if (!string.IsNullOrEmpty(android_id))
                 {
@@ -376,7 +376,7 @@ public static class PF_Authentication
         ios_id = string.Empty;
         custom_id = string.Empty;
 
-        if (FB.IsInitialized == true && FB.IsLoggedIn == true)
+        if (FB.IsInitialized && FB.IsLoggedIn)
         {
             CallFBLogout();
         }
@@ -417,7 +417,7 @@ public static class PF_Authentication
                 FB.Init();
             }
 
-            if (PF_Authentication.usedManualFacebook == true)
+            if (PF_Authentication.usedManualFacebook)
             {
                 LinkDeviceId();
                 PF_Authentication.usedManualFacebook = false;

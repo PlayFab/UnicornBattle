@@ -1,13 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
 using UnityEditor;
 
-namespace PlayFab.Editor
+namespace PlayFab.PfEditor
 {
     public class PlayFabEditorHeader : UnityEditor.Editor
     {
-        public static ProgressBar progressBar = new ProgressBar();
-
         public static void DrawHeader(float progress = 0f)
         {
             //using Begin Vertical as our container.
@@ -26,27 +23,27 @@ namespace PlayFab.Editor
             float gmAnchor = EditorGUIUtility.currentViewWidth - 30;
 
 
-                if (EditorGUIUtility.currentViewWidth > 375)
+            if (EditorGUIUtility.currentViewWidth > 375)
+            {
+                gmAnchor = EditorGUIUtility.currentViewWidth - 140;
+                GUILayout.BeginArea(new Rect(gmAnchor, 10, 140, 42));
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("GAME MANAGER", PlayFabEditorHelper.uiStyle.GetStyle("textButton"), GUILayout.MaxWidth(105)))
                 {
-                    gmAnchor = EditorGUIUtility.currentViewWidth - 140;
-                    GUILayout.BeginArea(new Rect(gmAnchor, 10, 140, 42));
-                    GUILayout.BeginHorizontal();
-                    if (GUILayout.Button("GAME MANAGER", PlayFabEditorHelper.uiStyle.GetStyle("textButton"), GUILayout.MaxWidth(105)))
-                    {
-                        OnDashbaordClicked();
-                    }
+                    OnDashbaordClicked();
                 }
-                else
-                {
-                    GUILayout.BeginArea(new Rect(gmAnchor, 10, EditorGUIUtility.currentViewWidth * .25f, 42));
-                    GUILayout.BeginHorizontal();
-                }
+            }
+            else
+            {
+                GUILayout.BeginArea(new Rect(gmAnchor, 10, EditorGUIUtility.currentViewWidth * .25f, 42));
+                GUILayout.BeginHorizontal();
+            }
 
-                if (GUILayout.Button("", PlayFabEditorHelper.uiStyle.GetStyle("gmIcon")))
-                    {
-                        OnDashbaordClicked();
-                    }
-               GUILayout.EndHorizontal();
+            if (GUILayout.Button("", PlayFabEditorHelper.uiStyle.GetStyle("gmIcon")))
+            {
+                OnDashbaordClicked();
+            }
+            GUILayout.EndHorizontal();
             GUILayout.EndArea();
 
             //end the vertical container
