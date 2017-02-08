@@ -9,11 +9,12 @@ using UnityEngine.UI;
 
 public class DialogCanvasController : Singleton<DialogCanvasController>
 {
+    public enum InventoryFilters { AllItems, UsableInCombat, Keys, Containers }
+
     protected DialogCanvasController() { } // guarantee this will be always a singleton only - can't use the constructor!
 
     public Button openDialogsButton;
     public Button closeDialogsButton;
-
     public Transform overlayTint;
     public ErrorPromptController errorPrompt;
     public ConfirmationPromptController confirmPrompt;
@@ -21,19 +22,18 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public TextInputPrompController textInputPrompt;
     public InterstitialController interstitialPrompt;
     public SelectorPromptController selectorPrompt;
-
     public ItemViewerController itemViewerPrompt;
     public FloatingStoreController floatingStorePrompt;
     public FloatingInventoryController floatingInvPrompt;
-
     public OfferPromptController offerPrompt;
     public LeaderboardPaneController socialPrompt;
     public AccountStatusController accountSettingsPrompt;
 
-    public enum InventoryFilters { AllItems, UsableInCombat, Keys, Containers }
-
     public bool showOpenCloseButton = true;
-
+    private List<OutgoingAPICounter> waitingOnRequests = new List<OutgoingAPICounter>();
+    //Coroutine to manage the 10 second timeout.
+    private Coroutine _timeOutCallback;
+    private float timeOutLength = 10f;
 
     public delegate void LoadingPromptHandler(PlayFabAPIMethods method);
     public static event LoadingPromptHandler RaiseLoadingPromptRequest;
@@ -68,12 +68,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public delegate void RequestOfferPromptHandler();
     public static event RequestOfferPromptHandler RaiseOfferRequest;
 
-    private List<OutgoingAPICounter> waitingOnRequests = new List<OutgoingAPICounter>();
-
-    //Coroutine to manage the 10 second timeout.
-    private Coroutine _timeOutCallback;
-    private float timeOutLength = 10f;
-
     void OnEnable()
     {
         PF_Bridge.OnPlayFabCallbackError += HandleCallbackError;
@@ -93,7 +87,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         RaiseSelectorPromptRequest += HandleSelectorPromptRequest;
         RaiseSocialRequest += HandleSocialRequest;
         RaiseOfferRequest += HandleOfferPromptRequest;
-
     }
 
     void OnDisable()
@@ -126,11 +119,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestOfferPrompt()
     {
         if (RaiseOfferRequest != null)
-        {
             RaiseOfferRequest();
-        }
     }
-
 
     void HandleSocialRequest()
     {
@@ -141,9 +131,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestSocialPrompt()
     {
         if (RaiseSocialRequest != null)
-        {
             RaiseSocialRequest();
-        }
     }
 
     void HandleSelectorPromptRequest(string title, List<string> options, UnityAction<int> responseCallback)
@@ -155,17 +143,13 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestSelectorPrompt(string title, List<string> options, UnityAction<int> responseCallback)
     {
         if (RaiseSelectorPromptRequest != null)
-        {
             RaiseSelectorPromptRequest(title, options, responseCallback);
-        }
     }
 
     public static void RequestAccountSettings()
     {
         if (RaiseAccountSettingsRequest != null)
-        {
             RaiseAccountSettingsRequest();
-        }
     }
 
     void HandleRaiseAccountSettingsRequest()
@@ -178,9 +162,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestInventoryPrompt(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems, bool enableTransUi = true, FloatingInventoryController.InventoryMode displayMode = FloatingInventoryController.InventoryMode.Character)
     {
         if (RaiseInventoryPromptRequest != null)
-        {
             RaiseInventoryPromptRequest(callback, filter, enableTransUi, displayMode);
-        }
     }
 
     void HandleInventoryRequest(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems, bool enableTransUi = true, FloatingInventoryController.InventoryMode displayMode = FloatingInventoryController.InventoryMode.Character)
@@ -206,50 +188,29 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestItemViewer(List<string> items, bool unpackToPlayer = false)
     {
         if (RaiseItemViewRequest != null)
-        {
             RaiseItemViewRequest(items, unpackToPlayer);
-        }
     }
 
     void HandleItemViewerRequest(List<string> items, bool unpackToPlayer)
     {
-        //		UnityAction<List<StoreItem>> afterGetStoreItems = (List<StoreItem> resultSet) => 
-        //		{
-        //			ShowTint();
-        //			floatingStorePrompt.InitiateStore(storeID, resultSet);
-        //		};
-        //		PF_GamePlay.RetrieveStoreItems (storeID, afterGetStoreItems);
-
         itemViewerPrompt.InitiateViewer(items, unpackToPlayer);
-
     }
 
     public static void RequestStore(string storeId)
     {
         if (RaiseStoreRequest != null)
-        {
             RaiseStoreRequest(storeId);
-        }
     }
 
     void HandleStoreRequest(string storeId)
     {
-        UnityAction<List<StoreItem>> afterGetStoreItems = (List<StoreItem> resultSet) =>
-        {
-            // ENABLE THIS AFTER WE HAVE A CONSISTENT WAY TO HIDE TINTS
-            //ShowTint();
-            floatingStorePrompt.InitiateStore(storeId, resultSet);
-        };
-        PF_GamePlay.RetrieveStoreItems(storeId, afterGetStoreItems);
-
+        PF_GamePlay.RetrieveStoreItems(storeId, floatingStorePrompt.InitiateStore);
     }
 
     public static void RequestInterstitial()
     {
         if (RaiseInterstitialRequest != null)
-        {
             RaiseInterstitialRequest();
-        }
     }
 
     public void HandleInterstitialRequest()
@@ -260,9 +221,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestTextInputPrompt(string title, string message, Action<string> responseCallback, string defaultValue = null)
     {
         if (RaiseTextInputPromptRequest != null)
-        {
             RaiseTextInputPromptRequest(title, message, responseCallback, defaultValue);
-        }
     }
 
     public void HandleTextInputRequest(string title, string message, Action<string> responseCallback, string defaultValue)
@@ -275,9 +234,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestConfirmationPrompt(string title, string message, Action<bool> responseCallback)
     {
         if (RaiseConfirmationPromptRequest != null)
-        {
             RaiseConfirmationPromptRequest(title, message, responseCallback);
-        }
     }
 
     public void HandleConfirmationPromptRequest(string title, string message, Action<bool> responseCallback)
@@ -290,9 +247,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public static void RequestLoadingPrompt(PlayFabAPIMethods method)
     {
         if (RaiseLoadingPromptRequest != null)
-        {
             RaiseLoadingPromptRequest(method);
-        }
     }
 
     public void HandleLoadingPromptRequest(PlayFabAPIMethods method)
@@ -376,9 +331,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
         CloseLoadingPrompt(method);
-        //Debug.Log(string.Format("{0} completed successfully.", method.ToString()));
     }
-
 
     public void ShowTint()
     {

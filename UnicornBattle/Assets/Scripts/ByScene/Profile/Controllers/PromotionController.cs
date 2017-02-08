@@ -38,16 +38,6 @@ public class PromotionController : MonoBehaviour
         SelectBanner(UB_PromoDisplay.EMPTY_PROMO, 0);
     }
 
-#if UNITY_EDITOR
-    void OnGUI()
-    {
-        if (GUILayout.Button("TEST", GUILayout.MinWidth(200), GUILayout.MinHeight(50)))
-        {
-            PF_Advertising.RewardAdActivity(new RewardAdActivityRequest() { PlacementId = "3EB87825435183BD", RewardId = "73524B821DE4F555" }, SupersonicEvents.OnReportAdActivitySuccess, PF_Bridge.PlayFabErrorCallback);
-        }
-    }
-#endif
-
     void OnEnable()
     {
         SupersonicEvents.OnAdRewarded += EvaluateAdState;

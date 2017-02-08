@@ -33,7 +33,7 @@ public static class PF_GameData
     public static List<CatalogItem> offersCataogItems = new List<CatalogItem>();
 
     // all the items in our primary (CharacterClasses) catalog
-    public static List<CatalogItem> catalogItems = new List<CatalogItem>();
+    public static Dictionary<string, CatalogItem> catalogItems = new Dictionary<string, CatalogItem>();
 
     // these containers hold the interstitial tips, parsed from the RawNewsItems
     public static List<UB_PromotionalItem> promoItems = new List<UB_PromotionalItem>();
@@ -98,19 +98,13 @@ public static class PF_GameData
     public static void BuildCDNRequests()
     {
         List<AssetBundleHelperObject> requests = new List<AssetBundleHelperObject>();
-        string mime = "application/x-gzip";
-
-        string keyPrefix = string.Empty;
+        var mime = "application/x-gzip";
+        var keyPrefix = string.Empty;
 
         if (Application.platform == RuntimePlatform.Android)
-        {
             keyPrefix = "Android/";
-        }
         else if (Application.platform == RuntimePlatform.IPhonePlayer)
-        {
             keyPrefix = "iOS/";
-        }
-
 
         foreach (var sale in Sales)
         {
@@ -140,12 +134,9 @@ public static class PF_GameData
             }
         }
 
-
         GameController.Instance.cdnController.assets = requests;
 
-
-
-        UnityAction<bool> afterCDNRequest = (bool response) =>
+        UnityAction<bool> afterCdnRequest = response =>
         {
             if (response)
             {
@@ -155,19 +146,15 @@ public static class PF_GameData
 
             PromoAssets.Clear();
             foreach (var obj in requests)
-            {
                 if (obj.IsUnpacked)
-                {
                     PromoAssets.Add(obj.Unpacked);
-                }
-            }
             GameController.Instance.cdnController.isInitalContentUnpacked = true;
         };
 
         if (GameController.Instance.cdnController.isInitalContentUnpacked == false && GameController.Instance.cdnController.useCDN)
         {
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCDNConent);
-            GameController.Instance.cdnController.KickOffCDNGet(requests, afterCDNRequest);
+            GameController.Instance.cdnController.KickOffCDNGet(requests, afterCdnRequest);
         }
     }
 
@@ -221,12 +208,8 @@ public static class PF_GameData
             Encounters.Clear();
 
             foreach (var item in encounters)
-            {
                 if (result.Data.ContainsKey(item))
-                {
                     Encounters.Add(item, JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
-                }
-            }
 
             PF_Bridge.RaiseCallbackSuccess("Encounters Loaded!", PlayFabAPIMethods.GetTitleData, MessageDisplayStyle.none);
 
@@ -256,16 +239,16 @@ public static class PF_GameData
 
     private static void OnGetCatalogSuccess(GetCatalogItemsResult result)
     {
-        catalogItems = result.Catalog;
+        catalogItems.Clear();
+        foreach (var eachItem in result.Catalog)
+            catalogItems[eachItem.ItemId] = eachItem;
 
         PF_PlayerData.GetUserAccountInfo();
     }
 
-
     public static void GetTitleNews()
     {
-        var request = new GetTitleNewsRequest();
-        request.Count = 15;
+        var request = new GetTitleNewsRequest { Count = 15 };
         PlayFabClientAPI.GetTitleNews(request, OnGetTitleNewsSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
@@ -300,119 +283,80 @@ public static class PF_GameData
         PlayFabClientAPI.UnlockContainerItem(request, (UnlockContainerItemResult result) =>
         {
             if (callback != null)
-            {
                 callback(result);
-            }
-
             PF_Bridge.RaiseCallbackSuccess("Container Unlocked", PlayFabAPIMethods.UnlockContainerItem, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
 
     }
 
-
     public static CatalogItem GetCatalogItemById(string id)
     {
-        return catalogItems.Find((item) => { return item.ItemId == id; });
-    }
-
-
-    public static CatalogItem ConvertStoreItemToCatalogItem(StoreItem si)
-    {
-        CatalogItem ci = new CatalogItem();
-        CatalogItem reference = catalogItems.Find((item) => { return item.ItemId == si.ItemId; });
-
-        if (reference == null)
-        {
-            return new CatalogItem()
-            {
-                ItemId = "ITEM ERROR",
-                DisplayName = "ITEM ERROR",
-                VirtualCurrencyPrices = new Dictionary<string, uint>()
-            };
-        }
-
-        ci.Bundle = reference.Bundle;
-        ci.CanBecomeCharacter = reference.CanBecomeCharacter;
-        ci.CatalogVersion = reference.CatalogVersion;
-        ci.Consumable = reference.Consumable;
-        ci.Container = reference.Container;
-        ci.CustomData = reference.CustomData;
-        ci.Description = reference.Description;
-        ci.DisplayName = reference.DisplayName;
-        ci.IsStackable = reference.IsStackable;
-        ci.ItemClass = reference.ItemClass;
-        ci.Tags = reference.Tags;
-
-        ci.RealCurrencyPrices = si.RealCurrencyPrices;
-        ci.VirtualCurrencyPrices = si.VirtualCurrencyPrices;
-        ci.ItemId = si.ItemId;
-
-        return ci;
+        if (string.IsNullOrEmpty(id))
+            return null;
+        CatalogItem output;
+        catalogItems.TryGetValue(id, out output);
+        return output;
     }
 
     public static void GetPlayerLeaderboard(string stat, UnityAction callback = null)
     {
-        GetLeaderboardRequest request = new GetLeaderboardRequest();
-        request.MaxResultsCount = 10;
-        request.StatisticName = stat;
+        var request = new GetLeaderboardRequest
+        {
+            MaxResultsCount = 10,
+            StatisticName = stat
+        };
 
-        PlayFabClientAPI.GetLeaderboard(request, (GetLeaderboardResult result) =>
-                                                 {
-                                                     currentTop10LB = result.Leaderboard;
-                                                     if (callback != null)
-                                                     {
-                                                         callback();
-                                                     }
-                                                     PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetPlayerLeaderboard, MessageDisplayStyle.none);
-                                                 }, PF_Bridge.PlayFabErrorCallback);
+        PlayFabClientAPI.GetLeaderboard(request, result =>
+        {
+            currentTop10LB = result.Leaderboard;
+            if (callback != null)
+                callback();
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetPlayerLeaderboard, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void GetFriendsLeaderboard(string stat, UnityAction callback = null)
     {
-        GetFriendLeaderboardRequest request = new GetFriendLeaderboardRequest();
-        request.MaxResultsCount = 10;
-        request.StatisticName = stat;
+        var request = new GetFriendLeaderboardRequest
+        {
+            MaxResultsCount = 10,
+            StatisticName = stat
+        };
 
-
-        PlayFabClientAPI.GetFriendLeaderboard(request, (GetLeaderboardResult result) =>
+        PlayFabClientAPI.GetFriendLeaderboard(request, result =>
         {
             friendsLB = result.Leaderboard;
             if (callback != null)
-            {
                 callback();
-            }
             PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetFriendsLeaderboard, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void GetMyCharacterLeaderboardRank(string stat, UnityAction<int> callback = null)
     {
-        GetLeaderboardAroundCharacterRequest request = new GetLeaderboardAroundCharacterRequest();
-        request.CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
-        request.StatisticName = stat;
-        request.MaxResultsCount = 1;
+        var request = new GetLeaderboardAroundCharacterRequest
+        {
+            CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId,
+            StatisticName = stat,
+            MaxResultsCount = 1
+        };
 
-        PlayFabClientAPI.GetLeaderboardAroundCharacter(request, (GetLeaderboardAroundCharacterResult result) =>
+        PlayFabClientAPI.GetLeaderboardAroundCharacter(request, result =>
         {
             if (callback != null && result.Leaderboard.Count > 0)
-            {
                 callback(result.Leaderboard.First().Position);
-            }
             PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetLeaderboardAroundCharacter, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void GetMyPlayerLeaderboardRank(string stat, UnityAction<int> callback = null)
     {
-        GetLeaderboardAroundPlayerRequest request = new GetLeaderboardAroundPlayerRequest();
-        request.StatisticName = stat;
+        var request = new GetLeaderboardAroundPlayerRequest { StatisticName = stat };
 
-        PlayFabClientAPI.GetLeaderboardAroundPlayer(request, (GetLeaderboardAroundPlayerResult result) =>
+        PlayFabClientAPI.GetLeaderboardAroundPlayer(request, result =>
         {
             if (callback != null && result.Leaderboard.Count > 0)
-            {
                 callback(result.Leaderboard.First().Position);
-            }
             PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetMyPlayerRank, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }

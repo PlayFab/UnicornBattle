@@ -13,7 +13,6 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
     public Text sliderMessage;
     public Button storeButton;
 
-    private float dragStart;
     private float slideDelay = 0.333f;
     private float resistance = 0.05f;
 
@@ -30,24 +29,21 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
     {
         // TODO clear listeners?
         uiSlider.value = uiSlider.minValue;
-
     }
-
 
     public void OnPointerUp(PointerEventData eventData)
     {
         Debug.Log("The mouse click was released");
-        if (!Mathf.Approximately(this.uiSlider.value, this.uiSlider.maxValue))
+        if (!Mathf.Approximately(uiSlider.value, uiSlider.maxValue))
         {
             // start sliding backwards
-            StartCoroutine(SlideBack(this.slideDelay));
+            StartCoroutine(SlideBack(slideDelay));
         }
-        else if (Mathf.Approximately(this.uiSlider.value, this.uiSlider.maxValue))
+        else if (Mathf.Approximately(uiSlider.value, uiSlider.maxValue))
         {
             CheckUnlock();
         }
     }
-
 
     public IEnumerator SlideBack(float delay)
     {
@@ -55,31 +51,29 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
         {
             yield return new WaitForSeconds(delay);
         }
-        while (!Mathf.Approximately(this.uiSlider.value, this.uiSlider.minValue))
+        while (!Mathf.Approximately(uiSlider.value, uiSlider.minValue))
         {
-            this.uiSlider.value -= resistance;
+            uiSlider.value -= resistance;
             yield return new WaitForEndOfFrame();
         }
-        this.handle.color = Color.white;
-        yield break;
+        handle.color = Color.white;
     }
 
     public void SetupSlider(UnityAction<UnlockContainerItemResult> callback = null)
     {
-        this.afterUnlock = callback;
-        this.ItemDescription.text = controller.selectedItem.Description;
+        afterUnlock = callback;
+        ItemDescription.text = controller.selectedItem.Description;
 
         if (controller.selectedItem.Container != null)
         {
-            string id = controller.selectedItem.Container.KeyItemId;
-            CatalogItem keyReference = PF_GameData.catalogItems.Find((i) => { return i.ItemId == id; });
-
+            var id = controller.selectedItem.Container.KeyItemId;
+            var keyReference = PF_GameData.GetCatalogItemById(id);
 
             if (keyReference != null)
             {
-                this.sliderMessage.text = string.Format("{0} Required", keyReference.DisplayName);
+                sliderMessage.text = string.Format("{0} Required", keyReference.DisplayName);
 
-                string iconName = "Default";
+                var iconName = "Default";
                 if (!string.Equals(keyReference.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
                 {
                     Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(keyReference.CustomData);
@@ -87,44 +81,37 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
                 }
 
                 iconName = iconName == GlobalStrings.DEFAULT_ICON || string.IsNullOrEmpty(iconName) ? GlobalStrings.BRONZE_KEY_ICON : iconName;
-                Sprite icon = GameController.Instance.iconManager.GetIconById(iconName);
-                this.handle.overrideSprite = icon;
+                var icon = GameController.Instance.iconManager.GetIconById(iconName);
+                handle.overrideSprite = icon;
 
                 //make sure player has key
-                if (PF_PlayerData.characterInvByCategory.ContainsKey(keyReference.ItemId))
-                {
-                    this.endIcon.color = Color.green;
-                }
-                else
-                {
-                    this.endIcon.color = Color.red;
-                }
+                endIcon.color = PF_PlayerData.characterInvByCategory.ContainsKey(keyReference.ItemId) ? Color.green : Color.red;
             }
             else
             {
-                this.handle.overrideSprite = GameController.Instance.iconManager.GetIconById(GlobalStrings.DARKSTONE_LOCK_ICON);
-                this.sliderMessage.text = GlobalStrings.UNLOCKED_MSG;
+                handle.overrideSprite = GameController.Instance.iconManager.GetIconById(GlobalStrings.DARKSTONE_LOCK_ICON);
+                sliderMessage.text = GlobalStrings.UNLOCKED_MSG;
             }
         }
         else
         {
-            this.sliderMessage.text = GlobalStrings.UNLOCKED_MSG;
+            sliderMessage.text = GlobalStrings.UNLOCKED_MSG;
             // set default key icon or lock or something...
         }
     }
 
     public void CheckUnlock()
     {
-        string item = this.controller.selectedItem.ItemId;
+        var item = controller.selectedItem.ItemId;
 
         if (controller.UnpackToPlayer)
         {
-            PF_GameData.TryOpenContainer(item, null, this.afterUnlock);
+            PF_GameData.TryOpenContainer(item, null, afterUnlock);
         }
         else
         {
-            string character = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
-            PF_GameData.TryOpenContainer(item, character, this.afterUnlock);
+            var character = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
+            PF_GameData.TryOpenContainer(item, character, afterUnlock);
         }
     }
 

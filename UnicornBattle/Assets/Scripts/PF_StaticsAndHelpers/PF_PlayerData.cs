@@ -112,18 +112,18 @@ public static class PF_PlayerData
 
                     if (!inventoryByCategory.ContainsKey(item.ItemId))
                     {
-                        var catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
-                        List<ItemInstance> items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
+                        var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
+                        var items = playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); });
 
                         try
                         {
-                            if (catalog != null)
+                            if (catalogItem != null)
                             {
                                 var customIcon = "Defaut";
                                 // here we can process the custom data and apply the propper treatment (eg assign icons)
-                                if (catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
+                                if (catalogItem.CustomData != null && catalogItem.CustomData != "null") //TODO update once the bug is fixed on the null value
                                 {
-                                    Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+                                    Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
                                     if (customAttributes.ContainsKey("icon"))
                                     {
                                         customIcon = customAttributes["icon"];
@@ -132,13 +132,13 @@ public static class PF_PlayerData
 
                                 var icon = GameController.Instance.iconManager.GetIconById(customIcon);
 
-                                if (catalog.Consumable.UsageCount > 0)
+                                if (catalogItem.Consumable.UsageCount > 0)
                                 {
-                                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalog, items, icon, true));
+                                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, true));
                                 }
                                 else
                                 {
-                                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalog, items, icon));
+                                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon));
                                 }
                             }
                         }
@@ -276,18 +276,17 @@ public static class PF_PlayerData
 
                 if (!inventoryByCategory.ContainsKey(item.ItemId))
                 {
-                    CatalogItem catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
-                    List<ItemInstance> items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
-
+                    var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
+                    var items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
                     try
                     {
-                        if (catalog != null)
+                        if (catalogItem != null)
                         {
                             string customIcon = "Defaut";
                             // here we can process the custom data and apply the propper treatment (eg assign icons)
-                            if (catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
+                            if (catalogItem.CustomData != null && catalogItem.CustomData != "null") //TODO update once the bug is fixed on the null value
                             {
-                                Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
+                                Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
                                 if (customAttributes.ContainsKey("icon"))
                                 {
                                     customIcon = customAttributes["icon"];
@@ -296,13 +295,13 @@ public static class PF_PlayerData
 
                             Sprite icon = GameController.Instance.iconManager.GetIconById(customIcon);
 
-                            if (catalog.Consumable.UsageCount > 0)
+                            if (catalogItem.Consumable.UsageCount > 0)
                             {
-                                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalog, items, icon, true));
+                                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, true));
                             }
                             else
                             {
-                                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalog, items, icon));
+                                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon));
                             }
                         }
                     }
@@ -549,48 +548,38 @@ public static class PF_PlayerData
         characterInventory = result.Inventory;
         characterInvByCategory.Clear();
 
-        if (PF_GameData.catalogItems.Count > 0)
+        if (PF_GameData.catalogItems.Count == 0)
+            return;
+
+        foreach (var item in characterInventory)
         {
-            foreach (var item in characterInventory)
+            if (characterInvByCategory.ContainsKey(item.ItemId))
+                continue;
+
+            var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
+            List<ItemInstance> items = new List<ItemInstance>(characterInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
+
+            try
             {
-                if (!characterInvByCategory.ContainsKey(item.ItemId))
+                if (catalogItem != null)
                 {
-                    var catalog = PF_GameData.catalogItems.Find((x) => { return x.ItemId.Contains(item.ItemId); });
-                    List<ItemInstance> items = new List<ItemInstance>(characterInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
-
-                    try
+                    var customIcon = "Default";
+                    // here we can process the custom data and apply the propper treatment (eg assign icons)
+                    if (catalogItem.CustomData != null && catalogItem.CustomData != "null") //TODO update once the bug is fixed on the null value
                     {
-                        if (catalog != null)
-                        {
-                            string customIcon = "Defaut";
-                            // here we can process the custom data and apply the propper treatment (eg assign icons)
-                            if (catalog.CustomData != null && catalog.CustomData != "null") //TODO update once the bug is fixed on the null value
-                            {
-                                Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalog.CustomData);
-                                if (customAttributes.ContainsKey("icon"))
-                                {
-                                    customIcon = customAttributes["icon"];
-                                }
-                            }
-
-                            Sprite icon = GameController.Instance.iconManager.GetIconById(customIcon);
-
-                            if (catalog.Consumable.UsageCount > 0)
-                            {
-                                characterInvByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalog, items, icon, true));
-                            }
-                            else
-                            {
-                                characterInvByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalog, items, icon));
-                            }
-                        }
+                        Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
+                        string temp;
+                        if (customAttributes.TryGetValue("icon", out temp))
+                            customIcon = temp;
                     }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning(item.ItemId + " -- " + e.Message);
-                        continue;
-                    }
+
+                    var icon = GameController.Instance.iconManager.GetIconById(customIcon);
+                    characterInvByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(item.ItemId + " -- " + e.Message);
             }
         }
     }

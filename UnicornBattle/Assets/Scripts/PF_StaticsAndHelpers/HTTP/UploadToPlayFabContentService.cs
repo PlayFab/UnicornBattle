@@ -34,7 +34,7 @@ public class UploadToPlayFabContentService : MonoBehaviour
             Caching.CleanCache();
         }
 
-        foreach (var asset in this.assets)
+        foreach (var asset in assets)
         {
             if (asset.IsFlagedForUpload)
             {
@@ -67,8 +67,6 @@ public class UploadToPlayFabContentService : MonoBehaviour
         }
         request.ContentType = asset.MimeType;       // mime type to match the file
 
-        Debug.Log("Requesting url for PUT: " + asset.FileName);
-
 #if UNITY_WEBPLAYER
 			//UnityEngine.Deubg.Log("Webplayer does not support uploading files.");
 #else
@@ -96,27 +94,18 @@ public class UploadToPlayFabContentService : MonoBehaviour
 
         if (payload != null)
         {
-            Stream dataStream = request.GetRequestStream();
-            dataStream.Write(payload, 0, payload.Length);
-            dataStream.Close();
+            using (var dataStream = request.GetRequestStream())
+                dataStream.Write(payload, 0, payload.Length);
         }
         else
         {
-            Debug.LogWarning(string.Format("ERROR: Byte arrry was empty or null"));
+            Debug.LogWarning("ERROR: Byte arrry was empty or null");
             return;
         }
 
-        Debug.Log("Starting HTTP PUT: " + asset.FileName);
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            Debug.Log("HTTP PUT Successful:" + asset.FileName);
-        }
-        else
-        {
+        var response = (HttpWebResponse)request.GetResponse();
+        if (response.StatusCode != HttpStatusCode.OK)
             Debug.LogWarning(string.Format("ERROR: Asset:{0} -- Code:[{1}] -- Msg:{2}", asset.FileName, response.StatusCode, response.StatusDescription));
-        }
     }
 
     #endregion
@@ -128,18 +117,13 @@ public class UploadToPlayFabContentService : MonoBehaviour
         StartCoroutine(GetDownloadEndpoints(assets, callback));
     }
 
-
     public IEnumerator GetDownloadEndpoints(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
     {
         float stTime = Time.time;
         float timeOut = 30;
 
         foreach (var asset in assets)
-        {
-            //StartCoroutine(DownloadAndUnpackAsset(asset));
-            Debug.Log("Requesting url for GET: " + asset.FileName);
             GetContentDownloadURL(asset);
-        }
 
         while (DoAllAssetsHaveDownloadEndpoints(assets) == false)
         {
@@ -152,19 +136,15 @@ public class UploadToPlayFabContentService : MonoBehaviour
             yield return 0;
         }
 
-        Debug.Log("--- DownloadEndpoint Complete ---");
-        StartCoroutine(GetAssetPackages(this.assets, callback));
-        yield break;
+        StartCoroutine(GetAssetPackages(assets, callback));
     }
-
-
 
     /// <summary>
     /// Requests a remote endpoint for downloads from the PlaFab service.
     /// </summary>
     void GetContentDownloadURL(AssetBundleHelperObject asset)
     {
-        GetContentDownloadUrlRequest request = new GetContentDownloadUrlRequest();
+        var request = new GetContentDownloadUrlRequest();
 
         if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.Android)
         {
@@ -178,19 +158,19 @@ public class UploadToPlayFabContentService : MonoBehaviour
         {
             request.Key = asset.ContentKey;
         }
-        //request.ThruCDN = this.useCDN;
+        //request.ThruCDN = useCDN;
         //request.ThruCDN = false;
 
-        PlayFabClientAPI.GetContentDownloadUrl(request, (GetContentDownloadUrlResult result) =>
-                                               {
-                                                   asset.GetUrl = result.URL;
-                                               }, OnPlayFabError);
+        PlayFabClientAPI.GetContentDownloadUrl(request, result =>
+        {
+            asset.GetUrl = result.URL;
+        }, OnPlayFabError);
     }
 
     public IEnumerator GetAssetPackages(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
     {
-        float stTime = Time.time;
-        float timeOut = 30;
+        var stTime = Time.time;
+        var timeOut = 30.0f;
 
         foreach (var asset in assets)
         {
@@ -201,14 +181,9 @@ public class UploadToPlayFabContentService : MonoBehaviour
         {
             if (Time.time > stTime + timeOut)
             {
-                //Debug.Log ("Error: TimeOut");
                 PF_Bridge.RaiseCallbackError("CDN Timeout: Could not obtain AssetBundles", PlayFabAPIMethods.GetCDNConent, MessageDisplayStyle.error);
-
                 if (callback != null)
-                {
                     callback(false);
-                }
-
                 yield break;
             }
 
@@ -216,27 +191,17 @@ public class UploadToPlayFabContentService : MonoBehaviour
         }
 
         foreach (var asset in assets)
-        {
             unpackedAssets.Add(asset.FileName, asset.Unpacked);
-        }
 
         if (callback != null)
-        {
             callback(true);
-        }
         Debug.Log("--- AllComplete ---");
-        yield break;
     }
-
-
-
 
     public IEnumerator DownloadAndUnpackAsset(AssetBundleHelperObject asset)
     {
-        Debug.Log(Caching.IsVersionCached(asset.GetUrl, asset.Version));
-
+        // Caching.IsVersionCached(asset.GetUrl, asset.Version)
         // Start a download of the given URL
-        Debug.Log("HTTP GET:" + asset.ContentKey);
         var www = WWW.LoadFromCacheOrDownload(asset.GetUrl, asset.Version);
 
         // wait until the download is done
@@ -248,63 +213,46 @@ public class UploadToPlayFabContentService : MonoBehaviour
 
         if (string.IsNullOrEmpty(www.error))
         {
-
             asset.Error = "";
             asset.Unpacked.ContentKey = asset.ContentKey;
             asset.Unpacked.PromoId = asset.FileName;
 
             asset.Bundle = www.assetBundle;
-
-            string[] names = asset.Bundle.GetAllAssetNames();
-            //Debug.Log(names.ToString());
-
-            foreach (var name in names)
+            var assetNames = asset.Bundle.GetAllAssetNames();
+            foreach (var assetName in assetNames)
             {
-                string bannerURI = string.Empty;
-                string splashURI = string.Empty;
+                var bannerUri = string.Empty;
+                var splashUri = string.Empty;
 
-                Debug.Log("Unpacking:" + name);
-                if (name.Contains("banner.png") || name.Contains("Banner.png") || name.Contains("banner.jpg") || name.Contains("banner.jpg"))
-                {
-                    bannerURI = name;
-                }
-                else if (name.Contains("splash.png") || name.Contains("Splash.png") || name.Contains("splash.jpg") || name.Contains("Splash.jpg"))
-                {
-                    splashURI = name;
-                }
+                if (assetName.Contains("banner.png") || assetName.Contains("Banner.png") || assetName.Contains("banner.jpg") || assetName.Contains("banner.jpg"))
+                    bannerUri = assetName;
+                else if (assetName.Contains("splash.png") || assetName.Contains("Splash.png") || assetName.Contains("splash.jpg") || assetName.Contains("Splash.jpg"))
+                    splashUri = assetName;
 
-                if (string.IsNullOrEmpty(bannerURI) == false)
+                if (string.IsNullOrEmpty(bannerUri) == false)
                 {
-                    Texture2D banner = asset.Bundle.LoadAsset<Texture2D>(bannerURI);
+                    var banner = asset.Bundle.LoadAsset<Texture2D>(bannerUri);
                     asset.Unpacked.Banner = banner;
                 }
-                else if (string.IsNullOrEmpty(splashURI) == false)
+                else if (string.IsNullOrEmpty(splashUri) == false)
                 {
-                    Texture2D splash = asset.Bundle.LoadAsset<Texture2D>(splashURI);
+                    var splash = asset.Bundle.LoadAsset<Texture2D>(splashUri);
                     asset.Unpacked.Splash = splash;
                 }
                 else
                 {
-                    asset.Error += string.Format("[Err: Unplacking: {0} -- {1} ]", asset.FileName, name);
+                    asset.Error += string.Format("[Err: Unplacking: {0} -- {1} ]", asset.FileName, assetName);
                 }
             }
 
             asset.Bundle.Unload(false);
             asset.IsUnpacked = true;
-            //this.isImageDownloaded = true;
             yield break;
         }
-        else
-        {
-            asset.Error = www.error;
-            Debug.Log("HTTP ERROR:" + asset.ContentKey);
-        }
 
-        yield break;
+        asset.Error = www.error;
+        Debug.Log("HTTP ERROR:" + asset.ContentKey);
     }
-
-
-
     #endregion
 
     #region Helper_Methods
@@ -436,7 +384,6 @@ public class AssetBundleHelperObject
     public bool IsUnpacked;
     public bool IsFlagedForUpload;
     public UB_UnpackedAssetBundle Unpacked;
-
 
     //public enum MimeTypes { application/x-gzip, application/octet-stream}
     public enum BundleTypes { StandAlone, iOS, Android }

@@ -1,5 +1,7 @@
 using PlayFab.ClientModels;
+using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,78 +15,34 @@ public class StoreDisplayItem : MonoBehaviour
     public Image ItemCurrencyIcon;
     public Text ItemDesc;
     public Text ItemPrice;
+    public Text SlashPrice;
+    public Text Slash;
     public List<Sprite> CurrencyIcons;
 
     public FloatingStoreController controller;
+
     public CatalogItem catalogItem;
 
     public void Init()
     {
-        this.btn.onClick.AddListener(() =>
-       {
-           this.controller.ItemClicked(this);
-           this.bg.color = Color.green;
-           this.image.color = new Color(255, 255, 255, 255);
-       });
-
+        btn.onClick.AddListener(() =>
+        {
+            controller.ItemClicked(this);
+            bg.color = Color.green;
+            image.color = new Color(255, 255, 255, 255);
+        });
     }
 
-
-    public void SetButton(Sprite icon, CatalogItem cItem)
+    public void SetButton(Sprite icon, StoreItem sItem)
     {
+        catalogItem = PF_GameData.GetCatalogItemById(sItem.ItemId);
+        var displayName = catalogItem != null ? catalogItem.DisplayName : "Unknown item";
+
         ActivateButton();
-        this.image.overrideSprite = icon;
+        image.overrideSprite = icon;
 
-        this.ItemDesc.text = cItem.DisplayName;
-        string currencyKey = "RM";
-        string currencyFormat = "{0:C2}";
-        ItemCurrencyIcon.sprite = CurrencyIcons[0];
-        //For now disable uses:
-        Savings.gameObject.SetActive(false);
-
-        if (cItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GEM_CURRENCY))
-        {
-            currencyKey = GlobalStrings.GEM_CURRENCY;
-            currencyFormat = "{0}";
-            ItemCurrencyIcon.sprite = CurrencyIcons[1];
-        }
-        else if (cItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GOLD_CURRENCY))
-        {
-            currencyKey = GlobalStrings.GOLD_CURRENCY;
-            currencyFormat = "{0}";
-            ItemCurrencyIcon.sprite = CurrencyIcons[2];
-        }
-
-        // check prices to see if this is a better deal than MSRP
-        this.Savings.gameObject.SetActive(false);
-        CatalogItem msrp = PF_GameData.GetCatalogItemById(cItem.ItemId);
-        uint msrpPrice;
-        if (msrp != null && msrp.VirtualCurrencyPrices != null && msrp.VirtualCurrencyPrices.TryGetValue(currencyKey, out msrpPrice))
-        {
-            // check prices to see if this is a better deal than MSRP
-            uint salePrice;
-            cItem.VirtualCurrencyPrices.TryGetValue(currencyKey, out salePrice);
-
-            if (salePrice < msrpPrice)
-            {
-                // VC only, not adjusting RM prices yet.
-                float percent = (((float)msrpPrice - (float)salePrice) / (float)msrpPrice);
-                this.SavingsText.text = string.Format("Save\n{0}%", Mathf.RoundToInt(percent * 100f));
-                this.Savings.gameObject.SetActive(true);
-            }
-        }
-
-        string price = string.Empty;
-        if (currencyKey == "RM" && cItem.VirtualCurrencyPrices.ContainsKey(currencyKey))
-        {
-            uint pennies = cItem.VirtualCurrencyPrices[currencyKey];
-            price = string.Format(currencyFormat, (float)pennies / 100f);
-        }
-        else if (cItem.VirtualCurrencyPrices.ContainsKey(currencyKey))
-        {
-            price = string.Format(currencyFormat, cItem.VirtualCurrencyPrices[currencyKey]);
-        }
-        this.ItemPrice.text = price;
+        gameObject.name = displayName;
+        ItemDesc.text = displayName;
 
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(() =>
@@ -93,38 +51,95 @@ public class StoreDisplayItem : MonoBehaviour
             controller.InitiatePurchase();
         });
 
-        this.catalogItem = cItem;
+        uint salePrice, basePrice; string currencyKey;
+        GetPrice(sItem, catalogItem, out salePrice, out basePrice, out currencyKey);
+        SetIcon(currencyKey);
+        SetPrice(salePrice, basePrice, currencyKey);
+    }
+
+    private void GetPrice(StoreItem sItem, CatalogItem cItem, out uint salePrice, out uint basePrice, out string currencyKey)
+    {
+        currencyKey = "RM";
+        if (sItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GEM_CURRENCY))
+            currencyKey = GlobalStrings.GEM_CURRENCY;
+        else if (sItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GOLD_CURRENCY))
+            currencyKey = GlobalStrings.GOLD_CURRENCY;
+
+        uint temp;
+        salePrice = basePrice = 0;
+        if (sItem.VirtualCurrencyPrices.TryGetValue(currencyKey, out temp))
+            salePrice = temp;
+        if (cItem != null && cItem.VirtualCurrencyPrices != null
+          && cItem.VirtualCurrencyPrices.TryGetValue(currencyKey, out temp))
+            basePrice = temp;
+    }
+
+    private void SetIcon(string currencyKey)
+    {
+        switch (currencyKey)
+        {
+            case "RM":
+                ItemCurrencyIcon.sprite = CurrencyIcons[0]; break;
+            case GlobalStrings.GEM_CURRENCY:
+                ItemCurrencyIcon.sprite = CurrencyIcons[1]; break;
+            case GlobalStrings.GOLD_CURRENCY:
+                ItemCurrencyIcon.sprite = CurrencyIcons[2]; break;
+        }
+    }
+
+    private void SetPrice(uint salePrice, uint basePrice, string currencyKey)
+    {
+        var onSale = salePrice < basePrice;
+        var percent = basePrice != 0 ? (basePrice - salePrice) / (float)basePrice : 0.0f;
+        SavingsText.text = !onSale ? "" : string.Format("Save\n{0}%", Mathf.RoundToInt(percent * 100f));
+
+        Savings.gameObject.SetActive(onSale);
+
+        ItemPrice.text = currencyKey == "RM"
+            ? string.Format("{0:C2}", salePrice / 100.0f) // Price in cents
+            : salePrice.ToString("N0").Trim('.');
+        SlashPrice.text = currencyKey == "RM"
+            ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
+            : basePrice.ToString("N0").Trim('.');
+        Slash.text = Slashes(SlashPrice.text.Length + 1);
+    }
+
+    [ThreadStatic]
+    private static StringBuilder _sb;
+    private string Slashes(int num)
+    {
+        if (_sb == null)
+            _sb = new StringBuilder();
+        _sb.Length = 0;
+        for (var i = 0; i < num; i++)
+            _sb.Append("-");
+        return _sb.ToString();
     }
 
     public void Deselect()
     {
-        this.bg.color = Color.white;
-        this.image.color = new Color(255, 255, 255, 190);
-        this.SavingsText.text = string.Empty;
-        this.ItemDesc.text = string.Empty;
-        this.ItemPrice.text = string.Empty;
+        bg.color = Color.white;
+        image.color = new Color(255, 255, 255, 190);
+        SavingsText.text = string.Empty;
+        ItemDesc.text = string.Empty;
+        ItemPrice.text = string.Empty;
     }
-
 
     public void ClearButton()
     {
-        this.image.overrideSprite = null;
-        this.image.color = Color.clear;
-        this.catalogItem = null;
-        this.btn.interactable = false;
-        this.bg.color = Color.white;
-        this.gameObject.SetActive(false);
+        image.overrideSprite = null;
+        image.color = Color.clear;
+        btn.interactable = false;
+        bg.color = Color.white;
+        gameObject.SetActive(false);
     }
 
     public void ActivateButton()
     {
-        this.gameObject.SetActive(true);
-        this.image.color = new Color(255, 255, 255, 190);
-        this.image.overrideSprite = null;
-        this.image.color = Color.white;
-        this.catalogItem = null;
-        this.btn.interactable = true;
-
+        gameObject.SetActive(true);
+        image.color = new Color(255, 255, 255, 190);
+        image.overrideSprite = null;
+        image.color = Color.white;
+        btn.interactable = true;
     }
-
 }

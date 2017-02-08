@@ -118,14 +118,14 @@ public class ItemViewerController : MonoBehaviour
                     foreach (var award in selectedItem.Bundle.BundledItems)
                     {
                         string awardIcon;
-                        var catItem = PF_GameData.catalogItems.Find((i) => { return i.ItemId == award; });
-                        var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catItem.CustomData);
+                        var catalogItem = PF_GameData.GetCatalogItemById(award);
+                        var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
                         kvps.TryGetValue("icon", out awardIcon);
 
                         items.Add(new ContainerResultItem()
                         {
                             displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon),
-                            displayName = catItem.DisplayName
+                            displayName = catalogItem.DisplayName
                         });
                     }
                 }
@@ -184,22 +184,22 @@ public class ItemViewerController : MonoBehaviour
         pfItems.Clear();
         openedBoxes.Clear();
 
-        if (PF_GameData.catalogItems != null && PF_GameData.catalogItems.Count > 0)
+        if (PF_GameData.catalogItems == null || PF_GameData.catalogItems.Count == 0)
+            return;
+
+        foreach (var item in items)
         {
-            foreach (var item in items)
-            {
-                var catalogRef = PF_GameData.catalogItems.Find((i) => { return i.ItemId == item; });
-                if (catalogRef != null)
-                    pfItems.Add(catalogRef);
-            }
-
-            PrevItemButton.interactable = pfItems.Count != 1;
-
-            //select the first in the list
-            SetSelectedItem(pfItems[0]);
-            selectedIndex = 0;
-            gameObject.SetActive(true);
+            var catalogItem = PF_GameData.GetCatalogItemById(item);
+            if (catalogItem != null)
+                pfItems.Add(catalogItem);
         }
+
+        PrevItemButton.interactable = pfItems.Count != 1;
+
+        //select the first in the list
+        SetSelectedItem(pfItems[0]);
+        selectedIndex = 0;
+        gameObject.SetActive(true);
     }
 
     public void CloseViewer()
@@ -250,10 +250,10 @@ public class ItemViewerController : MonoBehaviour
         foreach (var award in result.GrantedItems)
         {
             string awardIcon;
-            var catItem = PF_GameData.catalogItems.Find((i) => { return i.ItemId == award.ItemId; });
-            if (catItem != null)
+            var catalogItem = PF_GameData.GetCatalogItemById(award.ItemId);
+            if (catalogItem != null)
             {
-                Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catItem.CustomData);
+                Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
                 kvps.TryGetValue("icon", out awardIcon);
 
                 items.Add(new ContainerResultItem()

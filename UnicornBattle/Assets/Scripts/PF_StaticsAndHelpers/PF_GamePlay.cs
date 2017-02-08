@@ -1,3 +1,4 @@
+using System;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.Json;
@@ -161,7 +162,7 @@ public static class PF_GamePlay
     /// </summary>
     /// <param name="storeName">Store name.</param>
     /// <param name="callback">Callback.</param>
-    public static void RetrieveStoreItems(string storeName, UnityAction<List<StoreItem>> callback = null)
+    public static void RetrieveStoreItems(string storeName, Action<GetStoreItemsResult> callback = null)
     {
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetStoreItems);
         var request = new GetStoreItemsRequest
@@ -173,10 +174,7 @@ public static class PF_GamePlay
         {
             OnRetrieveStoreItemsSuccess(result);
             if (callback != null)
-            {
-                callback(result.Store);
-            }
-
+                callback(result);
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
@@ -188,7 +186,6 @@ public static class PF_GamePlay
     {
         PF_Bridge.RaiseCallbackSuccess("Store Retrieved", PlayFabAPIMethods.GetStoreItems, MessageDisplayStyle.none);
     }
-
 
     /// <summary>
     /// Makes the RM purchase.
