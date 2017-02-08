@@ -1,51 +1,48 @@
-﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
-public class InventoryCurrencyBarController : MonoBehaviour {
-	
-	public List<CurrencyDisplayItem> items = new List<CurrencyDisplayItem>();
-	public Transform CurrencyDisplayItemPrefab;
-	public Transform DisplayContainer;
-	public FloatingInventoryController controller;
+public class InventoryCurrencyBarController : MonoBehaviour
+{
+    public List<CurrencyDisplayItem> items = new List<CurrencyDisplayItem>();
+    public Transform CurrencyDisplayItemPrefab;
+    public Transform DisplayContainer;
+    public FloatingInventoryController controller;
 
-	public void Init(Dictionary<string, int> cd)
-	{
-		for(int i = 0; i < this.DisplayContainer.transform.childCount; i++)
-		{
-			Transform go = this.DisplayContainer.transform.GetChild(i);
-			Destroy(go.gameObject);
-		}
-		
-		this.items.Clear ();
-		
-		if(cd != null && cd.Count > 0)
-		{
-			for(int z = 0; z < controller.currenciesInUse.Count; z++)
-			{
-				string key = controller.currenciesInUse[z];
-				
-				// no need to show RM balances
-				
-				Transform go = Instantiate(this.CurrencyDisplayItemPrefab);
-				go.SetParent(DisplayContainer, false);
-				CurrencyDisplayItem comp = go.GetComponent<CurrencyDisplayItem>();
-				comp.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(key);
-				if(key != "RM")
-				{
-					int playerBalance;
-					cd.TryGetValue(key, out playerBalance);
-					comp.value.text = string.Format("{0:n0}", playerBalance);
-					
-				}
-				else
-				{
-					comp.value.text = string.Format("{0:C2}", "0");
-				}
-				this.items.Add(comp);
-			}
-		}
-	}
-	
+    public void Init(Dictionary<string, int> vcBalances)
+    {
+        for (var i = 0; i < DisplayContainer.transform.childCount; i++)
+        {
+            var go = DisplayContainer.transform.GetChild(i);
+            Destroy(go.gameObject);
+        }
+
+        items.Clear();
+
+        if (vcBalances == null || vcBalances.Count == 0)
+            return;
+
+        for (var z = 0; z < controller.currenciesInUse.Count; z++)
+        {
+            var key = controller.currenciesInUse[z];
+            if (key == GlobalStrings.REAL_MONEY_CURRENCY)
+                continue;
+            DisplayVc(z, vcBalances);
+        }
+    }
+
+    private void DisplayVc(int z, Dictionary<string, int> vcBalances)
+    {
+        var key = controller.currenciesInUse[z];
+        if (key == GlobalStrings.REAL_MONEY_CURRENCY)
+            return;
+
+        var go = Instantiate(CurrencyDisplayItemPrefab);
+        go.SetParent(DisplayContainer, false);
+        var comp = go.GetComponent<CurrencyDisplayItem>();
+        comp.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(key);
+        int playerBalance;
+        vcBalances.TryGetValue(key, out playerBalance);
+        comp.value.text = string.Format("{0:n0}", playerBalance);
+        items.Add(comp);
+    }
 }

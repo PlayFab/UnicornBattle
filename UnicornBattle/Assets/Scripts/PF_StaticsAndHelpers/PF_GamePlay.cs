@@ -215,10 +215,10 @@ public static class PF_GamePlay
     /// <param name="storeID">Store I.</param>
     public static void StartBuyStoreItem(CatalogItem item, string storeID)
     {
-        if (item.VirtualCurrencyPrices.ContainsKey("RM"))
+        if (item.VirtualCurrencyPrices.ContainsKey(GlobalStrings.REAL_MONEY_CURRENCY))
         {
             PF_Bridge.IAB_CurrencyCode = "US";
-            PF_Bridge.IAB_Price = (int)item.VirtualCurrencyPrices["RM"];
+            PF_Bridge.IAB_Price = (int)item.VirtualCurrencyPrices[GlobalStrings.REAL_MONEY_CURRENCY];
 
             MakeRmPurchase(item.ItemId);
             return;
@@ -227,15 +227,14 @@ public static class PF_GamePlay
         var vcKvp = item.VirtualCurrencyPrices.First();
 
         // normal purchase item flow
-        var request = new PurchaseItemRequest();
-        request.ItemId = item.ItemId;
-        request.VirtualCurrency = vcKvp.Key;
-        request.Price = (int)vcKvp.Value;
-        request.StoreId = storeID;
-        if (PF_PlayerData.activeCharacter != null)
+        var request = new PurchaseItemRequest
         {
-            request.CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
-        }
+            ItemId = item.ItemId,
+            VirtualCurrency = vcKvp.Key,
+            Price = (int)vcKvp.Value,
+            StoreId = storeID,
+            CharacterId = PF_PlayerData.activeCharacter == null ? null : PF_PlayerData.activeCharacter.characterDetails.CharacterId
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.MakePurchase);
         PlayFabClientAPI.PurchaseItem(request, OnBuyStoreItemSuccess, PF_Bridge.PlayFabErrorCallback);
@@ -258,19 +257,16 @@ public static class PF_GamePlay
     /// <param name="id">Identifier.</param>
     public static void ConsumeItem(string id)
     {
-        var request = new ConsumeItemRequest();
-        request.ConsumeCount = 1;
-        request.ItemInstanceId = id;
-        if (PF_PlayerData.activeCharacter != null)
+        var request = new ConsumeItemRequest
         {
-            request.CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
-        }
-
+            ConsumeCount = 1,
+            ItemInstanceId = id,
+            CharacterId = PF_PlayerData.activeCharacter == null ? null : PF_PlayerData.activeCharacter.characterDetails.CharacterId
+        };
 
         //DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericCloudScript);
-        PlayFabClientAPI.ConsumeItem(request, (ConsumeItemResult result) =>
+        PlayFabClientAPI.ConsumeItem(request, result =>
         {
-
             PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.ConsumeItemUse, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }
@@ -281,10 +277,9 @@ public static class PF_GamePlay
         var request = new RedeemCouponRequest();
         request.CouponCode = code;
 
-        PlayFabClientAPI.RedeemCoupon(request, (RedeemCouponResult result) =>
+        PlayFabClientAPI.RedeemCoupon(request, result =>
         {
             PF_Bridge.RaiseCallbackSuccess("Coupon (" + request.CouponCode + ") Redeemd: Granted " + result.GrantedItems.Count + " items.", PlayFabAPIMethods.RedeemCoupon, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }
 }
-

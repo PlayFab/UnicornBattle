@@ -72,6 +72,7 @@ public static class GlobalStrings
     public const string GOLD_CURRENCY = "AU";
     public const string GEM_CURRENCY = "GM";
     public const string HEART_CURRENCY = "HT";
+    public const string REAL_MONEY_CURRENCY = "RM";
 
     // Events
     public const string QUEST_START_EVENT = "Starting Quest";

@@ -60,7 +60,7 @@ public class StoreDisplayItem : MonoBehaviour
 
     private void GetPrice(StoreItem sItem, CatalogItem cItem, out uint salePrice, out uint basePrice, out string currencyKey)
     {
-        currencyKey = "RM";
+        currencyKey = GlobalStrings.REAL_MONEY_CURRENCY;
         if (sItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GEM_CURRENCY))
             currencyKey = GlobalStrings.GEM_CURRENCY;
         else if (sItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GOLD_CURRENCY))
@@ -79,7 +79,7 @@ public class StoreDisplayItem : MonoBehaviour
     {
         switch (currencyKey)
         {
-            case "RM":
+            case GlobalStrings.REAL_MONEY_CURRENCY:
                 ItemCurrencyIcon.sprite = CurrencyIcons[0]; break;
             case GlobalStrings.GEM_CURRENCY:
                 ItemCurrencyIcon.sprite = CurrencyIcons[1]; break;
@@ -99,17 +99,17 @@ public class StoreDisplayItem : MonoBehaviour
 
         if (onSale)
         {
-            OldPrice.text = currencyKey == "RM"
+            OldPrice.text = currencyKey == GlobalStrings.REAL_MONEY_CURRENCY
                 ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
                 : basePrice.ToString("N0").Trim('.');
-            NewPrice.text = currencyKey == "RM"
+            NewPrice.text = currencyKey == GlobalStrings.REAL_MONEY_CURRENCY
                 ? string.Format("{0:C2}", salePrice / 100.0f) // Price in cents
                 : salePrice.ToString("N0").Trim('.');
             Slash.text = Slashes((int)Math.Ceiling((OldPrice.text.Length + 1) * 1.1));
         }
         else
         {
-            ItemPrice.text = currencyKey == "RM"
+            ItemPrice.text = currencyKey == GlobalStrings.REAL_MONEY_CURRENCY
                     ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
                     : basePrice.ToString("N0").Trim('.');
         }
