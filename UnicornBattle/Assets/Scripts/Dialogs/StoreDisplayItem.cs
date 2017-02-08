@@ -15,7 +15,8 @@ public class StoreDisplayItem : MonoBehaviour
     public Image ItemCurrencyIcon;
     public Text ItemDesc;
     public Text ItemPrice;
-    public Text SlashPrice;
+    public Text OldPrice;
+    public Text NewPrice;
     public Text Slash;
     public List<Sprite> CurrencyIcons;
 
@@ -94,14 +95,24 @@ public class StoreDisplayItem : MonoBehaviour
         SavingsText.text = !onSale ? "" : string.Format("Save\n{0}%", Mathf.RoundToInt(percent * 100f));
 
         Savings.gameObject.SetActive(onSale);
+        ItemPrice.gameObject.SetActive(!onSale);
 
-        ItemPrice.text = currencyKey == "RM"
-            ? string.Format("{0:C2}", salePrice / 100.0f) // Price in cents
-            : salePrice.ToString("N0").Trim('.');
-        SlashPrice.text = currencyKey == "RM"
-            ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
-            : basePrice.ToString("N0").Trim('.');
-        Slash.text = Slashes(SlashPrice.text.Length + 1);
+        if (onSale)
+        {
+            OldPrice.text = currencyKey == "RM"
+                ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
+                : basePrice.ToString("N0").Trim('.');
+            NewPrice.text = currencyKey == "RM"
+                ? string.Format("{0:C2}", salePrice / 100.0f) // Price in cents
+                : salePrice.ToString("N0").Trim('.');
+            Slash.text = Slashes((int)Math.Ceiling((OldPrice.text.Length + 1) * 1.1));
+        }
+        else
+        {
+            ItemPrice.text = currencyKey == "RM"
+                    ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
+                    : basePrice.ToString("N0").Trim('.');
+        }
     }
 
     [ThreadStatic]

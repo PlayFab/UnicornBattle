@@ -2,7 +2,6 @@ using PlayFab.ClientModels;
 using PlayFab.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +17,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
     public StoreCurrencyBarController Currencies;
 
     public List<string> currenciesInUse;
-    public List<StoreDisplayItem> inventory = new List<StoreDisplayItem>();
+    private readonly List<StoreDisplayItem> _inventory = new List<StoreDisplayItem>();
 
     private string activeStoreId;
     private int currentPage = 1;
@@ -29,6 +28,10 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
     // close also needs to fire a callback to the calling area of the code
     public void InitiateStore(GetStoreItemsResult storeResult)
     {
+        if (_inventory.Count == 0)
+            foreach (var child in gameObject.GetComponentsInChildren<StoreDisplayItem>())
+                _inventory.Add(child);
+
         activeStoreId = storeResult.StoreId;
         Dictionary<string, object> eventData = new Dictionary<string, object> { { "store_name", activeStoreId } };
         PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_StoreVisit, eventData);
@@ -38,7 +41,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
         currentPage = 1;
         pageCount = Mathf.CeilToInt((float)storeResult.Store.Count / (float)itemsPerPage);
         pageDisplay.text = string.Format("{0} / {1}", currentPage, pageCount);
-        foreach (var item in inventory)
+        foreach (var item in _inventory)
             item.ClearButton();
 
         itemsToDisplay = storeResult.Store;
@@ -50,8 +53,8 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
         {
             Sprite icon;
             GetItemIcon(itemsToDisplay[z], out icon);
-            inventory[z].Init();
-            inventory[z].SetButton(icon, itemsToDisplay[z]);
+            _inventory[z].Init();
+            _inventory[z].SetButton(icon, itemsToDisplay[z]);
 
             // keep track of what currencies are being used in the store.				
             var vcPrices = itemsToDisplay[z].VirtualCurrencyPrices.Keys;
@@ -100,7 +103,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 
     public void DeselectButtons()
     {
-        foreach (var item in inventory)
+        foreach (var item in _inventory)
             if (item.catalogItem != null)
                 item.Deselect();
     }
@@ -134,12 +137,12 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
             {
                 Sprite icon;
                 GetItemIcon(itemsToDisplay[z], out icon);
-                inventory[uiIndex].Init();
-                inventory[uiIndex].SetButton(icon, itemsToDisplay[z]);
+                _inventory[uiIndex].Init();
+                _inventory[uiIndex].SetButton(icon, itemsToDisplay[z]);
             }
             else
             {
-                inventory[uiIndex].ClearButton();
+                _inventory[uiIndex].ClearButton();
             }
         }
 
@@ -162,8 +165,8 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
         {
             Sprite icon;
             GetItemIcon(itemsToDisplay[z], out icon);
-            inventory[uiIndex].Init();
-            inventory[uiIndex].SetButton(icon, itemsToDisplay[z]);
+            _inventory[uiIndex].Init();
+            _inventory[uiIndex].SetButton(icon, itemsToDisplay[z]);
         }
 
         nextPage.interactable = true;
