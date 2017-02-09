@@ -286,7 +286,6 @@ public static class PF_GameData
                 callback(result);
             PF_Bridge.RaiseCallbackSuccess("Container Unlocked", PlayFabAPIMethods.UnlockContainerItem, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
-
     }
 
     public static CatalogItem GetCatalogItemById(string id)
@@ -296,6 +295,28 @@ public static class PF_GameData
         CatalogItem output;
         catalogItems.TryGetValue(id, out output);
         return output;
+    }
+
+    public static string GetIconByItemById(string id, string iconDefault = "Default")
+    {
+        if (string.IsNullOrEmpty(id))
+            return null;
+        CatalogItem catalogItem;
+        if (!catalogItems.TryGetValue(id, out catalogItem))
+            return null;
+        var iconName = iconDefault;
+        try
+        {
+            string temp;
+            var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
+            if (kvps.TryGetValue("icon", out temp))
+                iconName = temp;
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+        return iconName;
     }
 
     public static void GetPlayerLeaderboard(string stat, UnityAction callback = null)

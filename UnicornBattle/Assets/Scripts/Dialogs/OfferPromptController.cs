@@ -14,15 +14,11 @@ public class OfferPromptController : MonoBehaviour
     public Text OfferName;
     public Text OfferDesc;
     public Button Redeem;
-
     public Transform OfferItem;
     public Transform OfferStore;
-
     public Button VisitStore;
-
     public Image ItemIcon;
     public Text ItemName;
-
     private UB_OfferData selectedDetails = null;
 
     private CatalogItem activeItem;
@@ -36,16 +32,15 @@ public class OfferPromptController : MonoBehaviour
         }
         else
         {
-            this.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
     }
-
 
     // move to PF_PlayerData?
     public void ShowItemOffer(ItemInstance item)
     {
-        this.activeItem = PF_GameData.offersCataogItems.Find((i) => { return i.ItemId == item.ItemId; });
-        this.activeInstance = item;
+        activeItem = PF_GameData.offersCataogItems.Find((i) => { return i.ItemId == item.ItemId; });
+        activeInstance = item;
 
         if (activeItem != null)
         {
@@ -60,35 +55,30 @@ public class OfferPromptController : MonoBehaviour
                 }
             }
 
-            this.OfferName.text = activeItem.DisplayName;
-            this.OfferDesc.text = activeItem.Description;
+            OfferName.text = activeItem.DisplayName;
+            OfferDesc.text = activeItem.Description;
 
             var customData = JsonWrapper.DeserializeObject<Dictionary<string, string>>(activeItem.CustomData);
 
-            var itemAwarded = "Random DropTable";
-            customData.TryGetValue("itemAwarded", out itemAwarded);
-
+            string itemAwarded;
             var awardIcon = "Default";
+            customData.TryGetValue("itemAwarded", out itemAwarded);
             if (customData.ContainsKey("itemAwarded"))
             {
                 var awardItem = PF_GameData.GetCatalogItemById(itemAwarded);
-                var awardCustomData = JsonWrapper.DeserializeObject<Dictionary<string, string>>(awardItem.CustomData);
-
-                awardCustomData.TryGetValue("icon", out awardIcon);
-                this.ItemName.text = awardItem.DisplayName;
+                awardIcon = PF_GameData.GetIconByItemById(itemAwarded);
+                ItemName.text = awardItem.DisplayName;
             }
             else
             {
-                this.ItemName.text = "Offer reward not found.";
+                ItemName.text = "Offer reward not found.";
             }
-            this.ItemIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(awardIcon);
-            this.OfferItem.gameObject.SetActive(true);
+            ItemIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(awardIcon);
+            OfferItem.gameObject.SetActive(true);
 
-            this.OfferStore.gameObject.SetActive(false);
+            OfferStore.gameObject.SetActive(false);
         }
     }
-
-
 
     public void ShowOffer(string guid)
     {
@@ -99,42 +89,38 @@ public class OfferPromptController : MonoBehaviour
         if (details != null)
         {
 
-            this.OfferName.text = details.OfferName;
-            this.OfferDesc.text = details.OfferDescription;
+            OfferName.text = details.OfferName;
+            OfferDesc.text = details.OfferDescription;
 
             if (details.ItemToGrant != null)
             {
                 var grantItem = PF_GameData.GetCatalogItemById(details.ItemToGrant);
                 if (grantItem != null)
                 {
-                    this.ItemName.text = grantItem.DisplayName;
-
-                    var iconString = string.Empty;
-                    var customData = JsonWrapper.DeserializeObject<Dictionary<string, string>>(grantItem.CustomData);
-                    customData.TryGetValue("icon", out iconString);
-
-                    this.ItemIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(iconString);
-                    this.OfferItem.gameObject.SetActive(true);
+                    ItemName.text = grantItem.DisplayName;
+                    var iconString = PF_GameData.GetIconByItemById(grantItem.ItemId);
+                    ItemIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(iconString);
+                    OfferItem.gameObject.SetActive(true);
                 }
                 else
                 {
                     Debug.Log("Grant Item not found in catalog");
-                    this.ItemName.text = GlobalStrings.GRANT_CATALOG_ERR_MSG;
+                    ItemName.text = GlobalStrings.GRANT_CATALOG_ERR_MSG;
                 }
             }
             else
             {
-                this.OfferItem.gameObject.SetActive(false);
+                OfferItem.gameObject.SetActive(false);
             }
 
-            if (details.StoreToUse != null && this.selectedDetails != null)
+            if (details.StoreToUse != null && selectedDetails != null)
             {
-                this.VisitStore.GetComponent<Text>().text = "Visit " + this.selectedDetails.StoreToUse;
-                this.OfferStore.gameObject.SetActive(true);
+                VisitStore.GetComponent<Text>().text = "Visit " + selectedDetails.StoreToUse;
+                OfferStore.gameObject.SetActive(true);
             }
             else
             {
-                this.OfferStore.gameObject.SetActive(false);
+                OfferStore.gameObject.SetActive(false);
             }
         }
         else
@@ -142,7 +128,6 @@ public class OfferPromptController : MonoBehaviour
             Debug.Log("Could not locate a corresponding offer on the server.");
         }
     }
-
 
     /// <summary>
     /// 
@@ -153,14 +138,12 @@ public class OfferPromptController : MonoBehaviour
         UnityAction<string> afterRedeem = (string result) =>
         {
             if (!string.IsNullOrEmpty(result))
-            {
                 DialogCanvasController.RequestItemViewer(new List<string>() { result }, true);
-            }
 
             PF_PlayerData.OfferContainers.RemoveAt(0);
-            this.Init();
+            Init();
         };
 
-        PF_PlayerData.RedeemItemOffer(this.activeItem, this.activeInstance.ItemInstanceId, afterRedeem, wasAlreadyRedemed);
+        PF_PlayerData.RedeemItemOffer(activeItem, activeInstance.ItemInstanceId, afterRedeem, wasAlreadyRedemed);
     }
 }

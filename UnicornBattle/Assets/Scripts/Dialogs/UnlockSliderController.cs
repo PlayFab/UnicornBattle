@@ -1,7 +1,5 @@
 using PlayFab.ClientModels;
-using PlayFab.Json;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -66,26 +64,22 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
 
         if (controller.selectedItem.Container != null)
         {
-            var id = controller.selectedItem.Container.KeyItemId;
-            var keyReference = PF_GameData.GetCatalogItemById(id);
-
+            var keyId = controller.selectedItem.Container.KeyItemId;
+            var keyReference = PF_GameData.GetCatalogItemById(keyId);
+            endIcon.gameObject.SetActive(keyReference != null);
             if (keyReference != null)
             {
-                sliderMessage.text = string.Format("{0} Required", keyReference.DisplayName);
+                var chestQty = PF_PlayerData.GetItemQty(controller.selectedItem.ItemId, controller.UnpackToPlayer);
+                var keyQty = PF_PlayerData.GetItemQty(keyId, controller.UnpackToPlayer);
+                var useColor = (chestQty > 0 && keyQty > 0) ? Color.cyan : Color.red;
 
-                var iconName = "Default";
-                if (!string.Equals(keyReference.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
-                {
-                    Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(keyReference.CustomData);
-                    kvps.TryGetValue("icon", out iconName);
-                }
+                endIcon.color = useColor;
+                sliderMessage.text = string.Format("{0} Required ({1} available)", keyReference.DisplayName, Mathf.Min(chestQty, keyQty));
+                sliderMessage.color = useColor;
 
-                iconName = iconName == GlobalStrings.DEFAULT_ICON || string.IsNullOrEmpty(iconName) ? GlobalStrings.BRONZE_KEY_ICON : iconName;
+                var iconName = PF_GameData.GetIconByItemById(keyReference.ItemId, GlobalStrings.BRONZE_KEY_ICON);
                 var icon = GameController.Instance.iconManager.GetIconById(iconName);
                 handle.overrideSprite = icon;
-
-                //make sure player has key
-                endIcon.color = PF_PlayerData.characterInvByCategory.ContainsKey(keyReference.ItemId) ? Color.green : Color.red;
             }
             else
             {
@@ -102,17 +96,16 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
 
     public void CheckUnlock()
     {
-        var item = controller.selectedItem.ItemId;
+        var chestItemId = controller.selectedItem.ItemId;
 
         if (controller.UnpackToPlayer)
         {
-            PF_GameData.TryOpenContainer(item, null, afterUnlock);
+            PF_GameData.TryOpenContainer(chestItemId, null, afterUnlock);
         }
         else
         {
             var character = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
-            PF_GameData.TryOpenContainer(item, character, afterUnlock);
+            PF_GameData.TryOpenContainer(chestItemId, character, afterUnlock);
         }
     }
-
 }

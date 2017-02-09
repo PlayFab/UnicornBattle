@@ -11,13 +11,8 @@ public class ItemViewerController : MonoBehaviour
     public Text CurrentItemName;
     public Text CurrentItemDesc;
     public Text ItemCount;
-
-    //container items
     public UnlockSliderController slider;
     public Text ContainerItemDesc;
-
-    // WHAT ITEM OBJECT TO USE?
-    //public List<
     public Button CloseButton;
     public Button NextItemButton;
     public Button PrevItemButton;
@@ -34,7 +29,6 @@ public class ItemViewerController : MonoBehaviour
     public Transform itemList;
     public Transform itemPrefab;
     public Transform containerResults;
-
     public Transform ItemMode;
     public Transform ContainerMode;
     public bool UnpackToPlayer = false;
@@ -42,19 +36,16 @@ public class ItemViewerController : MonoBehaviour
     #region standardControls
     public void NextItem()
     {
-        int index = selectedIndex;
+        var index = selectedIndex;
         index++;
 
         if (index + 1 == pfItems.Count)
-        {
             NextItemButton.interactable = false;
-        }
 
         PrevItemButton.interactable = true;
 
         selectedIndex = index;
         SetSelectedItem(pfItems[index]);
-
     }
 
     public void PrevItem()
@@ -82,12 +73,7 @@ public class ItemViewerController : MonoBehaviour
         ItemCount.text = string.Format("{0}/{1}", selectedIndex + 1, pfItems.Count);
         // refresh the UI
 
-        currentIconId = "Default";
-        if (!string.Equals(item.CustomData, null)) //should be !string.IsNullOrEmpty(CI.CustomData)
-        {
-            Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(item.CustomData);
-            kvps.TryGetValue("icon", out currentIconId);
-        }
+        currentIconId = PF_GameData.GetIconByItemById(item.ItemId);
         var icon = GameController.Instance.iconManager.GetIconById(currentIconId);
         CurrentIcon.overrideSprite = icon;
 
@@ -111,17 +97,14 @@ public class ItemViewerController : MonoBehaviour
             // if bundle, we need to show the contents, but not remove it from the list, as it will be unpacked and added automatically
             if (selectedItem.Bundle != null && (selectedItem.Bundle.BundledItems != null || selectedItem.Bundle.BundledResultTables != null || selectedItem.Bundle.BundledVirtualCurrencies != null))
             {
-                List<ContainerResultItem> items = new List<ContainerResultItem>();
+                var items = new List<ContainerResultItem>();
 
                 if (selectedItem.Bundle.BundledItems != null && selectedItem.Bundle.BundledItems.Count > 0)
                 {
                     foreach (var award in selectedItem.Bundle.BundledItems)
                     {
-                        string awardIcon;
                         var catalogItem = PF_GameData.GetCatalogItemById(award);
-                        var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-                        kvps.TryGetValue("icon", out awardIcon);
-
+                        var awardIcon = PF_GameData.GetIconByItemById(award);
                         items.Add(new ContainerResultItem()
                         {
                             displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon),
@@ -134,7 +117,7 @@ public class ItemViewerController : MonoBehaviour
                 {
                     foreach (var award in selectedItem.Bundle.BundledResultTables)
                     {
-                        items.Add(new ContainerResultItem()
+                        items.Add(new ContainerResultItem
                         {
                             displayIcon = GameController.Instance.iconManager.GetIconById("DropTable"),
                             displayName = string.Format("Drop Table: {0}", award)
@@ -146,7 +129,7 @@ public class ItemViewerController : MonoBehaviour
                 {
                     foreach (var award in selectedItem.Bundle.BundledVirtualCurrencies)
                     {
-                        items.Add(new ContainerResultItem()
+                        items.Add(new ContainerResultItem
                         {
                             displayIcon = GameController.Instance.iconManager.GetIconById(award.Key),
                             displayName = string.Format("{1} Award: {0:n0}", award.Value, award.Key)
@@ -157,23 +140,16 @@ public class ItemViewerController : MonoBehaviour
                 if (items.Count > 0)
                 {
                     openedBoxes.Add(selectedIndex, items);
-
                     EnableContainerMode(true);
-
                     // dont fall through the rest of the logic.
                     return;
                 }
             }
 
             if (selectedItem.Container != null && selectedItem.Container.ItemContents == null && selectedItem.Container.ResultTableContents == null && selectedItem.Container.VirtualCurrencyContents == null)
-            {
                 DisableContainerMode();
-            }
             else
-            {
-                Debug.Log("This is a container");
                 EnableContainerMode();
-            }
         }
     }
 
@@ -194,7 +170,8 @@ public class ItemViewerController : MonoBehaviour
                 pfItems.Add(catalogItem);
         }
 
-        PrevItemButton.interactable = pfItems.Count != 1;
+        PrevItemButton.interactable = false;
+        NextItemButton.interactable = pfItems.Count != 1;
 
         //select the first in the list
         SetSelectedItem(pfItems[0]);
@@ -249,75 +226,33 @@ public class ItemViewerController : MonoBehaviour
 
         foreach (var award in result.GrantedItems)
         {
-            string awardIcon;
-            var catalogItem = PF_GameData.GetCatalogItemById(award.ItemId);
-            if (catalogItem != null)
+            var awardIcon = PF_GameData.GetIconByItemById(award.ItemId);
+            items.Add(new ContainerResultItem
             {
-                Dictionary<string, string> kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-                kvps.TryGetValue("icon", out awardIcon);
-
-                items.Add(new ContainerResultItem()
-                {
-                    displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon),
-                    displayName = award.DisplayName
-                });
-            }
+                displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon),
+                displayName = award.DisplayName
+            });
         }
 
         if (result.VirtualCurrency != null)
         {
             foreach (var award in result.VirtualCurrency)
             {
-                var friendlyName = string.Empty;
-                if (award.Key == "AU")
+                string friendlyName;
+                switch (award.Key)
                 {
-                    friendlyName = "Gold";
-                }
-                else if (award.Key == "HT")
-                {
-                    friendlyName = "Lives";
-                }
-                else if (award.Key == "GM")
-                {
-                    friendlyName = "Gems";
+                    case GlobalStrings.GOLD_CURRENCY: friendlyName = "Gold"; break;
+                    case GlobalStrings.HEART_CURRENCY: friendlyName = "Lives"; break;
+                    case GlobalStrings.GEM_CURRENCY: friendlyName = "Gems"; break;
+                    default: friendlyName = ""; break;
                 }
 
-                items.Add(new ContainerResultItem()
+                items.Add(new ContainerResultItem
                 {
                     displayIcon = GameController.Instance.iconManager.GetIconById(award.Key),
-                    displayName = string.Format("   {0} {1}", award.Value, friendlyName)
+                    displayName = award.Value + " " + friendlyName
                 });
             }
-        }
-        else
-        {
-            //TODO find out if this is OK to remove:
-            //            CatalogItem catRef = PF_GameData.catalogItems.Find( (i) => {return i.ItemId == result. selectedItem.ItemId; });
-            //            if(catRef != null && catRef.Container.VirtualCurrencyContents.Count > 0)
-            //            {
-            //                
-            //                foreach(var vc in catRef.Container.VirtualCurrencyContents)
-            //                {
-            //                    string friendlyName = string.Empty;
-            //                    if(vc.Key == "AU")
-            //                    {
-            //                        friendlyName = "Gold";
-            //
-            //                    } else if(vc.Key == "HT")
-            //                    {
-            //                        friendlyName = "Lives";
-            //                    }
-            //                    else if(vc.Key == "GM")
-            //                    {
-            //                        friendlyName = "Gems";
-            //                    }
-            //
-            //                    items.Add(new ContainerResultItem(){ 
-            //                        displayIcon = GameController.Instance.iconManager.GetIconById(vc.Key),
-            //                        displayName = string.Format("   {1} Award: {0}", vc.Value, friendlyName ) 
-            //                    });
-            //                }
-            //            }
         }
 
         CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId + "_Open");
@@ -326,7 +261,6 @@ public class ItemViewerController : MonoBehaviour
 
         DialogCanvasController.RequestInventoryPrompt();
     }
-
 
     void EnableUnlockedItemsView(List<ContainerResultItem> unlockedItems = null)
     {

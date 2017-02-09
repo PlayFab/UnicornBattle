@@ -93,9 +93,6 @@ public class PromotionController : MonoBehaviour
 
     public void OnCheckForPlayFabPlacementSuccess(GetAdPlacementsResult result)
     {
-        Debug.Log("OnCheckForPlayFabPlacementSuccess!");
-        Debug.Log(string.Format("Retrieved {0} placements.", result.AdPlacements.Length));
-
         if ((result.AdPlacements != null && result.AdPlacements.Length > 0) && (result.AdPlacements[0].PlacementViewsRemaining == null || result.AdPlacements[0].PlacementViewsRemaining > 0))
         {
             var adpromo = promos.Find((p) => { return p.linkedAd != null && p.assets.PromoId == result.AdPlacements[0].PlacementId; });
@@ -103,7 +100,6 @@ public class PromotionController : MonoBehaviour
 
             if (adpromo == null)
             {
-                Debug.Log("AdPromo was null... adding: " + result.AdPlacements[0].RewardName);
                 AddAdPromo(result.AdPlacements[0]);
                 //SelectBanner(promos[0], 0);
             }
@@ -117,23 +113,15 @@ public class PromotionController : MonoBehaviour
                 var qtyString = string.Format("{0}", result.AdPlacements[0].PlacementViewsRemaining == null ? "UNLIMITED rewarded ads." : result.AdPlacements[0].PlacementViewsRemaining + " more rewarded ads.");
                 selectedDesc.text = result.AdPlacements[0].RewardDescription + " You may watch " + qtyString;
             }
-
         }
         else
         {
             var adpromo = promos.Find((p) => { return p.linkedAd != null && p.assets.PromoId == result.AdPlacements[0].PlacementId; });
-
             if (adpromo != null)
             {
-                Debug.Log("AdPromo was not null... removing: " + result.AdPlacements[0].PlacementId);
                 promos.Remove(adpromo);
                 SetAdSlotCount(promos.Count);
                 SelectBanner(promos[0], 0);
-                Debug.Log("Promo Count: " + promos.Count);
-            }
-            else
-            {
-                Debug.Log("AdPromo not in rotation.");
             }
         }
     }

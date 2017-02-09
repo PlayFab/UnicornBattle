@@ -239,15 +239,8 @@ public class FloatingInventoryController : MonoBehaviour
         }
 
         this.prevPage.interactable = true;
+        this.nextPage.interactable = pageCount > nextPage;
 
-        if (pageCount > nextPage)
-        {
-            this.nextPage.interactable = true;
-        }
-        else
-        {
-            this.nextPage.interactable = false;
-        }
         this.currentPage++;
     }
 
@@ -278,15 +271,8 @@ public class FloatingInventoryController : MonoBehaviour
         }
 
         this.nextPage.interactable = true;
+        this.prevPage.interactable = prevPage > 1;
 
-        if (prevPage > 1)
-        {
-            this.prevPage.interactable = true;
-        }
-        else
-        {
-            this.prevPage.interactable = false;
-        }
         currentPage--;
     }
 
@@ -303,16 +289,8 @@ public class FloatingInventoryController : MonoBehaviour
 
     public void UnlockContainer()
     {
-        if (this.activeMode == InventoryMode.Character)
-        {
-            DialogCanvasController.RequestItemViewer(new List<string>() { selectedItem.itemData.category.catalogRef.ItemId });
-        }
-        else
-        {
-            DialogCanvasController.RequestItemViewer(new List<string>() { selectedItem.itemData.category.catalogRef.ItemId }, true);
-        }
+        DialogCanvasController.RequestItemViewer(new List<string> { selectedItem.itemData.category.catalogRef.ItemId }, activeMode != InventoryMode.Character);
     }
-
 
     public void RefreshInventory()
     {
@@ -460,7 +438,7 @@ public class FloatingInventoryController : MonoBehaviour
              if (string.IsNullOrEmpty(response))
              {
                  return; //user canceled.
-            }
+             }
              if (!Int32.TryParse(response, out amount) || response == "0")
              {
                  PF_Bridge.RaiseCallbackError("Please enter an interger > 0 for VC amount", PlayFabAPIMethods.Generic, MessageDisplayStyle.error);
@@ -476,8 +454,8 @@ public class FloatingInventoryController : MonoBehaviour
                  {
                      if (this.activeMode == InventoryMode.Character && c.CharacterId == PF_PlayerData.activeCharacter.characterDetails.CharacterId)
                      {
-                        //Probably better logic for this, and I should feel sad (but i dont). 
-                    }
+                         //Probably better logic for this, and I should feel sad (but i dont). 
+                     }
                      else
                      {
                          transOptions.Add(c.CharacterName);

@@ -59,16 +59,12 @@ public static class PF_PlayerData
         };
 
         //DialogCanvasController.RequestLoadingPrompt (PlayFabAPIMethods.GetUserData);
-        PlayFabClientAPI.GetUserReadOnlyData(request, (GetUserDataResult result) =>
-                                             {
-                                                 if (callback != null)
-                                                 {
-                                                     callback(result);
-                                                 }
-                                                 PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetUserData, MessageDisplayStyle.none);
-
-                                             }, PF_Bridge.PlayFabErrorCallback);
-
+        PlayFabClientAPI.GetUserReadOnlyData(request, result =>
+        {
+            if (callback != null)
+                callback(result);
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetUserData, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void UpdateUserData(Dictionary<string, string> updates, string permission = "Public", UnityAction<UpdateUserDataResult> callback = null)
@@ -80,15 +76,12 @@ public static class PF_PlayerData
         };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateUserData);
-        PlayFabClientAPI.UpdateUserData(request, (UpdateUserDataResult result) =>
-                                        {
-                                            if (callback != null)
-                                            {
-                                                callback(result);
-                                            }
-                                            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.UpdateUserData, MessageDisplayStyle.none);
-
-                                        }, PF_Bridge.PlayFabErrorCallback);
+        PlayFabClientAPI.UpdateUserData(request, result =>
+        {
+            if (callback != null)
+                callback(result);
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.UpdateUserData, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void GetUserInventory(Action callback = null)
@@ -110,61 +103,29 @@ public static class PF_PlayerData
                         continue;
                     }
 
-                    if (!inventoryByCategory.ContainsKey(item.ItemId))
-                    {
-                        var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
-                        var items = playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); });
+                    if (inventoryByCategory.ContainsKey(item.ItemId))
+                        continue;
 
-                        try
-                        {
-                            if (catalogItem != null)
-                            {
-                                var customIcon = "Defaut";
-                                // here we can process the custom data and apply the propper treatment (eg assign icons)
-                                if (catalogItem.CustomData != null && catalogItem.CustomData != "null") //TODO update once the bug is fixed on the null value
-                                {
-                                    Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-                                    if (customAttributes.ContainsKey("icon"))
-                                    {
-                                        customIcon = customAttributes["icon"];
-                                    }
-                                }
+                    var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
+                    if (catalogItem == null)
+                        continue;
 
-                                var icon = GameController.Instance.iconManager.GetIconById(customIcon);
-
-                                if (catalogItem.Consumable.UsageCount > 0)
-                                {
-                                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, true));
-                                }
-                                else
-                                {
-                                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon));
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogWarning(item.ItemId + " -- " + e.Message);
-                            continue;
-                        }
-                    }
+                    var items = playerInventory.FindAll(x => { return x.ItemId.Equals(item.ItemId); });
+                    var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
+                    var icon = GameController.Instance.iconManager.GetIconById(customIcon);
+                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
                 }
 
                 if (OfferContainers.Count > 0)
-                {
                     DialogCanvasController.RequestOfferPrompt();
-                }
             }
 
             if (callback != null)
-            {
                 callback();
-            }
 
             PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetUserInventory, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }
-
     #endregion
 
     #region User Statistics
@@ -219,8 +180,10 @@ public static class PF_PlayerData
     #region User Account APIs
     public static void GetUserAccountInfo()
     {
-        var request = new GetPlayerCombinedInfoRequest();
-        request.InfoRequestParameters = new GetPlayerCombinedInfoRequestParams { GetUserData = true, GetUserReadOnlyData = true, GetUserInventory = true, GetUserVirtualCurrency = true, GetUserAccountInfo = true, GetPlayerStatistics = true };
+        var request = new GetPlayerCombinedInfoRequest
+        {
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams { GetUserData = true, GetUserReadOnlyData = true, GetUserInventory = true, GetUserVirtualCurrency = true, GetUserAccountInfo = true, GetPlayerStatistics = true }
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetAccountInfo);
         PlayFabClientAPI.GetPlayerCombinedInfo(request, OnGetUserAccountInfoSuccess, PF_Bridge.PlayFabErrorCallback);
@@ -232,20 +195,9 @@ public static class PF_PlayerData
         accountInfo = result.InfoResultPayload.AccountInfo;
 
         if (result.InfoResultPayload.UserData.ContainsKey("IsRegisteredForPush"))
-        {
-            if (result.InfoResultPayload.UserData["IsRegisteredForPush"].Value == "1")
-            {
-                isRegisteredForPush = true;
-            }
-            else
-            {
-                isRegisteredForPush = false;
-            }
-        }
+            isRegisteredForPush = result.InfoResultPayload.UserData["IsRegisteredForPush"].Value == "1";
         else
-        {
             isRegisteredForPush = false;
-        }
 
         if (result.InfoResultPayload.UserData.ContainsKey("ShowAccountOptionsOnLogin") && result.InfoResultPayload.UserData["ShowAccountOptionsOnLogin"].Value == "0")
         {
@@ -258,9 +210,7 @@ public static class PF_PlayerData
         }
 
         if (result.InfoResultPayload.UserReadOnlyData.ContainsKey("RedeemedOffers"))
-        {
             RedeemedOffers = JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
-        }
 
         inventoryByCategory.Clear();
 
@@ -274,67 +224,36 @@ public static class PF_PlayerData
                     continue;
                 }
 
-                if (!inventoryByCategory.ContainsKey(item.ItemId))
-                {
-                    var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
-                    var items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
-                    try
-                    {
-                        if (catalogItem != null)
-                        {
-                            string customIcon = "Defaut";
-                            // here we can process the custom data and apply the propper treatment (eg assign icons)
-                            if (catalogItem.CustomData != null && catalogItem.CustomData != "null") //TODO update once the bug is fixed on the null value
-                            {
-                                Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-                                if (customAttributes.ContainsKey("icon"))
-                                {
-                                    customIcon = customAttributes["icon"];
-                                }
-                            }
+                if (inventoryByCategory.ContainsKey(item.ItemId))
+                    continue;
 
-                            Sprite icon = GameController.Instance.iconManager.GetIconById(customIcon);
+                var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
+                if (catalogItem == null)
+                    continue;
 
-                            if (catalogItem.Consumable.UsageCount > 0)
-                            {
-                                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, true));
-                            }
-                            else
-                            {
-                                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon));
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning(item.ItemId + " -- " + e.Message);
-                        continue;
-                    }
-                }
+                var items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
+                var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
+                var icon = GameController.Instance.iconManager.GetIconById(customIcon);
+                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
             }
 
             if (OfferContainers.Count > 0)
-            {
                 DialogCanvasController.RequestOfferPrompt();
-            }
         }
-
 
         if (PF_Authentication.GetDeviceId(true))
         {
             Debug.Log("Mobile Device ID Found!");
 
-            string deviceID = string.IsNullOrEmpty(PF_Authentication.android_id) ? PF_Authentication.ios_id : PF_Authentication.android_id;
-            PlayerPrefs.SetString("LastDeviceIdUsed", deviceID);
+            var deviceId = string.IsNullOrEmpty(PF_Authentication.android_id) ? PF_Authentication.ios_id : PF_Authentication.android_id;
+            PlayerPrefs.SetString("LastDeviceIdUsed", deviceId);
         }
         else
         {
             Debug.Log("Custom Device ID Found!");
 
             if (string.IsNullOrEmpty(PF_Authentication.custom_id))
-            {
                 PlayerPrefs.SetString("LastDeviceIdUsed", PF_Authentication.custom_id);
-            }
         }
 
 
@@ -345,13 +264,9 @@ public static class PF_PlayerData
         //					FB.Login("public_profile,email,user_friends", (FBResult response) => 
         //					{
         //						if (response.Error != null)
-        //						{
         //							PF_Bridge.RaiseCallbackError("Facebook Error: " + response.Error, PlayFabAPIMethods.LoginWithFacebook, MessageDisplayStyle.none);
-        //						}
         //						else if (!FB.IsLoggedIn)
-        //						{
         //							PF_Bridge.RaiseCallbackError("You canceled the Facebook session, without an active facebook session photos and other data will not be accessable.", PlayFabAPIMethods.LoginWithFacebook, MessageDisplayStyle.none);
-        //						}	
         //					});
         //				}
         //
@@ -364,7 +279,6 @@ public static class PF_PlayerData
         //				PlayerPrefs.SetInt("LinkedFacebook", 0);
         //			}
 
-
         virtualCurrency = result.InfoResultPayload.UserVirtualCurrency;
         PF_Bridge.RaiseCallbackSuccess("Player Account Info Loaded", PlayFabAPIMethods.GetAccountInfo, MessageDisplayStyle.none);
     }
@@ -376,7 +290,7 @@ public static class PF_PlayerData
         playerCharacterData.Clear();
         characterAchievements.Clear();
 
-        int remainingCallbacks = playerCharacters.Count;
+        var remainingCallbacks = playerCharacters.Count;
 
         if (remainingCallbacks == 0)
         {
@@ -391,33 +305,26 @@ public static class PF_PlayerData
 
         foreach (var character in playerCharacters)
         {
-            var request = new GetCharacterDataRequest();
-            request.PlayFabId = PlayerId;
-            request.CharacterId = character.CharacterId;
-            request.Keys = new List<string>() { "CharacterData", "Achievements" };
+            var request = new GetCharacterDataRequest
+            {
+                PlayFabId = PlayerId,
+                CharacterId = character.CharacterId,
+                Keys = new List<string>() { "CharacterData", "Achievements" }
+            };
 
             PlayFabClientAPI.GetCharacterReadOnlyData(request, (result) =>
             {
-                // OFFERS
-
                 if (result.Data.ContainsKey("Achievements"))
-                {
                     characterAchievements.Add(result.CharacterId, JsonWrapper.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
-                }
 
+                if (!result.Data.ContainsKey("CharacterData"))
+                    return;
 
-                if (result.Data.ContainsKey("CharacterData"))
-                {
-                    playerCharacterData.Add(result.CharacterId, JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
-                    remainingCallbacks--;
-                    if (remainingCallbacks == 0)
-                    {
-                        PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
-                    }
-                }
-
+                playerCharacterData.Add(result.CharacterId, JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
+                remainingCallbacks--;
+                if (remainingCallbacks == 0)
+                    PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
             }, PF_Bridge.PlayFabErrorCallback);
-
         }
     }
 
@@ -425,45 +332,37 @@ public static class PF_PlayerData
     {
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCharacterReadOnlyData);
 
-        var request = new GetCharacterDataRequest();
-        request.PlayFabId = PlayerId;
-        request.CharacterId = characterId;
-        request.Keys = new List<string> { "CharacterData" };
+        var request = new GetCharacterDataRequest
+        {
+            PlayFabId = PlayerId,
+            CharacterId = characterId,
+            Keys = new List<string> { "CharacterData" }
+        };
 
-        PlayFabClientAPI.GetCharacterReadOnlyData(request, (result) =>
-                                                  {
-                                                      if (result.Data.ContainsKey("CharacterData"))
-                                                      {
-                                                          playerCharacterData[result.CharacterId] = JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
-
-                                                          PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
-                                                      }
-
-                                                  }, PF_Bridge.PlayFabErrorCallback);
+        PlayFabClientAPI.GetCharacterReadOnlyData(request, result =>
+        {
+            if (result.Data.ContainsKey("CharacterData"))
+            {
+                playerCharacterData[result.CharacterId] = JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
+                PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
+            }
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static bool DoesCharacterHaveAchievement(string charId, string achvId)
     {
         List<string> achievements;
         characterAchievements.TryGetValue(charId, out achievements);
-        if (achievements != null && achievements.Count > 0)
-        {
-            var check = achievements.FirstOrDefault((i) => { return string.Equals(i, achvId); });
-            if (check != null)
-            {
-                return true;
-            }
-        }
-        return false;
+        if (achievements == null || achievements.Count == 0)
+            return false;
+        return achievements.Any(i => { return string.Equals(i, achvId); });
     }
 
     public static void GetCharacterStatistics()
     {
         var characterIDs = new List<string>();
         foreach (var each in playerCharacters)
-        {
             characterIDs.Add(each.CharacterId);
-        }
 
         var request = new ExecuteCloudScriptRequest
         {
@@ -482,10 +381,10 @@ public static class PF_PlayerData
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterStatistics, MessageDisplayStyle.none);
     }
 
-    public static void UpdateCharacterStatistics(string charID, Dictionary<string, int> updates)
+    public static void UpdateCharacterStatistics(string characterId, Dictionary<string, int> updates)
     {
         Dictionary<string, int> activeStats;
-        characterStatistics.TryGetValue(charID, out activeStats);
+        characterStatistics.TryGetValue(characterId, out activeStats);
 
         if (activeStats != null)
         {
@@ -506,7 +405,7 @@ public static class PF_PlayerData
             var request = new ExecuteCloudScriptRequest
             {
                 FunctionName = "UpdateCharacterStats",
-                FunctionParameter = new { CharacterId = charID, CharacterStatistics = activeStats },
+                FunctionParameter = new { CharacterId = characterId, CharacterStatistics = activeStats },
             };
             PlayFabClientAPI.ExecuteCloudScript(request, OnUpdateCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
         }
@@ -516,8 +415,6 @@ public static class PF_PlayerData
     {
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
-
-        Debug.Log("Stats Saved!");
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.UpdateCharacterStatistics, MessageDisplayStyle.none);
     }
 
@@ -525,18 +422,16 @@ public static class PF_PlayerData
     {
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCharacterInventory);
 
-        var request = new GetCharacterInventoryRequest();
-        request.CharacterId = characterId;
+        var request = new GetCharacterInventoryRequest
+        {
+            CharacterId = characterId
+        };
 
-        PlayFabClientAPI.GetCharacterInventory(request, (GetCharacterInventoryResult result) =>
+        PlayFabClientAPI.GetCharacterInventory(request, result =>
         {
             OnGetCharacterInventorySuccess(result);
-
             if (callback != null)
-            {
                 callback();
-            }
-
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
@@ -557,52 +452,35 @@ public static class PF_PlayerData
                 continue;
 
             var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
-            List<ItemInstance> items = new List<ItemInstance>(characterInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
+            if (catalogItem == null)
+                continue;
 
-            try
-            {
-                if (catalogItem != null)
-                {
-                    var customIcon = "Default";
-                    // here we can process the custom data and apply the propper treatment (eg assign icons)
-                    if (catalogItem.CustomData != null && catalogItem.CustomData != "null") //TODO update once the bug is fixed on the null value
-                    {
-                        Dictionary<string, string> customAttributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-                        string temp;
-                        if (customAttributes.TryGetValue("icon", out temp))
-                            customIcon = temp;
-                    }
-
-                    var icon = GameController.Instance.iconManager.GetIconById(customIcon);
-                    characterInvByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(item.ItemId + " -- " + e.Message);
-            }
+            var items = new List<ItemInstance>(characterInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
+            var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
+            var icon = GameController.Instance.iconManager.GetIconById(customIcon);
+            characterInvByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
         }
     }
 
     public static void GetPlayerCharacters()
     {
         var request = new ListUsersCharactersRequest();
-
         PlayFabClientAPI.GetAllUsersCharacters(request, OnGetPlayerCharactersSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
     private static void OnGetPlayerCharactersSuccess(ListUsersCharactersResult result)
     {
         playerCharacters = result.Characters;
-
         PF_Bridge.RaiseCallbackSuccess("Player Characters Retrieved", PlayFabAPIMethods.GetAllUsersCharacters, MessageDisplayStyle.none);
     }
 
     public static void CreateNewCharacter(string name, UB_ClassDetail details)
     {
-        var request = new ExecuteCloudScriptRequest();
-        request.FunctionName = "CreateCharacter";
-        request.FunctionParameter = new { catalogCode = details.CatalogCode, characterName = name };
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "CreateCharacter",
+            FunctionParameter = new { catalogCode = details.CatalogCode, characterName = name }
+        };
         PlayFabClientAPI.ExecuteCloudScript(request, OnCreateNewCharacterSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
@@ -612,26 +490,19 @@ public static class PF_PlayerData
             return;
 
         if ((bool)result.FunctionResult)
-        {
             PF_Bridge.RaiseCallbackSuccess("New Character Added", PlayFabAPIMethods.GrantCharacterToUser, MessageDisplayStyle.none);
-        }
         else
-        {
             PF_Bridge.RaiseCallbackError("Error Creating Character" + result.Logs.ToString(), PlayFabAPIMethods.GrantCharacterToUser, MessageDisplayStyle.error);
-        }
     }
 
     public static void DeleteCharacter(string cid)
     {
-        Action callback = () =>
+        var request = new ExecuteCloudScriptRequest
         {
-            var request = new ExecuteCloudScriptRequest();
-            request.FunctionName = "DeleteCharacter";
-            request.FunctionParameter = new { characterId = cid };
-            PlayFabClientAPI.ExecuteCloudScript(request, OnDeleteCharacterSuccess, PF_Bridge.PlayFabErrorCallback);
+            FunctionName = "DeleteCharacter",
+            FunctionParameter = new { characterId = cid }
         };
-
-        callback();
+        PlayFabClientAPI.ExecuteCloudScript(request, OnDeleteCharacterSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
     private static void OnDeleteCharacterSuccess(ExecuteCloudScriptResult result)
@@ -640,13 +511,9 @@ public static class PF_PlayerData
             return;
 
         if ((bool)result.FunctionResult)
-        {
             PF_Bridge.RaiseCallbackSuccess("Character Deleted", PlayFabAPIMethods.DeleteCharacter, MessageDisplayStyle.none);
-        }
         else
-        {
             PF_Bridge.RaiseCallbackError("Error Deleting Character" + result.Logs.ToString(), PlayFabAPIMethods.DeleteCharacter, MessageDisplayStyle.none);
-        }
     }
 
     public static void UpdateActiveCharacterData()
@@ -656,13 +523,36 @@ public static class PF_PlayerData
         playerCharacterData.TryGetValue(id, out cData);
 
         if (cData != null)
-        {
             activeCharacter.characterData = cData;
-        }
 
         activeCharacter.RefillVitals();
     }
     #endregion
+
+    #region Inventory Utilities
+    /// <summary>
+    /// Return number of RemainingUses of an itemId in your inventory
+    /// </summary>
+    /// <returns>
+    /// 0 => Item does not exist in the inventory
+    /// 0 => Item does not exist in the inventory
+    /// </returns>
+    public static int GetItemQty(string itemId, bool isPlayerInv)
+    {
+        var output = 0;
+        List<ItemInstance> inv = isPlayerInv ? playerInventory : characterInventory;
+        foreach (var eachItem in inv)
+        {
+            if (eachItem.ItemId != itemId)
+                continue;
+            if (eachItem.RemainingUses == null)
+                return -1; // Unlimited uses
+            if (eachItem.RemainingUses.Value > 0) // Non-Positive is probably a PlayFab api error
+                output += eachItem.RemainingUses.Value;
+        }
+        return output;
+    }
+    #endregion Inventory Utilities
 
     #region Friend APIs
     public static void GetFriendsList(UnityAction callback = null)
@@ -672,7 +562,7 @@ public static class PF_PlayerData
         request.IncludeSteamFriends = false;
 
         //DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetFriendList);
-        PlayFabClientAPI.GetFriendsList(request, (GetFriendsListResult result) =>
+        PlayFabClientAPI.GetFriendsList(request, result =>
                                         {
                                             playerFriends = result.Friends;
                                             if (callback != null)
@@ -687,67 +577,56 @@ public static class PF_PlayerData
 
     public static void AddFriend(string input, AddFriendMethod method, UnityAction<bool> callback = null)
     {
-        AddFriendRequest request = new AddFriendRequest();
-        if (method == AddFriendMethod.DisplayName)
+        var request = new AddFriendRequest();
+        switch (method)
         {
-            request.FriendTitleDisplayName = input;
-        }
-        else if (method == AddFriendMethod.Email)
-        {
-            request.FriendEmail = input;
-        }
-        else if (method == AddFriendMethod.Username)
-        {
-            request.FriendUsername = input;
-        }
-        else if (method == AddFriendMethod.PlayFabID)
-        {
-            request.FriendPlayFabId = input;
+            case AddFriendMethod.DisplayName:
+                request.FriendTitleDisplayName = input; break;
+            case AddFriendMethod.Email:
+                request.FriendEmail = input; break;
+            case AddFriendMethod.Username:
+                request.FriendUsername = input; break;
+            case AddFriendMethod.PlayFabID:
+                request.FriendPlayFabId = input; break;
         }
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.AddFriend);
-        PlayFabClientAPI.AddFriend(request, (AddFriendResult result) =>
-                                   {
-                                       if (callback != null)
-                                       {
-                                           callback(result.Created);
-                                       }
-                                       PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.AddFriend, MessageDisplayStyle.none);
-                                   }, PF_Bridge.PlayFabErrorCallback);
+        PlayFabClientAPI.AddFriend(request, result =>
+        {
+            if (callback != null)
+                callback(result.Created);
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.AddFriend, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
-
 
     public static void RemoveFriend(string id, UnityAction callback = null)
     {
-        RemoveFriendRequest request = new RemoveFriendRequest();
-        request.FriendPlayFabId = id;
+        var request = new RemoveFriendRequest { FriendPlayFabId = id };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RemoveFriend);
-        PlayFabClientAPI.RemoveFriend(request, (RemoveFriendResult result) =>
-                                      {
-                                          if (callback != null)
-                                          {
-                                              callback();
-                                          }
-                                          PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RemoveFriend, MessageDisplayStyle.none);
-                                      }, PF_Bridge.PlayFabErrorCallback);
+        PlayFabClientAPI.RemoveFriend(request, result =>
+        {
+            if (callback != null)
+                callback();
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RemoveFriend, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void SetFriendTags(string id, List<string> tags, UnityAction callback = null)
     {
-        SetFriendTagsRequest request = new SetFriendTagsRequest();
-        request.FriendPlayFabId = id;
-        request.Tags = tags;
+        var request = new SetFriendTagsRequest
+        {
+            FriendPlayFabId = id,
+            Tags = tags
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.SetFriendTags);
-        PlayFabClientAPI.SetFriendTags(request, (SetFriendTagsResult result) =>
-                                       {
-                                           if (callback != null)
-                                           {
-                                               callback();
-                                           }
-                                           PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.SetFriendTags, MessageDisplayStyle.none);
-                                       }, PF_Bridge.PlayFabErrorCallback);
+        PlayFabClientAPI.SetFriendTags(request, result =>
+        {
+            if (callback != null)
+                callback();
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.SetFriendTags, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
     #endregion
 
@@ -762,15 +641,13 @@ public static class PF_PlayerData
             request.FunctionParameter = new { PFID = PlayerId, InstanceToRemove = instanceToRemove };
 
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ConsumeOffer);
-            PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
+            PlayFabClientAPI.ExecuteCloudScript(request, result =>
             {
                 if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
                     return;
 
                 if (callback != null)
-                {
                     callback(null);
-                }
                 PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ConsumeOffer, MessageDisplayStyle.none);
 
             }, PF_Bridge.PlayFabErrorCallback);
@@ -778,31 +655,30 @@ public static class PF_PlayerData
         else
         {
             // consume the item 
-            ExecuteCloudScriptRequest removeReq = new ExecuteCloudScriptRequest();
-            removeReq.FunctionName = "RemoveOfferItem";
-            removeReq.FunctionParameter = new { PFID = PlayerId, InstanceToRemove = instanceToRemove };
-            PlayFabClientAPI.ExecuteCloudScript(removeReq, (ExecuteCloudScriptResult result) =>
+            var removeReq = new ExecuteCloudScriptRequest
             {
-                if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-                    return;
+                FunctionName = "RemoveOfferItem",
+                FunctionParameter = new { PFID = PlayerId, InstanceToRemove = instanceToRemove }
+            };
+            PlayFabClientAPI.ExecuteCloudScript(removeReq, result =>
+            {
+                PF_Bridge.VerifyErrorFreeCloudScriptResult(result);
             }, PF_Bridge.PlayFabErrorCallback);
 
             // make the award
-            ExecuteCloudScriptRequest awardRequest = new ExecuteCloudScriptRequest();
-            awardRequest.FunctionName = "RedeemItemOffer";
-
-            awardRequest.FunctionParameter = new { PFID = PlayerId, Offer = offer, SingleUse = offer.Tags.IndexOf("SingleUse") > -1 ? true : false };
+            var awardRequest = new ExecuteCloudScriptRequest
+            {
+                FunctionName = "RedeemItemOffer",
+                FunctionParameter = new { PFID = PlayerId, Offer = offer, SingleUse = offer.Tags.IndexOf("SingleUse") > -1 ? true : false }
+            };
 
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ConsumeOffer);
-            PlayFabClientAPI.ExecuteCloudScript(awardRequest, (ExecuteCloudScriptResult result) =>
+            PlayFabClientAPI.ExecuteCloudScript(awardRequest, result =>
             {
                 if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
                     return;
-
                 if (callback != null)
-                {
                     callback(result.FunctionResult.ToString());
-                }
                 PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ConsumeOffer, MessageDisplayStyle.none);
             }, PF_Bridge.PlayFabErrorCallback);
         }
@@ -810,14 +686,15 @@ public static class PF_PlayerData
     public static void SubtractLifeFromPlayer()
     {
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ExecuteCloudScript);
-        var request = new ExecuteCloudScriptRequest();
-        request.FunctionName = "SubtractLife";
-        request.FunctionParameter = new { CharacterId = activeCharacter.characterDetails.CharacterId };
-        PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "SubtractLife",
+            FunctionParameter = new { CharacterId = activeCharacter.characterDetails.CharacterId }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, result =>
         {
             if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
                 return;
-
             PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.ExecuteCloudScript, MessageDisplayStyle.none);
 
         }, PF_Bridge.PlayFabErrorCallback);
@@ -835,57 +712,52 @@ public static class PF_PlayerData
 
     public static void LinkFBAccount(UnityAction callback = null)
     {
-        Action<string> linkAction = (string token) =>
+        Action<string> linkAction = token =>
         {
-            Action<LinkFacebookAccountResult> afterLink = (LinkFacebookAccountResult result) =>
+            Action<LinkFacebookAccountResult> afterLink = result =>
             {
                 Debug.Log("Facebook Linked Account!");
                 PlayerPrefs.SetInt("LinkedFacebook", 1);
 
                 if (callback != null)
-                {
                     callback();
-                }
                 PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
             };
 
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
 
-            LinkFacebookAccountRequest request = new LinkFacebookAccountRequest();
+            var request = new LinkFacebookAccountRequest();
             request.AccessToken = token;
-            PlayFabClientAPI.LinkFacebookAccount(request, (LinkFacebookAccountResult result) =>
-                                                     {
-                                                         afterLink(result);
-                                                     }, (PlayFabError error) =>
-                                                     {
-                                                         if (error.ErrorMessage.Contains("already linked"))  // ew, gotta get better error codes
-                                                         {
-                                                             PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-                                                             Action<bool> afterConfirm = (bool response) =>
-                                                                 {
-                                                                     if (response)
-                                                                     {
-                                                                         request.ForceLink = true;
+            PlayFabClientAPI.LinkFacebookAccount(request, result =>
+            {
+                afterLink(result);
+            }, error =>
+            {
+                if (error.ErrorMessage.Contains("already linked"))  // ew, gotta get better error codes
+                {
+                    PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
+                    Action<bool> afterConfirm = (bool response) =>
+                    {
+                        if (!response)
+                            return;
 
-                                                                         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
-                                                                         PlayFabClientAPI.LinkFacebookAccount(request, (LinkFacebookAccountResult result) =>
-                                                                                                               {
-                                                                                                                   afterLink(result);
-                                                                                                               }, PF_Bridge.PlayFabErrorCallback);
-                                                                     }
-                                                                 };
+                        request.ForceLink = true;
 
-                                                             DialogCanvasController.RequestConfirmationPrompt("Caution!", "Your current facebook account is already linked to another Unicorn Battle player. Do you want to force-bind your Facebook account to this player?", afterConfirm);
+                        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
+                        PlayFabClientAPI.LinkFacebookAccount(request, result =>
+                        {
+                            afterLink(result);
+                        }, PF_Bridge.PlayFabErrorCallback);
+                    };
 
-                                                         }
-                                                         else
-                                                         {
-                                                             PF_Bridge.RaiseCallbackError(error.ErrorMessage, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.error);
-                                                         }
-
-                                                     });
+                    DialogCanvasController.RequestConfirmationPrompt("Caution!", "Your current facebook account is already linked to another Unicorn Battle player. Do you want to force-bind your Facebook account to this player?", afterConfirm);
+                }
+                else
+                {
+                    PF_Bridge.RaiseCallbackError(error.ErrorMessage, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.error);
+                }
+            });
         };
-
 
         if (FB.IsInitialized && FB.IsLoggedIn)
         {
@@ -893,54 +765,43 @@ public static class PF_PlayerData
         }
         else
         {
-            Action<ILoginResult> afterFBLogin = (ILoginResult result) =>
+            Action<ILoginResult> afterFBLogin = result =>
            {
                if (result.Error != null)
-               {
                    PF_Bridge.RaiseCallbackError("Facebook Error: " + result.Error, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-               }
                else if (!FB.IsLoggedIn)
-               {
                    PF_Bridge.RaiseCallbackError("Facebook Error: Login cancelled by Player", PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-               }
                else
-               {
                    linkAction(AccessToken.CurrentAccessToken.TokenString);
-               }
            };
 
             Action afterFBInit = () =>
             {
                 //Debug.Log("FB.Init completed: Is user logged in? " + FB.IsLoggedIn);
                 if (FB.IsLoggedIn == false)
-                {
-                    FB.LogInWithReadPermissions(new List<string>() { "public_profile", "email", "user_friends" }, (ILoginResult result) => { afterFBLogin(result); });
-                }
+                    FB.LogInWithReadPermissions(new List<string> { "public_profile", "email", "user_friends" }, result => { afterFBLogin(result); });
                 else
-                {
                     linkAction(AccessToken.CurrentAccessToken.UserId);
-                }
             };
 
             PF_Authentication.StartFacebookLogin(afterFBInit);
         }
-
     }
 
     public static void UnlinkFBAccount(UnityAction calback = null)
     {
         var request = new UnlinkFacebookAccountRequest();
-        PlayFabClientAPI.UnlinkFacebookAccount(request, (UnlinkFacebookAccountResult result) =>
-                                               {
-                                                   accountInfo.FacebookInfo = null;
-                                                   if (calback != null)
-                                                   {
-                                                       Debug.Log("Unlinked Account.");
-                                                       PlayerPrefs.SetInt("LinkedFacebook", 0);
+        PlayFabClientAPI.UnlinkFacebookAccount(request, result =>
+        {
+            accountInfo.FacebookInfo = null;
+            if (calback != null)
+            {
+                Debug.Log("Unlinked Account.");
+                PlayerPrefs.SetInt("LinkedFacebook", 0);
 
-                                                       calback();
-                                                   }
-                                               }, PF_Bridge.PlayFabErrorCallback);
+                calback();
+            }
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void RegisterForPushNotification(string pushToken = null, UnityAction callback = null)
@@ -965,7 +826,7 @@ public static class PF_PlayerData
 				Debug.Log (hexToken);
 				
 				DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
-				PlayFabClientAPI.RegisterForIOSPushNotification(request, (RegisterForIOSPushNotificationResult result) => 
+				PlayFabClientAPI.RegisterForIOSPushNotification(request, result => 
 				                                                {
 					if(callback != null)
 					{
@@ -989,14 +850,12 @@ public static class PF_PlayerData
             request.DeviceToken = pushToken;
 
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
-            PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, (AndroidDevicePushNotificationRegistrationResult result) =>
-                                                                       {
-                                                                           if (callback != null)
-                                                                           {
-                                                                               callback();
-                                                                           }
-                                                                           PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RegisterForPush, MessageDisplayStyle.none);
-                                                                       }, PF_Bridge.PlayFabErrorCallback);
+            PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, result =>
+            {
+                if (callback != null)
+                    callback();
+                PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RegisterForPush, MessageDisplayStyle.none);
+            }, PF_Bridge.PlayFabErrorCallback);
 
         }
         else
@@ -1009,72 +868,70 @@ public static class PF_PlayerData
 
     public static void TransferItemToPlayer(string sourceId, string instanceId, Action callback = null)
     {
-        var request = new ExecuteCloudScriptRequest();
-        request.FunctionName = "TransferItemToPlayer";
-        request.FunctionParameter = new { sourceId = sourceId, instanceId = instanceId };
-        PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "TransferItemToPlayer",
+            FunctionParameter = new { sourceId = sourceId, instanceId = instanceId }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, result =>
         {
             if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
                 return;
 
             if (callback != null)
-            {
                 callback();
-            }
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void TransferItemToCharacter(string sourceId, string sourceType, string instanceId, string destId, Action callback = null)
     {
-        var request = new ExecuteCloudScriptRequest();
-        request.FunctionName = "TransferItemToCharacter";
-        request.FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, instanceId = instanceId };
-        PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "TransferItemToCharacter",
+            FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, instanceId = instanceId }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, result =>
         {
             if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
                 return;
 
             if (callback != null)
-            {
                 callback();
-            }
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void TransferVcToPlayer(string sourceId, string cCode, int amount, Action callback = null)
     {
-        var request = new ExecuteCloudScriptRequest();
-        request.FunctionName = "TransferVcToPlayer";
-        request.FunctionParameter = new { sourceId = sourceId, amount = amount, cCode = cCode };
-        PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "TransferVcToPlayer",
+            FunctionParameter = new { sourceId = sourceId, amount = amount, cCode = cCode }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, result =>
         {
             if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
                 return;
 
             if (callback != null)
-            {
                 callback();
-            }
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void TransferVCToCharacter(string sourceId, string sourceType, string cCode, int amount, string destId, Action callback = null)
     {
-        var request = new ExecuteCloudScriptRequest();
-        request.FunctionName = "TransferVCToCharacter";
-        request.FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, amount = amount, cCode = cCode };
-        PlayFabClientAPI.ExecuteCloudScript(request, (ExecuteCloudScriptResult result) =>
+        var request = new ExecuteCloudScriptRequest
         {
-            if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-                return;
-
-            if (callback != null)
+            FunctionName = "TransferVCToCharacter",
+            FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, amount = amount, cCode = cCode }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, result =>
             {
-                callback();
-            }
-        }, PF_Bridge.PlayFabErrorCallback);
+                if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
+                    return;
+
+                if (callback != null)
+                    callback();
+            }, PF_Bridge.PlayFabErrorCallback);
     }
     #endregion
 }
-
-

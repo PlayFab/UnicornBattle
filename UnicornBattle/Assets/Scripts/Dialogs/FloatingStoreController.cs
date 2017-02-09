@@ -74,20 +74,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 
     private static void GetItemIcon(StoreItem storeItem, out Sprite icon)
     {
-        var catalogItem = PF_GameData.GetCatalogItemById(storeItem.ItemId);
-        var iconName = "Default";
-        if (catalogItem.CustomData != null && !string.Equals(catalogItem.CustomData, "null"))
-        {
-            try
-            {
-                var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-                kvps.TryGetValue("icon", out iconName);
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-            }
-        }
+        var iconName = PF_GameData.GetIconByItemById(storeItem.ItemId);
         icon = GameController.Instance.iconManager.GetIconById(iconName);
     }
 

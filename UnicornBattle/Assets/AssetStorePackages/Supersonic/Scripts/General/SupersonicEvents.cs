@@ -162,30 +162,15 @@ public class SupersonicEvents : MonoBehaviour
         }
 
         if (gotItems)
-        {
             output += ".\n Click the check mark to view your new items.";
-        }
 
         if (OnAdRewarded != null)
-        {
             OnAdRewarded(result);
-        }
 
-        DialogCanvasController.RequestConfirmationPrompt("You were granted a gift!", output, (bool response) =>
+        DialogCanvasController.RequestConfirmationPrompt("You were granted a gift!", output, response =>
         {
-
-
             if (response && gotItems)
-            {
                 DialogCanvasController.RequestItemViewer(itemGifts, true);
-            }
-
-            // if true then show items
-            // false, item pop-up can be seen later...
-            // cloud script to mark gifts as new / seen
-
-
-            return;
         });
 
 
