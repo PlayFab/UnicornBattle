@@ -17,19 +17,9 @@ public class StoreCurrencyBarController : MonoBehaviour
         }
 
         items.Clear();
-
-        if (PF_PlayerData.activeCharacter != null) // Show character balances
-        {
-            if (PF_PlayerData.characterVirtualCurrency != null && PF_PlayerData.characterVirtualCurrency.Count > 0)
-                for (var z = 0; z < controller.currenciesInUse.Count; z++)
-                    DisplayVc(z, PF_PlayerData.characterVirtualCurrency);
-        }
-        else // Show player balances
-        {
-            if (PF_PlayerData.virtualCurrency != null && PF_PlayerData.virtualCurrency.Count > 0)
-                for (var z = 0; z < controller.currenciesInUse.Count; z++)
-                    DisplayVc(z, PF_PlayerData.virtualCurrency);
-        }
+        if (PF_PlayerData.virtualCurrency != null && PF_PlayerData.virtualCurrency.Count > 0)
+            for (var z = 0; z < controller.currenciesInUse.Count; z++)
+                DisplayVc(z, PF_PlayerData.virtualCurrency);
     }
 
     private void DisplayVc(int z, Dictionary<string, int> vcBalances)

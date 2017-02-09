@@ -31,7 +31,6 @@ public class ItemViewerController : MonoBehaviour
     public Transform containerResults;
     public Transform ItemMode;
     public Transform ContainerMode;
-    public bool UnpackToPlayer = false;
 
     #region standardControls
     public void NextItem()
@@ -153,10 +152,8 @@ public class ItemViewerController : MonoBehaviour
         }
     }
 
-    public void InitiateViewer(List<string> items, bool unpackToPlayer) // need a new flag to determine if we should unpack to a player or a character
+    public void InitiateViewer(List<string> items) // need a new flag to determine if we should unpack to a player or a character
     {
-        UnpackToPlayer = unpackToPlayer;
-
         pfItems.Clear();
         openedBoxes.Clear();
 
@@ -182,7 +179,6 @@ public class ItemViewerController : MonoBehaviour
     public void CloseViewer()
     {
         PF_PlayerData.GetUserInventory();
-        PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
 
         gameObject.SetActive(false);
     }

@@ -193,7 +193,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
                 if (PF_PlayerData.activeCharacter == null)
                     PF_PlayerData.GetUserAccountInfo();
                 else
-                    PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
+                    PF_PlayerData.GetUserInventory();
                 break;
             case PlayFabAPIMethods.GetCharacterInventory:
             case PlayFabAPIMethods.GetAccountInfo:

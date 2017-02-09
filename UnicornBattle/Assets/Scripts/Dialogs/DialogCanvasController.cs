@@ -53,10 +53,10 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public delegate void StoreRequestHandler(string storeID);
     public static event StoreRequestHandler RaiseStoreRequest;
 
-    public delegate void ItemViewRequestHandler(List<string> items, bool unpackToPlayer);
+    public delegate void ItemViewRequestHandler(List<string> items);
     public static event ItemViewRequestHandler RaiseItemViewRequest;
 
-    public delegate void InventoryPromptHandler(Action<string> responseCallback, InventoryFilters filter, bool enableTransUi = false, FloatingInventoryController.InventoryMode displayMode = FloatingInventoryController.InventoryMode.Character);
+    public delegate void InventoryPromptHandler(Action<string> responseCallback, InventoryFilters filter);
     public static event InventoryPromptHandler RaiseInventoryPromptRequest;
 
     public delegate void RequestAccountSettingsHandler();
@@ -159,41 +159,34 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     }
 
 
-    public static void RequestInventoryPrompt(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems, bool enableTransUi = true, FloatingInventoryController.InventoryMode displayMode = FloatingInventoryController.InventoryMode.Character)
+    public static void RequestInventoryPrompt(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems)
     {
         if (RaiseInventoryPromptRequest != null)
-            RaiseInventoryPromptRequest(callback, filter, enableTransUi, displayMode);
+            RaiseInventoryPromptRequest(callback, filter);
     }
 
-    void HandleInventoryRequest(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems, bool enableTransUi = true, FloatingInventoryController.InventoryMode displayMode = FloatingInventoryController.InventoryMode.Character)
+    void HandleInventoryRequest(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems)
     {
 
         Action afterGetInventory = () =>
         {
             // ENABLE THIS AFTER WE HAVE A CONSISTENT WAY TO HIDE TINTS
             //ShowTint();
-            floatingInvPrompt.Init(callback, filter, enableTransUi, displayMode);
+            floatingInvPrompt.Init(callback, filter);
         };
 
-        if (displayMode == FloatingInventoryController.InventoryMode.Character)
-        {
-            PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId, afterGetInventory);
-        }
-        else
-        {
-            PF_PlayerData.GetUserInventory(afterGetInventory);
-        }
+        PF_PlayerData.GetUserInventory(afterGetInventory);
     }
 
-    public static void RequestItemViewer(List<string> items, bool unpackToPlayer = false)
+    public static void RequestItemViewer(List<string> items)
     {
         if (RaiseItemViewRequest != null)
-            RaiseItemViewRequest(items, unpackToPlayer);
+            RaiseItemViewRequest(items);
     }
 
-    void HandleItemViewerRequest(List<string> items, bool unpackToPlayer)
+    void HandleItemViewerRequest(List<string> items)
     {
-        itemViewerPrompt.InitiateViewer(items, unpackToPlayer);
+        itemViewerPrompt.InitiateViewer(items);
     }
 
     public static void RequestStore(string storeId)

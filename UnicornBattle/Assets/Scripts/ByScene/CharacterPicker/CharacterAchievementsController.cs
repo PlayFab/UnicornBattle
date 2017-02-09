@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public class CharacterAchievementsController : MonoBehaviour
 {
-
     public List<Image> colorize = new List<Image>();
     public AchievementItem achievementItemPrefab;
     public CharacterPicker cPicker;
@@ -17,15 +16,13 @@ public class CharacterAchievementsController : MonoBehaviour
     {
         if (cPicker.selectedSlot.saved != null)
         {
-
             if (PF_GameData.Achievements != null && PF_GameData.Achievements.Count > 0)
             {
                 while (items.Count < PF_GameData.Achievements.Count)
                 {
                     var achvItem = Instantiate(achievementItemPrefab);
-                    achvItem.transform.SetParent(this.listView, false);
+                    achvItem.transform.SetParent(listView, false);
                     items.Add(achvItem);
-
                 }
 
                 for (int z = 0; z < items.Count; z++)
@@ -33,14 +30,13 @@ public class CharacterAchievementsController : MonoBehaviour
                     var kvp = PF_GameData.Achievements.ElementAt(z);
                     // check here for already awarded
 
-                    this.colorize.Add(items[z].coloredBar);
-
-
+                    colorize.Add(items[z].coloredBar);
+                    
                     items[z].icon.overrideSprite = GameController.Instance.iconManager.GetIconById(kvp.Value.Icon);
                     items[z].Name.text = kvp.Key;
                     items[z].progressBar.maxValue = kvp.Value.Threshold;
 
-                    if (PF_PlayerData.DoesCharacterHaveAchievement(this.cPicker.selectedSlot.saved.characterDetails.CharacterId, kvp.Key))
+                    if (PF_PlayerData.DoesCharacterHaveAchievement(cPicker.selectedSlot.saved.characterDetails.CharacterId, kvp.Key))
                     {
                         items[z].CompleteAchievement();
                         StartCoroutine(items[z].progressBar.UpdateBar(kvp.Value.Threshold));
@@ -63,22 +59,16 @@ public class CharacterAchievementsController : MonoBehaviour
         switch ((int)ponyType)
         {
             case 0:
-                foreach (var item in this.colorize)
-                {
+                foreach (var item in colorize)
                     item.color = PF_GamePlay.ClassColor1;
-                }
                 break;
             case 1:
-                foreach (var item in this.colorize)
-                {
+                foreach (var item in colorize)
                     item.color = PF_GamePlay.ClassColor2;
-                }
                 break;
             case 2:
-                foreach (var item in this.colorize)
-                {
+                foreach (var item in colorize)
                     item.color = PF_GamePlay.ClassColor3;
-                }
                 break;
             default:
                 Debug.LogWarning("Unknown Class type detected...");
@@ -102,7 +92,7 @@ public class CharacterAchievementsController : MonoBehaviour
 
     public int CalcProgress(UB_Achievement achvItem)
     {
-        var charId = this.cPicker.selectedSlot.saved.characterDetails.CharacterId;
+        var charId = cPicker.selectedSlot.saved.characterDetails.CharacterId;
         Dictionary<string, int> stats;
 
         if (PF_PlayerData.characterStatistics != null && PF_PlayerData.characterStatistics.Count > 0
@@ -110,25 +100,18 @@ public class CharacterAchievementsController : MonoBehaviour
         && PF_PlayerData.characterAchievements != null)
         {
             PF_PlayerData.characterStatistics.TryGetValue(charId, out stats);
-            if (stats != null)
-            {
-                if (achvItem.SingleStat)
-                {
-                    return stats.ContainsKey(achvItem.MatchingStatistic) ? stats[achvItem.MatchingStatistic] : 0;
-                }
-                else
-                {
-                    var total = 0;
-                    foreach (var stat in stats)
-                    {
-                        if (stat.Key.Contains(achvItem.MatchingStatistic))
-                        {
-                            total += stat.Value;
-                        }
-                    }
-                    return total;
-                }
-            }
+            if (stats == null)
+                return 0;
+
+            if (achvItem.SingleStat)
+
+                return stats.ContainsKey(achvItem.MatchingStatistic) ? stats[achvItem.MatchingStatistic] : 0;
+
+            var total = 0;
+            foreach (var stat in stats)
+                if (stat.Key.Contains(achvItem.MatchingStatistic))
+                    total += stat.Value;
+            return total;
         }
         return 0;
     }

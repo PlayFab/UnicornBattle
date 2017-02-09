@@ -135,10 +135,10 @@ public class OfferPromptController : MonoBehaviour
     /// <param name="wasAlreadyRedemed">If set to <c>true</c>  if the player has already redeemed this offer.</param>
     public void ContinueClicked(bool wasAlreadyRedemed = false)
     {
-        UnityAction<string> afterRedeem = (string result) =>
+        UnityAction<string> afterRedeem = result =>
         {
             if (!string.IsNullOrEmpty(result))
-                DialogCanvasController.RequestItemViewer(new List<string>() { result }, true);
+                DialogCanvasController.RequestItemViewer(new List<string>() { result });
 
             PF_PlayerData.OfferContainers.RemoveAt(0);
             Init();

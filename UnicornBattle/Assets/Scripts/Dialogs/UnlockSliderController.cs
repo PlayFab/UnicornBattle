@@ -69,8 +69,8 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
             endIcon.gameObject.SetActive(keyReference != null);
             if (keyReference != null)
             {
-                var chestQty = PF_PlayerData.GetItemQty(controller.selectedItem.ItemId, controller.UnpackToPlayer);
-                var keyQty = PF_PlayerData.GetItemQty(keyId, controller.UnpackToPlayer);
+                var chestQty = PF_PlayerData.GetItemQty(controller.selectedItem.ItemId);
+                var keyQty = PF_PlayerData.GetItemQty(keyId);
                 var useColor = (chestQty > 0 && keyQty > 0) ? Color.cyan : Color.red;
 
                 endIcon.color = useColor;
@@ -97,15 +97,6 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
     public void CheckUnlock()
     {
         var chestItemId = controller.selectedItem.ItemId;
-
-        if (controller.UnpackToPlayer)
-        {
-            PF_GameData.TryOpenContainer(chestItemId, null, afterUnlock);
-        }
-        else
-        {
-            var character = PF_PlayerData.activeCharacter.characterDetails.CharacterId;
-            PF_GameData.TryOpenContainer(chestItemId, character, afterUnlock);
-        }
+        PF_GameData.TryOpenContainer(chestItemId, afterUnlock);
     }
 }

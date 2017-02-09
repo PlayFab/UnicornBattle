@@ -276,11 +276,11 @@ public static class PF_GameData
     }
 
 
-    public static void TryOpenContainer(string containerId, string characterId = null, UnityAction<UnlockContainerItemResult> callback = null)
+    public static void TryOpenContainer(string containerId, UnityAction<UnlockContainerItemResult> callback = null)
     {
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UnlockContainerItem);
-        var request = new UnlockContainerItemRequest { ContainerItemId = containerId, CharacterId = characterId };
-        PlayFabClientAPI.UnlockContainerItem(request, (UnlockContainerItemResult result) =>
+        var request = new UnlockContainerItemRequest { ContainerItemId = containerId };
+        PlayFabClientAPI.UnlockContainerItem(request, result =>
         {
             if (callback != null)
                 callback(result);

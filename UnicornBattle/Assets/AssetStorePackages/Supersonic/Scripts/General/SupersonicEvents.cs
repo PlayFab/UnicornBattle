@@ -170,7 +170,7 @@ public class SupersonicEvents : MonoBehaviour
         DialogCanvasController.RequestConfirmationPrompt("You were granted a gift!", output, response =>
         {
             if (response && gotItems)
-                DialogCanvasController.RequestItemViewer(itemGifts, true);
+                DialogCanvasController.RequestItemViewer(itemGifts);
         });
 
 

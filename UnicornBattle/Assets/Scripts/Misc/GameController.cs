@@ -115,7 +115,6 @@ public class GameController : Singleton<GameController>
     public void CharacterProfileDataRefresh()
     {
         PF_PlayerData.GetCharacterDataById(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
-        PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
     }
 
     // Use this for initialization

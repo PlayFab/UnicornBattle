@@ -226,7 +226,7 @@ public class QuestOutroController : MonoBehaviour
             QuestName.text = PF_GamePlay.ActiveQuest.levelName;
 
             var balance = 0;
-            LivesRemaining.text = string.Format("{0}", PF_PlayerData.characterVirtualCurrency.TryGetValue("HT", out balance) ? balance : -1);
+            LivesRemaining.text = string.Format("{0}", PF_PlayerData.virtualCurrency.TryGetValue(GlobalStrings.HEART_CURRENCY, out balance) ? balance : -1);
 
             var nextLevelStr = string.Format("{0}", PF_PlayerData.activeCharacter.characterData.CharacterLevel + 1);
             if (PF_GameData.CharacterLevelRamp.ContainsKey(nextLevelStr) && PF_GamePlay.QuestProgress.isQuestWon)
@@ -265,12 +265,12 @@ public class QuestOutroController : MonoBehaviour
     {
         //Debug.Log("Try Again not implemented");
         int hearts;
-        PF_PlayerData.characterVirtualCurrency.TryGetValue("HT", out hearts);
+        PF_PlayerData.virtualCurrency.TryGetValue(GlobalStrings.HEART_CURRENCY, out hearts);
         if (hearts > 0)
         {
             // decrement HT currency
             hearts -= 1;
-            PF_PlayerData.characterVirtualCurrency["HT"] = hearts;
+            PF_PlayerData.virtualCurrency[GlobalStrings.HEART_CURRENCY] = hearts;
             PF_PlayerData.SubtractLifeFromPlayer();
             // will need to trigger Cloud Script to tick this on the server side
 

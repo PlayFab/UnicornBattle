@@ -105,7 +105,7 @@ public static class PF_GamePlay
         var request = new ExecuteCloudScriptRequest
         {
             FunctionName = "SaveProgress",
-            FunctionParameter = new { CurrentPlayerData = PF_PlayerData.activeCharacter, QuestProgress = PF_GamePlay.QuestProgress, LevelRamp = PF_GameData.CharacterLevelRamp },
+            FunctionParameter = new { CurrentPlayerData = PF_PlayerData.activeCharacter, QuestProgress = QuestProgress, LevelRamp = PF_GameData.CharacterLevelRamp },
         };
         PlayFabClientAPI.ExecuteCloudScript(request, OnSavePlayerDataSuccess, PF_Bridge.PlayFabErrorCallback);
     }
@@ -150,9 +150,9 @@ public static class PF_GamePlay
         //Debug.Log(result.ToString());
         QuestProgress.ItemsGranted = JsonWrapper.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
 
-        PF_GamePlay.QuestProgress.areItemsAwarded = true;
+        QuestProgress.areItemsAwarded = true;
 
-        PF_PlayerData.GetCharacterInventory(PF_PlayerData.activeCharacter.characterDetails.CharacterId);
+        PF_PlayerData.GetUserInventory();
 
         PF_Bridge.RaiseCallbackSuccess("Items granted", PlayFabAPIMethods.RetriveQuestItems, MessageDisplayStyle.none);
     }

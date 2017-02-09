@@ -18,31 +18,26 @@ public static class PF_PlayerData
     public static bool showAccountOptionsOnLogin = true;
     public static bool isRegisteredForPush = false;
     public static UserAccountInfo accountInfo;
-    public static Dictionary<string, UserDataRecord> UserData = new Dictionary<string, UserDataRecord>();
+    public static readonly Dictionary<string, UserDataRecord> UserData = new Dictionary<string, UserDataRecord>();
 
     // this is a sorted, collated structure built from playerInventory. By default, this will only grab items that are in the primary catalog
-    public static Dictionary<string, InventoryCategory> inventoryByCategory = new Dictionary<string, InventoryCategory>();
-    public static Dictionary<string, int> virtualCurrency;
-    public static List<ItemInstance> playerInventory = new List<ItemInstance>();
-    public static Dictionary<string, int> userStatistics = new Dictionary<string, int>();
+    public static readonly Dictionary<string, InventoryCategory> inventoryByCategory = new Dictionary<string, InventoryCategory>();
+    public static readonly Dictionary<string, int> virtualCurrency = new Dictionary<string, int>();
+    public static readonly List<ItemInstance> playerInventory = new List<ItemInstance>();
+    public static readonly Dictionary<string, int> userStatistics = new Dictionary<string, int>();
 
     //aggregation of player characters
-    public static List<CharacterResult> playerCharacters = new List<CharacterResult>();
-    public static Dictionary<string, UB_CharacterData> playerCharacterData = new Dictionary<string, UB_CharacterData>();
-    public static Dictionary<string, List<string>> characterAchievements = new Dictionary<string, List<string>>();
-    public static Dictionary<string, Dictionary<string, int>> characterStatistics = new Dictionary<string, Dictionary<string, int>>();
+    public static readonly List<CharacterResult> playerCharacters = new List<CharacterResult>();
+    public static readonly Dictionary<string, UB_CharacterData> playerCharacterData = new Dictionary<string, UB_CharacterData>();
+    public static readonly Dictionary<string, List<string>> characterAchievements = new Dictionary<string, List<string>>();
+    public static readonly Dictionary<string, Dictionary<string, int>> characterStatistics = new Dictionary<string, Dictionary<string, int>>();
 
-    // Active Character Level Data:
-    public static Dictionary<string, int> characterVirtualCurrency = new Dictionary<string, int>();
-    public static List<ItemInstance> characterInventory = new List<ItemInstance>();
-    public static Dictionary<string, InventoryCategory> characterInvByCategory = new Dictionary<string, InventoryCategory>();
+    public static readonly List<FriendInfo> playerFriends = new List<FriendInfo>();
 
-    public static List<FriendInfo> playerFriends = new List<FriendInfo>();
+    public static readonly Dictionary<string, UB_AwardedOffer> pendingOffers = new Dictionary<string, UB_AwardedOffer>();
 
-    public static Dictionary<string, UB_AwardedOffer> pendingOffers = new Dictionary<string, UB_AwardedOffer>();
-
-    public static List<ItemInstance> OfferContainers = new List<ItemInstance>();
-    public static List<string> RedeemedOffers = new List<string>();
+    public static readonly List<ItemInstance> OfferContainers = new List<ItemInstance>();
+    public static readonly List<string> RedeemedOffers = new List<string>();
 
     public enum PlayerClassTypes { Bucephelous = 0, Nightmare = 1, PegaZeus = 2 }
 
@@ -89,8 +84,13 @@ public static class PF_PlayerData
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetUserInventory);
         PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(), (GetUserInventoryResult result) =>
         {
-            virtualCurrency = result.VirtualCurrency;
-            playerInventory = result.Inventory;
+            virtualCurrency.Clear();
+            playerInventory.Clear();
+
+            foreach (var pair in result.VirtualCurrency)
+                virtualCurrency.Add(pair.Key, pair.Value);
+            foreach (var eachItem in result.Inventory)
+                playerInventory.Add(eachItem);
             inventoryByCategory.Clear();
 
             if (PF_GameData.catalogItems.Count > 0)
@@ -191,7 +191,9 @@ public static class PF_PlayerData
 
     private static void OnGetUserAccountInfoSuccess(GetPlayerCombinedInfoResult result)
     {
-        playerInventory = result.InfoResultPayload.UserInventory;
+        playerInventory.Clear();
+        foreach (var eachItem in result.InfoResultPayload.UserInventory)
+            playerInventory.Add(eachItem);
         accountInfo = result.InfoResultPayload.AccountInfo;
 
         if (result.InfoResultPayload.UserData.ContainsKey("IsRegisteredForPush"))
@@ -209,11 +211,15 @@ public static class PF_PlayerData
             DialogCanvasController.RequestAccountSettings();
         }
 
+        RedeemedOffers.Clear();
         if (result.InfoResultPayload.UserReadOnlyData.ContainsKey("RedeemedOffers"))
-            RedeemedOffers = JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
+        {
+            var newOffers = JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
+            foreach (var each in newOffers)
+                RedeemedOffers.Add(each);
+        }
 
         inventoryByCategory.Clear();
-
         if (PF_GameData.catalogItems.Count > 0)
         {
             foreach (var item in playerInventory)
@@ -279,7 +285,10 @@ public static class PF_PlayerData
         //				PlayerPrefs.SetInt("LinkedFacebook", 0);
         //			}
 
-        virtualCurrency = result.InfoResultPayload.UserVirtualCurrency;
+        virtualCurrency.Clear();
+        foreach (var eachPair in result.InfoResultPayload.UserVirtualCurrency)
+            virtualCurrency.Add(eachPair.Key, eachPair.Value);
+
         PF_Bridge.RaiseCallbackSuccess("Player Account Info Loaded", PlayFabAPIMethods.GetAccountInfo, MessageDisplayStyle.none);
     }
     #endregion
@@ -377,7 +386,10 @@ public static class PF_PlayerData
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
 
-        characterStatistics = JsonWrapper.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(result.FunctionResult.ToString());
+        characterStatistics.Clear();
+        var resultStats = JsonWrapper.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(result.FunctionResult.ToString());
+        foreach (var statPair in resultStats)
+            characterStatistics.Add(statPair.Key, statPair.Value);
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterStatistics, MessageDisplayStyle.none);
     }
 
@@ -390,14 +402,9 @@ public static class PF_PlayerData
         {
             foreach (var each in updates)
             {
-                if (activeStats.ContainsKey(each.Key))
-                {
-                    activeStats[each.Key] += each.Value;
-                }
-                else
-                {
-                    activeStats.Add(each.Key, each.Value);
-                }
+                int temp;
+                activeStats.TryGetValue(each.Key, out temp);
+                activeStats[each.Key] = temp + each.Value;
             }
 
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateCharacterStatistics);
@@ -417,51 +424,6 @@ public static class PF_PlayerData
             return;
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.UpdateCharacterStatistics, MessageDisplayStyle.none);
     }
-
-    public static void GetCharacterInventory(string characterId, Action callback = null)
-    {
-        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCharacterInventory);
-
-        var request = new GetCharacterInventoryRequest
-        {
-            CharacterId = characterId
-        };
-
-        PlayFabClientAPI.GetCharacterInventory(request, result =>
-        {
-            OnGetCharacterInventorySuccess(result);
-            if (callback != null)
-                callback();
-        }, PF_Bridge.PlayFabErrorCallback);
-    }
-
-    private static void OnGetCharacterInventorySuccess(GetCharacterInventoryResult result)
-    {
-        PF_Bridge.RaiseCallbackSuccess("Character Inventory Loaded", PlayFabAPIMethods.GetCharacterInventory, MessageDisplayStyle.none);
-
-        characterVirtualCurrency = result.VirtualCurrency;
-        characterInventory = result.Inventory;
-        characterInvByCategory.Clear();
-
-        if (PF_GameData.catalogItems.Count == 0)
-            return;
-
-        foreach (var item in characterInventory)
-        {
-            if (characterInvByCategory.ContainsKey(item.ItemId))
-                continue;
-
-            var catalogItem = PF_GameData.GetCatalogItemById(item.ItemId);
-            if (catalogItem == null)
-                continue;
-
-            var items = new List<ItemInstance>(characterInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
-            var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
-            var icon = GameController.Instance.iconManager.GetIconById(customIcon);
-            characterInvByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
-        }
-    }
-
     public static void GetPlayerCharacters()
     {
         var request = new ListUsersCharactersRequest();
@@ -470,7 +432,9 @@ public static class PF_PlayerData
 
     private static void OnGetPlayerCharactersSuccess(ListUsersCharactersResult result)
     {
-        playerCharacters = result.Characters;
+        playerCharacters.Clear();
+        foreach (var eachChar in result.Characters)
+            playerCharacters.Add(eachChar);
         PF_Bridge.RaiseCallbackSuccess("Player Characters Retrieved", PlayFabAPIMethods.GetAllUsersCharacters, MessageDisplayStyle.none);
     }
 
@@ -534,14 +498,14 @@ public static class PF_PlayerData
     /// Return number of RemainingUses of an itemId in your inventory
     /// </summary>
     /// <returns>
-    /// 0 => Item does not exist in the inventory
-    /// 0 => Item does not exist in the inventory
+    /// -1 => Item does not exist in the inventory
+    /// 0 => The item has infinite uses
+    /// else, the number of remaining uses
     /// </returns>
-    public static int GetItemQty(string itemId, bool isPlayerInv)
+    public static int GetItemQty(string itemId)
     {
         var output = 0;
-        List<ItemInstance> inv = isPlayerInv ? playerInventory : characterInventory;
-        foreach (var eachItem in inv)
+        foreach (var eachItem in playerInventory)
         {
             if (eachItem.ItemId != itemId)
                 continue;
@@ -557,20 +521,22 @@ public static class PF_PlayerData
     #region Friend APIs
     public static void GetFriendsList(UnityAction callback = null)
     {
-        GetFriendsListRequest request = new GetFriendsListRequest();
-        request.IncludeFacebookFriends = true;
-        request.IncludeSteamFriends = false;
+        var request = new GetFriendsListRequest
+        {
+            IncludeFacebookFriends = true,
+            IncludeSteamFriends = false
+        };
 
         //DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetFriendList);
         PlayFabClientAPI.GetFriendsList(request, result =>
-                                        {
-                                            playerFriends = result.Friends;
-                                            if (callback != null)
-                                            {
-                                                callback();
-                                            }
-                                            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetFriendList, MessageDisplayStyle.none);
-                                        }, PF_Bridge.PlayFabErrorCallback);
+        {
+            playerFriends.Clear();
+            foreach (var eachFriend in result.Friends)
+                playerFriends.Add(eachFriend);
+            if (callback != null)
+                callback();
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GetFriendList, MessageDisplayStyle.none);
+        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public enum AddFriendMethod { DisplayName, Email, Username, PlayFabID }
@@ -704,10 +670,7 @@ public static class PF_PlayerData
     {
         activeCharacter = null;
         if (characterAchievements != null) characterAchievements.Clear();
-        if (characterInvByCategory != null) characterInvByCategory.Clear();
-        if (characterInventory != null) characterInventory.Clear();
         if (characterStatistics != null) characterStatistics.Clear();
-        if (characterVirtualCurrency != null) characterVirtualCurrency.Clear();
     }
 
     public static void LinkFBAccount(UnityAction callback = null)
