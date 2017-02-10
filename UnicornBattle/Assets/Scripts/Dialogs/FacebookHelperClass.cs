@@ -14,8 +14,8 @@ public class FacebookHelperClass
     #region facebook Util
     public static string GetPictureURL(string facebookID, int? width = null, int? height = null, string type = null)
     {
-        string url = string.Format("/{0}/picture", facebookID);
-        string query = width != null ? "&width=" + width.ToString() : "";
+        var url = string.Format("/{0}/picture", facebookID);
+        var query = width != null ? "&width=" + width.ToString() : "";
         query += height != null ? "&height=" + height.ToString() : "";
         query += type != null ? "&type=" + type : "";
         query += "&redirect=false";
@@ -27,56 +27,37 @@ public class FacebookHelperClass
     {
         Dictionary<string, FB_PhotoResponse> result = JsonWrapper.DeserializeObject<Dictionary<string, FB_PhotoResponse>>(response);
         FB_PhotoResponse urlH;
-
-        if (result.TryGetValue("data", out urlH))
-        {
-            return urlH.url;
-        }
-        else
-        {
-            return null;
-        }
+        result.TryGetValue("data", out urlH);
+        return urlH == null ? null : urlH.url;
     }
 
     public static string DeserializePictureURLObject(object pictureObj)
     {
-
-
         var picture = (Dictionary<string, object>)(((Dictionary<string, object>)pictureObj)["data"]);
-        object urlH = null;
-        if (picture.TryGetValue("url", out urlH))
-        {
-            return (string)urlH;
-        }
-
-        return null;
+        object urlH;
+        picture.TryGetValue("url", out urlH);
+        return urlH as string;
     }
-
     #endregion
-
-
-
 
     public static IEnumerator GetPlayerProfilePhoto(WebFetchHandle webRequest, UnityAction<Texture2D> callback = null)
     {
         if (FB.IsInitialized && FB.IsLoggedIn)
         {
-            LoadPictureAPI(GetPictureURL("me", 128, 128), webRequest, (Texture2D tx) =>
-          {
-              if (tx == null)
-              {
+            LoadPictureAPI(GetPictureURL("me", 128, 128), webRequest, tx =>
+            {
+                if (tx == null)
+                {
                     // Let's just try again
                     LoadPictureAPI(GetPictureURL("me", 128, 128), webRequest, callback);
-                  return;
-              }
-              else
-              {
-                  if (callback != null)
-                  {
-                      callback(tx);
-                  }
-              }
-          });
+                    return;
+                }
+                else
+                {
+                    if (callback != null)
+                        callback(tx);
+                }
+            });
         }
         yield break;
     }
@@ -85,36 +66,30 @@ public class FacebookHelperClass
     {
         if (FB.IsInitialized && FB.IsLoggedIn)
         {
-            LoadPictureAPI(GetPictureURL(id, 128, 128), webRequest, (Texture2D tx) =>
-                          {
-                              if (tx == null)
-                              {
-                                    // Let's just try again
-                                    LoadPictureAPI(GetPictureURL(id, 128, 128), webRequest, callback);
-                                  return;
-                              }
-                              else
-                              {
-                                  if (callback != null)
-                                  {
-                                      callback(tx);
-                                  }
-                              }
-                          });
+            LoadPictureAPI(GetPictureURL(id, 128, 128), webRequest, tx =>
+            {
+                if (tx == null)
+                {
+                    // Let's just try again
+                    LoadPictureAPI(GetPictureURL(id, 128, 128), webRequest, callback);
+                    return;
+                }
+                else
+                {
+                    if (callback != null)
+                        callback(tx);
+                }
+            });
         }
         yield break;
     }
 
-
-
-
     public static void LoadPictureAPI(string url, WebFetchHandle wwwFetch, UnityAction<Texture2D> callback = null)
     {
-        FB.API(url, HttpMethod.GET, (IGraphResult result) =>
+        FB.API(url, HttpMethod.GET, result =>
         {
             if (result.Error != null)
             {
-                //Util.LogError(result.Error);
                 Debug.LogError(result.Error);
                 return;
             }
@@ -128,27 +103,22 @@ public class FacebookHelperClass
 
     public static void GetFBUserName(UnityAction<string> callback = null)
     {
-        FB.API("me?fields=name", HttpMethod.GET, (IGraphResult result) =>
+        FB.API("me?fields=name", HttpMethod.GET, result =>
         {
             if (result.Error != null)
             {
                 Debug.LogWarning("Facebook API Error: " + result.Error);
                 if (callback != null)
-                {
                     callback(null);
-                }
             }
             else
             {
                 var dict = result.ResultDictionary;
                 if (callback != null && dict.ContainsKey("name"))
-                {
                     callback(dict["name"].ToString());
-                }
             }
         });
     }
-
 }
 
 public class FB_PhotoResponse
@@ -157,7 +127,4 @@ public class FB_PhotoResponse
     public int width { get; set; }
     public bool is_silhouette { get; set; }
     public string url { get; set; }
-
-    public FB_PhotoResponse() { }
 }
-

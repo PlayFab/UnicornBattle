@@ -14,42 +14,39 @@ public class CharacterAchievementsController : MonoBehaviour
 
     public void Init()
     {
-        if (cPicker.selectedSlot.saved != null)
+        if (cPicker.selectedSlot.saved != null && PF_GameData.Achievements != null && PF_GameData.Achievements.Count > 0)
         {
-            if (PF_GameData.Achievements != null && PF_GameData.Achievements.Count > 0)
+            while (items.Count < PF_GameData.Achievements.Count)
             {
-                while (items.Count < PF_GameData.Achievements.Count)
+                var achvItem = Instantiate(achievementItemPrefab);
+                achvItem.transform.SetParent(listView, false);
+                items.Add(achvItem);
+            }
+
+            for (var z = 0; z < items.Count; z++)
+            {
+                var kvp = PF_GameData.Achievements.ElementAt(z);
+                // check here for already awarded
+
+                colorize.Add(items[z].coloredBar);
+
+                items[z].icon.overrideSprite = GameController.Instance.iconManager.GetIconById(kvp.Value.Icon);
+                items[z].Name.text = kvp.Value.AchievementName;
+                items[z].progressBar.maxValue = kvp.Value.Threshold;
+
+                if (PF_PlayerData.DoesCharacterHaveAchievement(cPicker.selectedSlot.saved.characterDetails.CharacterId, kvp.Key))
                 {
-                    var achvItem = Instantiate(achievementItemPrefab);
-                    achvItem.transform.SetParent(listView, false);
-                    items.Add(achvItem);
+                    items[z].CompleteAchievement();
+                    StartCoroutine(items[z].progressBar.UpdateBar(kvp.Value.Threshold));
+                    items[z].display.text = GlobalStrings.COMPLETE_MSG;
                 }
-
-                for (int z = 0; z < items.Count; z++)
+                else
                 {
-                    var kvp = PF_GameData.Achievements.ElementAt(z);
-                    // check here for already awarded
+                    items[z].ResetImage();
 
-                    colorize.Add(items[z].coloredBar);
-                    
-                    items[z].icon.overrideSprite = GameController.Instance.iconManager.GetIconById(kvp.Value.Icon);
-                    items[z].Name.text = kvp.Key;
-                    items[z].progressBar.maxValue = kvp.Value.Threshold;
-
-                    if (PF_PlayerData.DoesCharacterHaveAchievement(cPicker.selectedSlot.saved.characterDetails.CharacterId, kvp.Key))
-                    {
-                        items[z].CompleteAchievement();
-                        StartCoroutine(items[z].progressBar.UpdateBar(kvp.Value.Threshold));
-                        items[z].display.text = GlobalStrings.COMPLETE_MSG;
-                    }
-                    else
-                    {
-                        items[z].ResetImage();
-
-                        int progress = CalcProgress(kvp.Value);
-                        items[z].display.text = string.Format("{0:n0}/{1:n0} {2}", AchievementDisplayNumber(progress), AchievementDisplayNumber(kvp.Value.Threshold), kvp.Value.MatchingStatistic);
-                        StartCoroutine(items[z].progressBar.UpdateBar(progress));
-                    }
+                    int progress = CalcProgress(kvp.Value);
+                    items[z].display.text = string.Format("{0:n0}/{1:n0} {2}", AchievementDisplayNumber(progress), AchievementDisplayNumber(kvp.Value.Threshold), kvp.Value.MatchingStatistic);
+                    StartCoroutine(items[z].progressBar.UpdateBar(progress));
                 }
             }
         }

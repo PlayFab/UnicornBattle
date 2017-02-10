@@ -58,7 +58,6 @@ public class FX_Placement : MonoBehaviour {
 		Func<GameObject> GetRadomFX = () => 
 		{
 			int rnd = UnityEngine.Random.Range(0,effects.Count);
-			Debug.Log(""+rnd);
 			return CFX_SpawnSystem.GetNextObject(effects[rnd], false);
 		};
 		

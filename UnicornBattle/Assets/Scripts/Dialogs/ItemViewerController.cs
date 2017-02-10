@@ -1,5 +1,4 @@
 using PlayFab.ClientModels;
-using PlayFab.Json;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -20,7 +19,6 @@ public class ItemViewerController : MonoBehaviour
     public List<CatalogItem> pfItems = new List<CatalogItem>();
     public CatalogItem selectedItem;
     private int selectedIndex = 0;
-    private UnityAction<UnlockContainerItemResult> afterUnlockCallback;
     private string currentIconId = string.Empty;
 
     // MAKE THIS index / List<ContainerResultItem>

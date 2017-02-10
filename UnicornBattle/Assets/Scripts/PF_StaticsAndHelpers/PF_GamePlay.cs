@@ -133,7 +133,7 @@ public static class PF_GamePlay
         var request = new ExecuteCloudScriptRequest
         {
             FunctionName = "RetriveQuestItems",
-            FunctionParameter = new { CharacterId = PF_PlayerData.activeCharacter.characterDetails.CharacterId, ItemIds = QuestProgress.ItemsFound },
+            FunctionParameter = new { ItemIds = QuestProgress.ItemsFound },
         };
         PlayFabClientAPI.ExecuteCloudScript(request, OnRetrieveQuestItemsSuccess, PF_Bridge.PlayFabErrorCallback);
     }
@@ -196,9 +196,6 @@ public static class PF_GamePlay
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
         {
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.MakePurchase);
-
-
-            Debug.Log("RM: " + itemId);
             OnePF.OpenIAB.purchaseProduct(itemId);
         }
         else
@@ -207,33 +204,28 @@ public static class PF_GamePlay
         }
     }
 
-
     /// <summary>
     /// Starts the buy store item.
     /// </summary>
     /// <param name="item">Item.</param>
-    /// <param name="storeID">Store I.</param>
-    public static void StartBuyStoreItem(CatalogItem item, string storeID)
+    /// <param name="storeId">Store I.</param>
+    public static void StartBuyStoreItem(CatalogItem item, string storeId, string currencyKey, uint currencyValue)
     {
-        if (item.VirtualCurrencyPrices.ContainsKey(GlobalStrings.REAL_MONEY_CURRENCY))
+        if (currencyKey == GlobalStrings.REAL_MONEY_CURRENCY)
         {
             PF_Bridge.IAB_CurrencyCode = "US";
-            PF_Bridge.IAB_Price = (int)item.VirtualCurrencyPrices[GlobalStrings.REAL_MONEY_CURRENCY];
-
+            PF_Bridge.IAB_Price = (int)currencyValue;
             MakeRmPurchase(item.ItemId);
             return;
         }
-
-        var vcKvp = item.VirtualCurrencyPrices.First();
 
         // normal purchase item flow
         var request = new PurchaseItemRequest
         {
             ItemId = item.ItemId,
-            VirtualCurrency = vcKvp.Key,
-            Price = (int)vcKvp.Value,
-            StoreId = storeID,
-            CharacterId = PF_PlayerData.activeCharacter == null ? null : PF_PlayerData.activeCharacter.characterDetails.CharacterId
+            VirtualCurrency = currencyKey,
+            Price = (int)currencyValue,
+            StoreId = storeId
         };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.MakePurchase);
@@ -260,8 +252,7 @@ public static class PF_GamePlay
         var request = new ConsumeItemRequest
         {
             ConsumeCount = 1,
-            ItemInstanceId = id,
-            CharacterId = PF_PlayerData.activeCharacter == null ? null : PF_PlayerData.activeCharacter.characterDetails.CharacterId
+            ItemInstanceId = id
         };
 
         //DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericCloudScript);

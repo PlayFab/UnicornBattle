@@ -21,13 +21,11 @@ public class FloatingInventoryController : MonoBehaviour
     private int _pageCount = 1;
     private int _itemsPerPage = 12;
 
-    private StorePicker sPicker;
+    // private StorePicker sPicker;
     private Dictionary<string, InventoryCategory> _itemsToDisplay = new Dictionary<string, InventoryCategory>();
     private Action<string> _callbackAfterUse;
 
-    //public StoreDisplayItem selectedItem
     public FloatingInventory_SelectedItem selectedItem;
-
     public InventoryCurrencyBarController Currencies;
 
     //TODO add in filter for things like:
@@ -39,11 +37,9 @@ public class FloatingInventoryController : MonoBehaviour
         activeFilter = filter;
 
         if (callback != null)
-        {
             _callbackAfterUse = callback;
-        }
 
-        //only displaying the main currencies (Gold & Gems) for now
+        // only displaying the main currencies (Gold & Gems) for now
         currenciesInUse.Clear();
         currenciesInUse.Add(GlobalStrings.GOLD_CURRENCY);
         currenciesInUse.Add(GlobalStrings.GEM_CURRENCY);
@@ -121,18 +117,14 @@ public class FloatingInventoryController : MonoBehaviour
     public void HideSelectedItem()
     {
         DeselectButtons();
-
-        if (selectedItem.itemData != null)
-            selectedItem.itemData = null;
-
+        selectedItem.itemData = null;
         selectedItem.gameObject.SetActive(false);
     }
 
     public void DeselectButtons()
     {
         foreach (var item in inventory)
-            if (item != null)
-                item.Deselect();
+            item.Deselect();
     }
 
     public void CloseInventory()
@@ -145,9 +137,7 @@ public class FloatingInventoryController : MonoBehaviour
     public void ItemClicked(InventoryDisplayItem item)
     {
         if (selectedItem.itemData != null)
-        {
             selectedItem.itemData.Deselect();
-        }
 
         selectedItem.RefreshSelected(item);
         ShowSelectedItem();
@@ -170,7 +160,6 @@ public class FloatingInventoryController : MonoBehaviour
             if (z < _itemsToDisplay.Count)
             {
                 var kvp = _itemsToDisplay.ElementAt(z);
-
 
                 inventory[uiIndex].Init();
                 inventory[uiIndex].SetButton(kvp.Value.icon, kvp.Value);
@@ -202,7 +191,6 @@ public class FloatingInventoryController : MonoBehaviour
             if (z < _itemsToDisplay.Count)
             {
                 var kvp = _itemsToDisplay.ElementAt(z);
-
 
                 inventory[uiIndex].Init();
                 inventory[uiIndex].SetButton(kvp.Value.icon, kvp.Value);

@@ -1,6 +1,4 @@
 using PlayFab.ClientModels;
-using PlayFab.Json;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +9,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
     public Text pageDisplay;
     public Button nextPage;
     public Button prevPage;
-    private StorePicker sPicker;
+    // private StorePicker sPicker;
     private List<StoreItem> itemsToDisplay;
     public StoreDisplayItem selectedItem;
     public StoreCurrencyBarController Currencies;
@@ -53,8 +51,8 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
         {
             Sprite icon;
             GetItemIcon(itemsToDisplay[z], out icon);
-            _inventory[z].Init();
-            _inventory[z].SetButton(icon, itemsToDisplay[z]);
+            _inventory[z].Init(this);
+            _inventory[z].SetButton(icon, activeStoreId, itemsToDisplay[z]);
 
             // keep track of what currencies are being used in the store.				
             var vcPrices = itemsToDisplay[z].VirtualCurrencyPrices.Keys;
@@ -124,8 +122,8 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
             {
                 Sprite icon;
                 GetItemIcon(itemsToDisplay[z], out icon);
-                _inventory[uiIndex].Init();
-                _inventory[uiIndex].SetButton(icon, itemsToDisplay[z]);
+                _inventory[uiIndex].Init(this);
+                _inventory[uiIndex].SetButton(icon, activeStoreId, itemsToDisplay[z]);
             }
             else
             {
@@ -152,20 +150,13 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
         {
             Sprite icon;
             GetItemIcon(itemsToDisplay[z], out icon);
-            _inventory[uiIndex].Init();
-            _inventory[uiIndex].SetButton(icon, itemsToDisplay[z]);
+            _inventory[uiIndex].Init(this);
+            _inventory[uiIndex].SetButton(icon, activeStoreId, itemsToDisplay[z]);
         }
 
         nextPage.interactable = true;
         prevPage.interactable = prevPageIdx > 1;
         currentPage--;
-    }
-
-    public void InitiatePurchase()
-    {
-        //NEED TO KNOW WHICH PURCHASE FLOW TO USE
-        //Debug.Log ("Starting purchase of " + selectedItem.catalogItem.ItemId);
-        PF_GamePlay.StartBuyStoreItem(selectedItem.catalogItem, activeStoreId);
     }
 
     void OnEnable()
@@ -195,7 +186,6 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
                 else
                     PF_PlayerData.GetUserInventory();
                 break;
-            case PlayFabAPIMethods.GetCharacterInventory:
             case PlayFabAPIMethods.GetAccountInfo:
                 DialogCanvasController.RequestStore(activeStoreId);
                 break;

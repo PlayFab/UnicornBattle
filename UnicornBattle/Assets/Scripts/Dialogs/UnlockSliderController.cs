@@ -10,18 +10,14 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
     public Slider uiSlider;
     public Text sliderMessage;
     public Button storeButton;
+    public Image endIcon;
+    public Image handle;
+    public ItemViewerController controller;
+    public Text ItemDescription;
 
     private float slideDelay = 0.333f;
     private float resistance = 0.05f;
-
-    private Coroutine slideBack;
     private UnityAction<UnlockContainerItemResult> afterUnlock;
-
-    public Image endIcon;
-    public Image handle;
-
-    public ItemViewerController controller;
-    public Text ItemDescription;
 
     void OnEnable()
     {
@@ -31,24 +27,17 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        Debug.Log("The mouse click was released");
         if (!Mathf.Approximately(uiSlider.value, uiSlider.maxValue))
-        {
-            // start sliding backwards
             StartCoroutine(SlideBack(slideDelay));
-        }
         else if (Mathf.Approximately(uiSlider.value, uiSlider.maxValue))
-        {
             CheckUnlock();
-        }
     }
 
     public IEnumerator SlideBack(float delay)
     {
         if (delay > 0)
-        {
             yield return new WaitForSeconds(delay);
-        }
+
         while (!Mathf.Approximately(uiSlider.value, uiSlider.minValue))
         {
             uiSlider.value -= resistance;

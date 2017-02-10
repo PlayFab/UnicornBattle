@@ -19,13 +19,17 @@ public class StoreDisplayItem : MonoBehaviour
     public Text NewPrice;
     public Text Slash;
     public List<Sprite> CurrencyIcons;
-
     public FloatingStoreController controller;
 
     public CatalogItem catalogItem;
+    public string currencyKey;
+    public uint finalPrice;
+    private StoreItem storeItem;
+    private string storeId;
 
-    public void Init()
+    public void Init(FloatingStoreController setController)
     {
+        controller = setController;
         btn.onClick.AddListener(() =>
         {
             controller.ItemClicked(this);
@@ -34,9 +38,12 @@ public class StoreDisplayItem : MonoBehaviour
         });
     }
 
-    public void SetButton(Sprite icon, StoreItem sItem)
+    public void SetButton(Sprite icon, string sId, StoreItem sItem)
     {
+        storeId = sId;
+        storeItem = sItem;
         catalogItem = PF_GameData.GetCatalogItemById(sItem.ItemId);
+
         var displayName = catalogItem != null ? catalogItem.DisplayName : "Unknown item";
 
         ActivateButton();
@@ -49,33 +56,39 @@ public class StoreDisplayItem : MonoBehaviour
         btn.onClick.AddListener(() =>
         {
             controller.selectedItem = this;
-            controller.InitiatePurchase();
+            InitiatePurchase();
         });
 
-        uint salePrice, basePrice; string currencyKey;
-        GetPrice(sItem, catalogItem, out salePrice, out basePrice, out currencyKey);
-        SetIcon(currencyKey);
+        uint salePrice, basePrice;
+        finalPrice = GetPrice(out salePrice, out basePrice, out currencyKey);
+        SetIcon();
         SetPrice(salePrice, basePrice, currencyKey);
     }
 
-    private void GetPrice(StoreItem sItem, CatalogItem cItem, out uint salePrice, out uint basePrice, out string currencyKey)
+    public void InitiatePurchase()
     {
-        currencyKey = GlobalStrings.REAL_MONEY_CURRENCY;
-        if (sItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GEM_CURRENCY))
-            currencyKey = GlobalStrings.GEM_CURRENCY;
-        else if (sItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GOLD_CURRENCY))
-            currencyKey = GlobalStrings.GOLD_CURRENCY;
-
-        uint temp;
-        salePrice = basePrice = 0;
-        if (sItem.VirtualCurrencyPrices.TryGetValue(currencyKey, out temp))
-            salePrice = temp;
-        if (cItem != null && cItem.VirtualCurrencyPrices != null
-          && cItem.VirtualCurrencyPrices.TryGetValue(currencyKey, out temp))
-            basePrice = temp;
+        PF_GamePlay.StartBuyStoreItem(catalogItem, storeId, currencyKey, finalPrice);
     }
 
-    private void SetIcon(string currencyKey)
+    /// <returns>Final price that will be passed into the Purchase API</returns>
+    private uint GetPrice(out uint salePrice, out uint basePrice, out string getCurrencyKey)
+    {
+        getCurrencyKey = GlobalStrings.REAL_MONEY_CURRENCY;
+        if (storeItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GEM_CURRENCY))
+            getCurrencyKey = GlobalStrings.GEM_CURRENCY;
+        else if (storeItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GOLD_CURRENCY))
+            getCurrencyKey = GlobalStrings.GOLD_CURRENCY;
+
+        uint temp, tempFinalPrice = 0; salePrice = basePrice = 0;
+        if (catalogItem != null && catalogItem.VirtualCurrencyPrices != null
+          && catalogItem.VirtualCurrencyPrices.TryGetValue(getCurrencyKey, out temp))
+            tempFinalPrice = basePrice = temp;
+        if (storeItem.VirtualCurrencyPrices.TryGetValue(getCurrencyKey, out temp))
+            tempFinalPrice = salePrice = temp;
+        return tempFinalPrice;
+    }
+
+    private void SetIcon()
     {
         switch (currencyKey)
         {
@@ -110,8 +123,8 @@ public class StoreDisplayItem : MonoBehaviour
         else
         {
             ItemPrice.text = currencyKey == GlobalStrings.REAL_MONEY_CURRENCY
-                    ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
-                    : basePrice.ToString("N0").Trim('.');
+                ? string.Format("{0:C2}", basePrice / 100.0f) // Price in cents
+                : basePrice.ToString("N0").Trim('.');
         }
     }
 

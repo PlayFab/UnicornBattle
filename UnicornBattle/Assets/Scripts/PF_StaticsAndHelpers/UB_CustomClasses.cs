@@ -88,12 +88,6 @@ public class UB_GamePlayEncounter
     //TODO add a bool for signals end of act
 }
 
-public class UB_GamePlayActions
-{
-    string ActionName;
-    string ActionDetails;
-}
-
 public enum EncounterTypes { Creep, MegaCreep, RareCreep, BossCreep, Hero, Store }
 public class UB_EncounterData
 {
@@ -148,35 +142,28 @@ public class UB_EncounterData
     //copy ctor
     public UB_EncounterData(UB_EncounterData prius)
     {
-        if (prius != null)
-        {
-            SpawnWeight = prius.SpawnWeight;
-            EncounterType = prius.EncounterType;
-            Description = prius.Description;
-            Icon = prius.Icon;
+        if (prius == null)
+            return;
 
-            Vitals = new EnemyVitals(prius.Vitals);
+        SpawnWeight = prius.SpawnWeight;
+        EncounterType = prius.EncounterType;
+        Description = prius.Description;
+        Icon = prius.Icon;
 
-            Rewards = new EncounterRewards(prius.Rewards);
+        Vitals = new EnemyVitals(prius.Vitals);
+        Rewards = new EncounterRewards(prius.Rewards);
 
-            EncounterActions = new Dictionary<string, string>();
-            foreach (var kvp in prius.EncounterActions)
-            {
-                EncounterActions.Add(kvp.Key, kvp.Value);
-            }
+        EncounterActions = new Dictionary<string, string>();
+        foreach (var kvp in prius.EncounterActions)
+            EncounterActions.Add(kvp.Key, kvp.Value);
 
-            Spells = new Dictionary<string, EnemySpellDetail>();
-            foreach (var spell in prius.Spells)
-            {
-                Spells.Add(spell.Key, new EnemySpellDetail(spell.Value));
-            }
+        Spells = new Dictionary<string, EnemySpellDetail>();
+        foreach (var spell in prius.Spells)
+            Spells.Add(spell.Key, new EnemySpellDetail(spell.Value));
 
-            Vitals.ActiveStati = new List<UB_SpellStatus>();
-            foreach (var status in prius.Vitals.ActiveStati)
-            {
-                Vitals.ActiveStati.Add(new UB_SpellStatus(status));
-            }
-        }
+        Vitals.ActiveStati = new List<UB_SpellStatus>();
+        foreach (var status in prius.Vitals.ActiveStati)
+            Vitals.ActiveStati.Add(new UB_SpellStatus(status));
     }
 }
 
@@ -205,16 +192,16 @@ public class EnemySpellDetail
     //copy ctor
     public EnemySpellDetail(EnemySpellDetail prius)
     {
-        if (prius != null)
-        {
-            SpellName = prius.SpellName;
-            SpellPriority = prius.SpellPriority;
-            SpellLevel = prius.SpellLevel;
-            IsLocked = prius.IsLocked;
-            IsOnCooldown = prius.IsOnCooldown;
-            CdTurns = prius.CdTurns;
-            Detail = new UB_SpellDetail(prius.Detail);
-        }
+        if (prius == null)
+            return;
+
+        SpellName = prius.SpellName;
+        SpellPriority = prius.SpellPriority;
+        SpellLevel = prius.SpellLevel;
+        IsLocked = prius.IsLocked;
+        IsOnCooldown = prius.IsOnCooldown;
+        CdTurns = prius.CdTurns;
+        Detail = new UB_SpellDetail(prius.Detail);
     }
 }
 
@@ -251,43 +238,43 @@ public class EnemyVitals
     //Copy ctor
     public EnemyVitals(EnemyVitals prius)
     {
-        if (prius != null)
+        if (prius == null)
+            return;
+
+        Health = prius.Health;
+        Mana = prius.Mana;
+        Speed = prius.Speed;
+        Defense = prius.Defense;
+        CharacterLevel = prius.CharacterLevel;
+        MaxHealth = prius.MaxHealth;
+        MaxMana = prius.MaxMana;
+        MaxSpeed = prius.MaxSpeed;
+        MaxDefense = prius.MaxDefense;
+
+        if (prius.UsableItems != null && prius.UsableItems.Count > 0)
         {
-            Health = prius.Health;
-            Mana = prius.Mana;
-            Speed = prius.Speed;
-            Defense = prius.Defense;
-            CharacterLevel = prius.CharacterLevel;
-            MaxHealth = prius.MaxHealth;
-            MaxMana = prius.MaxMana;
-            MaxSpeed = prius.MaxSpeed;
-            MaxDefense = prius.MaxDefense;
+            UsableItems = prius.UsableItems.ToList();
+        }
+        else
+        {
+            UsableItems = new List<string>();
+        }
 
-            if (prius.UsableItems != null && prius.UsableItems.Count > 0)
+        Spells = new List<EnemySpellDetail>();
+        if (prius.Spells != null && prius.Spells.Count > 0)
+        {
+            foreach (var spell in prius.Spells)
             {
-                UsableItems = prius.UsableItems.ToList();
+                Spells.Add(new EnemySpellDetail(spell));
             }
-            else
-            {
-                UsableItems = new List<string>();
-            }
+        }
 
-            Spells = new List<EnemySpellDetail>();
-            if (prius.Spells != null && prius.Spells.Count > 0)
+        ActiveStati = new List<UB_SpellStatus>();
+        if (prius.ActiveStati != null && prius.ActiveStati.Count > 0)
+        {
+            foreach (var status in ActiveStati)
             {
-                foreach (var spell in prius.Spells)
-                {
-                    Spells.Add(new EnemySpellDetail(spell));
-                }
-            }
-
-            ActiveStati = new List<UB_SpellStatus>();
-            if (prius.ActiveStati != null && prius.ActiveStati.Count > 0)
-            {
-                foreach (var status in ActiveStati)
-                {
-                    ActiveStati.Add(new UB_SpellStatus(status));
-                }
+                ActiveStati.Add(new UB_SpellStatus(status));
             }
         }
     }
@@ -394,14 +381,14 @@ public class EncounterRewards
     //copy ctor
     public EncounterRewards(EncounterRewards prius)
     {
-        if (prius != null)
-        {
-            XpMin = prius.XpMin;
-            XpMax = prius.XpMax;
-            GoldMin = prius.GoldMin;
-            GoldMax = prius.GoldMax;
-            ItemsDropped = prius.ItemsDropped.ToList();
-        }
+        if (prius == null)
+            return;
+
+        XpMin = prius.XpMin;
+        XpMax = prius.XpMax;
+        GoldMin = prius.GoldMin;
+        GoldMax = prius.GoldMax;
+        ItemsDropped = prius.ItemsDropped.ToList();
     }
 }
 
@@ -473,21 +460,21 @@ public class UB_SpellDetail
     //copy ctor
     public UB_SpellDetail(UB_SpellDetail prius)
     {
-        if (prius != null)
-        {
-            Description = prius.Description;
-            Icon = prius.Icon;
-            Target = prius.Target;
-            BaseDmg = prius.BaseDmg;
-            ManaCost = prius.ManaCost;
-            BaseDmg = prius.BaseDmg;
-            UpgradePower = prius.UpgradePower;
-            UpgradeLevels = prius.UpgradeLevels;
-            FX = prius.FX;
-            Cooldown = prius.Cooldown;
-            LevelReq = prius.LevelReq;
-            ApplyStatus = new UB_SpellStatus(prius.ApplyStatus);
-        }
+        if (prius == null)
+            return;
+
+        Description = prius.Description;
+        Icon = prius.Icon;
+        Target = prius.Target;
+        BaseDmg = prius.BaseDmg;
+        ManaCost = prius.ManaCost;
+        BaseDmg = prius.BaseDmg;
+        UpgradePower = prius.UpgradePower;
+        UpgradeLevels = prius.UpgradeLevels;
+        FX = prius.FX;
+        Cooldown = prius.Cooldown;
+        LevelReq = prius.LevelReq;
+        ApplyStatus = new UB_SpellStatus(prius.ApplyStatus);
     }
 }
 
@@ -514,19 +501,19 @@ public class UB_SpellStatus
     //copy ctor
     public UB_SpellStatus(UB_SpellStatus prius)
     {
-        if (prius != null)
-        {
-            StatusName = prius.StatusName;
-            Target = prius.Target;
-            UpgradeReq = prius.UpgradeReq;
-            StatusDescription = prius.StatusDescription;
-            StatModifierCode = prius.StatModifierCode;
-            ModifyAmount = prius.ModifyAmount;
-            ChanceToApply = prius.ChanceToApply;
-            Turns = prius.Turns;
-            Icon = prius.Icon;
-            FX = prius.FX;
-        }
+        if (prius == null)
+            return;
+
+        StatusName = prius.StatusName;
+        Target = prius.Target;
+        UpgradeReq = prius.UpgradeReq;
+        StatusDescription = prius.StatusDescription;
+        StatModifierCode = prius.StatModifierCode;
+        ModifyAmount = prius.ModifyAmount;
+        ChanceToApply = prius.ChanceToApply;
+        Turns = prius.Turns;
+        Icon = prius.Icon;
+        FX = prius.FX;
     }
 }
 

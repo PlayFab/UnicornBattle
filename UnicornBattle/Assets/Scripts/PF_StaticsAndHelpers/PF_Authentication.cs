@@ -341,11 +341,6 @@ public static class PF_Authentication
         else
         {
             custom_id = SystemInfo.deviceUniqueIdentifier;
-            //LoginWithCustomIDRequest
-            //			if(OnLoginFail != null && silent == false)
-            //			{
-            //				OnLoginFail("Must be using android or ios platforms to use deveice id.", MessageDisplayStyle.error);
-            //			}
             return false;
         }
     }
@@ -356,11 +351,7 @@ public static class PF_Authentication
     /// <returns><c>true</c>, for supported mobile platform, <c>false</c> otherwise.</returns>
     public static bool CheckForSupportedMobilePlatform()
     {
-        if (Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer)
-        {
-            return false;
-        }
-        return true;
+        return Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer;
     }
 
     /// <summary>
@@ -369,27 +360,20 @@ public static class PF_Authentication
     public static void Logout()
     {
         if (OnLoginFail != null)
-        {
             OnLoginFail("Logout", MessageDisplayStyle.none);
-        }
         android_id = string.Empty;
         ios_id = string.Empty;
         custom_id = string.Empty;
 
         if (FB.IsInitialized && FB.IsLoggedIn)
-        {
             CallFBLogout();
-        }
 
         //TODO maybe not OK to delete all, but if it works out this is easy
         // hack, manually deleteing keys to work across android devices.
         PlayerPrefs.DeleteKey("LinkedFacebook");
         PlayerPrefs.DeleteKey("LastDeviceIdUsed");
         PlayerPrefs.DeleteKey("TitleId");
-
-
-
-        PF_Authentication.isLoggedOut = true;
+        isLoggedOut = true;
 
         //TODO make sure the delay here is long enough to shut down the active game systems
         SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Authenticate, .333f);
@@ -411,26 +395,19 @@ public static class PF_Authentication
 
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer || Application.isEditor)
         {
-            if (FB.IsInitialized == false)
-            {
-                //FB.Init(OnInitComplete, OnHideUnity);
+            if (!FB.IsInitialized)
                 FB.Init();
-            }
 
-            if (PF_Authentication.usedManualFacebook)
+            if (usedManualFacebook)
             {
                 LinkDeviceId();
-                PF_Authentication.usedManualFacebook = false;
+                usedManualFacebook = false;
             }
         }
-
-        Debug.Log("Session Ticket: " + result.SessionTicket);
 
         PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.GenericLogin, MessageDisplayStyle.none);
         if (OnLoginSuccess != null)
-        {
             OnLoginSuccess(string.Format("SUCCESS: {0}", result.SessionTicket), MessageDisplayStyle.error);
-        }
     }
 
     /// <summary>
@@ -439,36 +416,22 @@ public static class PF_Authentication
     /// <param name="error">Error.</param>
     private static void OnLoginError(PlayFabError error) //PlayFabError
     {
-        string errorMessage = string.Empty;
+        string errorMessage;
         if (error.Error == PlayFabErrorCode.InvalidParams && error.ErrorDetails.ContainsKey("Password"))
-        {
             errorMessage = "Invalid Password";
-        }
         else if (error.Error == PlayFabErrorCode.InvalidParams && error.ErrorDetails.ContainsKey("Username") || (error.Error == PlayFabErrorCode.InvalidUsername))
-        {
             errorMessage = "Invalid Username";
-        }
         else if (error.Error == PlayFabErrorCode.AccountNotFound)
-        {
             errorMessage = "Account Not Found, you must have a linked PlayFab account. Start by registering a new account or using your device id";
-        }
         else if (error.Error == PlayFabErrorCode.AccountBanned)
-        {
             errorMessage = "Account Banned";
-        }
         else if (error.Error == PlayFabErrorCode.InvalidUsernameOrPassword)
-        {
             errorMessage = "Invalid Username or Password";
-        }
         else
-        {
             errorMessage = string.Format("Error {0}: {1}", error.HttpCode, error.ErrorMessage);
-        }
 
         if (OnLoginFail != null)
-        {
             OnLoginFail(errorMessage, MessageDisplayStyle.error);
-        }
 
         // reset these IDs (a hack for properly detecting if a device is claimed or not, we will have an API call for this soon)
         //PlayFabLoginCalls.android_id = string.Empty;
@@ -476,33 +439,26 @@ public static class PF_Authentication
 
         //clear the token if we had a fb login fail
         if (FB.IsLoggedIn)
-        {
             CallFBLogout();
-        }
     }
-
-
 
     /// <summary>
     /// Calls the UpdateUserTitleDisplayName request API
     /// </summary>
     public static void UpdateDisplayName(string displayName, UnityAction<UpdateUserTitleDisplayNameResult> callback = null)
     {
-        if (displayName.Length > 2 && displayName.Length < 21)
-        {
-            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateDisplayName);
-            UpdateUserTitleDisplayNameRequest request = new UpdateUserTitleDisplayNameRequest();
-            request.DisplayName = displayName;
+        if (displayName.Length < 3 || 20 < displayName.Length)
+            return;
 
-            PlayFabClientAPI.UpdateUserTitleDisplayName(request, (UpdateUserTitleDisplayNameResult result) =>
-            {
-                PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.UpdateDisplayName, MessageDisplayStyle.none);
-                if (callback != null)
-                {
-                    callback(result);
-                }
-            }, PF_Bridge.PlayFabErrorCallback);
-        }
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateDisplayName);
+        var request = new UpdateUserTitleDisplayNameRequest { DisplayName = displayName };
+        PlayFabClientAPI.UpdateUserTitleDisplayName(request, result =>
+        {
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.UpdateDisplayName, MessageDisplayStyle.none);
+            if (callback != null)
+                callback(result);
+        }, PF_Bridge.PlayFabErrorCallback);
+
     }
 
     /// <summary>
@@ -513,20 +469,19 @@ public static class PF_Authentication
     /// <param name="email">Email - email to use (must be unique)</param>
     public static void AddUserNameAndPassword(string user, string pass, string email, UnityAction<AddUsernamePasswordResult> callback = null)
     {
-        AddUsernamePasswordRequest request = new AddUsernamePasswordRequest();
-        request.Email = email;
-        request.Password = pass;
-        request.Username = user;
+        var request = new AddUsernamePasswordRequest
+        {
+            Email = email,
+            Password = pass,
+            Username = user
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.AddUsernamePassword);
-        PlayFabClientAPI.AddUsernamePassword(request, (AddUsernamePasswordResult result) =>
+        PlayFabClientAPI.AddUsernamePassword(request, result =>
         {
             if (callback != null)
-            {
                 callback(result);
-            }
             PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.AddUsernamePassword, MessageDisplayStyle.none);
-
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
@@ -622,8 +577,7 @@ public static class PF_Authentication
     }
 
     #endregion
-
-
+    
     #region helperfunctions
     /// <summary>
     /// Validates the email.
@@ -632,7 +586,7 @@ public static class PF_Authentication
     /// <param name="em">Email address</param>
     public static bool ValidateEmail(string em)
     {
-        return Regex.IsMatch(em, PF_Authentication.emailPattern);
+        return Regex.IsMatch(em, emailPattern);
     }
 
     /// <summary>
@@ -647,10 +601,8 @@ public static class PF_Authentication
     }
 
     #endregion
-
-
+    
     #region fb_helperfunctions
-
     // callback after FB.Init();
     public static void OnInitComplete()
     {
@@ -668,7 +620,6 @@ public static class PF_Authentication
     // Handler for OnHideUnity Events
     public static void OnHideUnity(bool isGameShown)
     {
-        Debug.Log("Is game showing? " + isGameShown);
     }
 
     /// <summary>
@@ -679,23 +630,18 @@ public static class PF_Authentication
         FB.LogInWithReadPermissions(new List<string>() { "public_profile", "email", "user_friends" }, LoginCallback);
     }
 
-
     // callback called after a successful FB login.
     public static void LoginCallback(Facebook.Unity.ILoginResult result)
     {
         if (result.Error != null)
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("Facebook Error: " + result.Error, MessageDisplayStyle.none);
-            }
         }
         else if (!FB.IsLoggedIn)
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("Facebook Error: Login cancelled by Player", MessageDisplayStyle.none);
-            }
         }
         else
         {

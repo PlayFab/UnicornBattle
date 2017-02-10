@@ -309,7 +309,7 @@ public static class PF_GameData
         {
             string temp;
             var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
-            if (kvps.TryGetValue("icon", out temp))
+            if (kvps != null && kvps.TryGetValue("icon", out temp))
                 iconName = temp;
         }
         catch (Exception e)

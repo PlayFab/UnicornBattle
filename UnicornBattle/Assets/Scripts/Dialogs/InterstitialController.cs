@@ -17,9 +17,7 @@ public class InterstitialController : MonoBehaviour
 
     public float startTime;
     public float waitTime = 5;
-
-    private UB_SaleData saleOnDisplay;
-
+    
     public delegate void InterstitalComplete();
     public static event InterstitalComplete OnInterstitialFinish;
 

@@ -7,7 +7,6 @@ public class ProfileUIController : MonoBehaviour
     public Transform[] UiObjects;
     public Image[] colorize;
 
-    private bool _isCharacterInventoryLoaded = false;
     private bool _isCharacterDataLoaded = false;
 
     public void OnEnable()
@@ -24,7 +23,6 @@ public class ProfileUIController : MonoBehaviour
 
     public void HandleCallbackError(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
-
     }
 
     public void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
@@ -34,18 +32,15 @@ public class ProfileUIController : MonoBehaviour
             case PlayFabAPIMethods.GetCharacterReadOnlyData:
                 _isCharacterDataLoaded = true;
                 break;
-            case PlayFabAPIMethods.GetCharacterInventory:
-                _isCharacterInventoryLoaded = true;
-                break;
         }
         CheckToContinue();
     }
 
     private void CheckToContinue()
     {
-        if (_isCharacterDataLoaded && _isCharacterInventoryLoaded)
+        if (_isCharacterDataLoaded)
         {
-            PF_PlayerData.PlayerClassTypes ponyType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), PF_PlayerData.activeCharacter.baseClass.CatalogCode);
+            var ponyType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), PF_PlayerData.activeCharacter.baseClass.CatalogCode);
 
             switch ((int)ponyType)
             {
@@ -67,14 +62,13 @@ public class ProfileUIController : MonoBehaviour
             }
 
             PF_PlayerData.UpdateActiveCharacterData();
-            foreach (Transform each in UiObjects)
+            foreach (var each in UiObjects)
             {
                 each.gameObject.SetActive(true); //<---- BOOM Null Ref
                 each.BroadcastMessage("Init", SendMessageOptions.DontRequireReceiver);
             }
             // ResetDataChecks
             _isCharacterDataLoaded = false;
-            _isCharacterInventoryLoaded = false;
         }
     }
 

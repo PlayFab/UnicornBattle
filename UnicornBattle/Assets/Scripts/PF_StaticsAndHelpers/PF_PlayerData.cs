@@ -318,7 +318,7 @@ public static class PF_PlayerData
             {
                 PlayFabId = PlayerId,
                 CharacterId = character.CharacterId,
-                Keys = new List<string>() { "CharacterData", "Achievements" }
+                Keys = new List<string> { "CharacterData", "Achievements" }
             };
 
             PlayFabClientAPI.GetCharacterReadOnlyData(request, (result) =>
@@ -369,59 +369,51 @@ public static class PF_PlayerData
 
     public static void GetCharacterStatistics()
     {
-        var characterIDs = new List<string>();
         foreach (var each in playerCharacters)
-            characterIDs.Add(each.CharacterId);
-
-        var request = new ExecuteCloudScriptRequest
         {
-            FunctionName = "GetCharacterStatistics",
-            FunctionParameter = new { CharacterId = characterIDs },
-        };
-        PlayFabClientAPI.ExecuteCloudScript(request, OnGetCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
+            var request = new GetCharacterStatisticsRequest { CharacterId = each.CharacterId };
+            PlayFabClientAPI.GetCharacterStatistics(request, OnGetCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
+        }
     }
 
-    private static void OnGetCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
+    private static void OnGetCharacterStatisticsSuccess(GetCharacterStatisticsResult result)
     {
-        if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-            return;
+        var characterId = ((GetCharacterStatisticsRequest)result.Request).CharacterId;
+        Dictionary<string, int> activeStats;
+        if (!characterStatistics.TryGetValue(characterId, out activeStats))
+        {
+            activeStats = new Dictionary<string, int>();
+            characterStatistics[characterId] = activeStats;
+        }
+        activeStats.Clear();
 
-        characterStatistics.Clear();
-        var resultStats = JsonWrapper.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(result.FunctionResult.ToString());
-        foreach (var statPair in resultStats)
-            characterStatistics.Add(statPair.Key, statPair.Value);
-        PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterStatistics, MessageDisplayStyle.none);
+        foreach (var statPair in result.CharacterStatistics)
+            activeStats.Add(statPair.Key, statPair.Value);
+
+        if (characterStatistics.Count == playerCharacters.Count)
+            PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterStatistics, MessageDisplayStyle.none);
     }
 
     public static void UpdateCharacterStatistics(string characterId, Dictionary<string, int> updates)
     {
         Dictionary<string, int> activeStats;
-        characterStatistics.TryGetValue(characterId, out activeStats);
+        if (!characterStatistics.TryGetValue(characterId, out activeStats))
+            return; ;
 
-        if (activeStats != null)
+        foreach (var each in updates)
         {
-            foreach (var each in updates)
-            {
-                int temp;
-                activeStats.TryGetValue(each.Key, out temp);
-                activeStats[each.Key] = temp + each.Value;
-            }
-
-            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateCharacterStatistics);
-
-            var request = new ExecuteCloudScriptRequest
-            {
-                FunctionName = "UpdateCharacterStats",
-                FunctionParameter = new { CharacterId = characterId, CharacterStatistics = activeStats },
-            };
-            PlayFabClientAPI.ExecuteCloudScript(request, OnUpdateCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
+            int temp;
+            activeStats.TryGetValue(each.Key, out temp);
+            activeStats[each.Key] = temp + each.Value;
         }
+
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateCharacterStatistics);
+        var request = new UpdateCharacterStatisticsRequest { CharacterId = characterId, CharacterStatistics = activeStats };
+        PlayFabClientAPI.UpdateCharacterStatistics(request, OnUpdateCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    private static void OnUpdateCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
+    private static void OnUpdateCharacterStatisticsSuccess(UpdateCharacterStatisticsResult result)
     {
-        if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-            return;
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.UpdateCharacterStatistics, MessageDisplayStyle.none);
     }
     public static void GetPlayerCharacters()
@@ -827,74 +819,6 @@ public static class PF_PlayerData
             Debug.Log("Push Token was null or empty: ");
         }
 #endif
-    }
-
-    public static void TransferItemToPlayer(string sourceId, string instanceId, Action callback = null)
-    {
-        var request = new ExecuteCloudScriptRequest
-        {
-            FunctionName = "TransferItemToPlayer",
-            FunctionParameter = new { sourceId = sourceId, instanceId = instanceId }
-        };
-        PlayFabClientAPI.ExecuteCloudScript(request, result =>
-        {
-            if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-                return;
-
-            if (callback != null)
-                callback();
-        }, PF_Bridge.PlayFabErrorCallback);
-    }
-
-    public static void TransferItemToCharacter(string sourceId, string sourceType, string instanceId, string destId, Action callback = null)
-    {
-        var request = new ExecuteCloudScriptRequest
-        {
-            FunctionName = "TransferItemToCharacter",
-            FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, instanceId = instanceId }
-        };
-        PlayFabClientAPI.ExecuteCloudScript(request, result =>
-        {
-            if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-                return;
-
-            if (callback != null)
-                callback();
-        }, PF_Bridge.PlayFabErrorCallback);
-    }
-
-    public static void TransferVcToPlayer(string sourceId, string cCode, int amount, Action callback = null)
-    {
-        var request = new ExecuteCloudScriptRequest
-        {
-            FunctionName = "TransferVcToPlayer",
-            FunctionParameter = new { sourceId = sourceId, amount = amount, cCode = cCode }
-        };
-        PlayFabClientAPI.ExecuteCloudScript(request, result =>
-        {
-            if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-                return;
-
-            if (callback != null)
-                callback();
-        }, PF_Bridge.PlayFabErrorCallback);
-    }
-
-    public static void TransferVCToCharacter(string sourceId, string sourceType, string cCode, int amount, string destId, Action callback = null)
-    {
-        var request = new ExecuteCloudScriptRequest
-        {
-            FunctionName = "TransferVCToCharacter",
-            FunctionParameter = new { sourceId = sourceId, sourceType = sourceType, destId = destId, amount = amount, cCode = cCode }
-        };
-        PlayFabClientAPI.ExecuteCloudScript(request, result =>
-            {
-                if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
-                    return;
-
-                if (callback != null)
-                    callback();
-            }, PF_Bridge.PlayFabErrorCallback);
     }
     #endregion
 }

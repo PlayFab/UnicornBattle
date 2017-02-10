@@ -61,14 +61,6 @@ public class QuestOutroController : MonoBehaviour
 
     public void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
-        switch (method)
-        {
-            case PlayFabAPIMethods.GetCharacterInventory:
-                //var items = PF_GamePlay.QuestProgress.ItemsGranted;
-                //PF_GamePlay.ActiveQuest.levelData.
-                Debug.Log("Enable ViewItems Button.");
-                break;
-        }
     }
 
     public void OnReturnToHubClick()
@@ -256,7 +248,6 @@ public class QuestOutroController : MonoBehaviour
 
     public void AcceptLevelupInput(int spellNumber)
     {
-        Debug.Log("Level-UP: Spell Number: " + spellNumber);
         PF_PlayerData.activeCharacter.PlayerVitals.skillSelected = spellNumber;
         PF_GamePlay.OutroPane(LevelUpPane.gameObject, .333f, null);
     }

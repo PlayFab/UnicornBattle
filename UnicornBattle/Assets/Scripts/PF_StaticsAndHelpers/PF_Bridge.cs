@@ -79,7 +79,7 @@ public static class PF_Bridge
     //		{
     //			PlayFabClientAPI.GetCloudScriptUrl(new GetCloudScriptUrlRequest(), (s) => 
     //			{ 
-    //				PF_Bridge.RaiseCallbackSuccess("CloudScript URL Loaded", PlayFabAPIMethods.GetCloudScriptUrl, MessageDisplayStyle.none);
+    //				RaiseCallbackSuccess("CloudScript URL Loaded", PlayFabAPIMethods.GetCloudScriptUrl, MessageDisplayStyle.none);
     //				if(cb != null)
     //				{
     //					cb();
@@ -97,39 +97,36 @@ public static class PF_Bridge
     /// <summary>
     /// Validates the android IAP completed through the GooglePlay store.
     /// </summary>
-    /// <param name="json">Json.</param>
-    /// <param name="sig">Sig.</param>
     public static void ValidateAndroidPurcahse(string json, string sig)
     {
-        var request = new ValidateGooglePlayPurchaseRequest();
-        request.Signature = sig;
-        request.ReceiptJson = json;
+        var request = new ValidateGooglePlayPurchaseRequest
+        {
+            Signature = sig,
+            ReceiptJson = json
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ValidateIAP);
-        PlayFabClientAPI.ValidateGooglePlayPurchase(request, (ValidateGooglePlayPurchaseResult result) =>
+        PlayFabClientAPI.ValidateGooglePlayPurchase(request, result =>
         {
-            Debug.Log("Reciept Validated!!");
-            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP, MessageDisplayStyle.none);
-        }, PF_Bridge.PlayFabErrorCallback);
-
-
+            RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP, MessageDisplayStyle.none);
+        }, PlayFabErrorCallback);
     }
 
     public static void ValidateIosPurchase(string receipt)
     {
-        var request = new ValidateIOSReceiptRequest();
-        request.CurrencyCode = IAB_CurrencyCode;
-        request.PurchasePrice = IAB_Price;
-        request.ReceiptData = receipt;
+        var request = new ValidateIOSReceiptRequest
+        {
+            CurrencyCode = IAB_CurrencyCode,
+            PurchasePrice = IAB_Price,
+            ReceiptData = receipt
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ValidateIAP);
-        PlayFabClientAPI.ValidateIOSReceipt(request, (ValidateIOSReceiptResult result) =>
+        PlayFabClientAPI.ValidateIOSReceipt(request, result =>
         {
-            Debug.Log("Reciept Validated!!");
-            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP, MessageDisplayStyle.none);
-        }, PF_Bridge.PlayFabErrorCallback);
+            RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP, MessageDisplayStyle.none);
+        }, PlayFabErrorCallback);
     }
-
 
     //	Used for sending analytics data back into PlayFab
     public enum CustomEventTypes
@@ -218,7 +215,6 @@ public enum PlayFabAPIMethods
     GetAllUsersCharacters,
     GetCharacterData,
     GetCharacterReadOnlyData,
-    GetCharacterInventory,
     GetUserStatistics,
     GetCharacterStatistics,
     GetPlayerLeaderboard,
