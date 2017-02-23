@@ -30,7 +30,7 @@ public class CharacterAchievementsController : MonoBehaviour
 
                 colorize.Add(items[z].coloredBar);
 
-                items[z].icon.overrideSprite = GameController.Instance.iconManager.GetIconById(kvp.Value.Icon);
+                items[z].icon.overrideSprite = GameController.Instance.iconManager.GetIconById(kvp.Value.Icon, IconManager.IconTypes.Misc);
                 items[z].Name.text = kvp.Value.AchievementName;
                 items[z].progressBar.maxValue = kvp.Value.Threshold;
 
@@ -51,9 +51,9 @@ public class CharacterAchievementsController : MonoBehaviour
             }
         }
 
-        var ponyType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), cPicker.selectedSlot.saved.baseClass.CatalogCode);
+        var classType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), cPicker.selectedSlot.saved.baseClass.CatalogCode);
 
-        switch ((int)ponyType)
+        switch ((int)classType)
         {
             case 0:
                 foreach (var item in colorize)

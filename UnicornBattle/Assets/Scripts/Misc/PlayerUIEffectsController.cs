@@ -141,7 +141,7 @@ public class PlayerUIEffectsController : MonoBehaviour
 
         if (PF_PlayerData.activeCharacter != null)
         {
-            PlayerIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon);
+            PlayerIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon, IconManager.IconTypes.Class);
             LivesCount.text = "" + PF_PlayerData.virtualCurrency[GlobalStrings.HEART_CURRENCY];
             PlayerLevel.text = "" + PF_PlayerData.activeCharacter.characterData.CharacterLevel;
             PlayerName.text = PF_PlayerData.activeCharacter.characterDetails.CharacterName;

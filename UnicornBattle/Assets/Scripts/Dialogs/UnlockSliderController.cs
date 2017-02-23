@@ -67,12 +67,12 @@ public class UnlockSliderController : MonoBehaviour, IPointerUpHandler
                 sliderMessage.color = useColor;
 
                 var iconName = PF_GameData.GetIconByItemById(keyReference.ItemId, GlobalStrings.BRONZE_KEY_ICON);
-                var icon = GameController.Instance.iconManager.GetIconById(iconName);
+                var icon = GameController.Instance.iconManager.GetIconById(iconName, IconManager.IconTypes.Item);
                 handle.overrideSprite = icon;
             }
             else
             {
-                handle.overrideSprite = GameController.Instance.iconManager.GetIconById(GlobalStrings.DARKSTONE_LOCK_ICON);
+                handle.overrideSprite = GameController.Instance.iconManager.GetIconById(GlobalStrings.DARKSTONE_LOCK_ICON, IconManager.IconTypes.Misc);
                 sliderMessage.text = GlobalStrings.UNLOCKED_MSG;
             }
         }

@@ -1,10 +1,9 @@
-using System;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -172,19 +171,10 @@ public static class PF_GamePlay
         };
         PlayFabClientAPI.GetStoreItems(request, result =>
         {
-            OnRetrieveStoreItemsSuccess(result);
             if (callback != null)
                 callback(result);
+            PF_Bridge.RaiseCallbackSuccess("Store Retrieved", PlayFabAPIMethods.GetStoreItems, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
-    }
-
-    /// <summary>
-    /// Raises the retrieve store items success event.
-    /// </summary>
-    /// <param name="result">Result.</param>
-    private static void OnRetrieveStoreItemsSuccess(GetStoreItemsResult result)
-    {
-        PF_Bridge.RaiseCallbackSuccess("Store Retrieved", PlayFabAPIMethods.GetStoreItems, MessageDisplayStyle.none);
     }
 
     /// <summary>

@@ -40,9 +40,7 @@ public static class PF_Authentication
     public static void RaiseLoginSuccessEvent(string details, MessageDisplayStyle style)
     {
         if (OnLoginSuccess != null)
-        {
             OnLoginSuccess(details, style);
-        }
     }
 
     /// <summary>
@@ -53,35 +51,22 @@ public static class PF_Authentication
     public static void RaiseLoginFailedEvent(string details, MessageDisplayStyle style)
     {
         if (OnLoginFail != null)
-        {
             OnLoginFail(details, style);
-        }
     }
-
 
     #region Plugin Access & Helper Functions
     // Kicks off the Facebook login process
     public static void StartFacebookLogin(Action onInit = null)
     {
         if (FB.IsInitialized && onInit == null)
-        {
             OnInitComplete();
-        }
         else if (FB.IsInitialized)
-        {
             onInit();
-        }
         else if (onInit != null)
-        {
             FB.Init(() => { onInit(); });
-        }
         else
-        {
             FB.Init(OnInitComplete, OnHideUnity);
-        }
     }
-
-
     #endregion
 
     #region PlayFab API calls
@@ -92,27 +77,27 @@ public static class PF_Authentication
     public static void LoginWithFacebook(string token, bool createAccount = false, UnityAction errCallback = null)
     {
         //LoginMethodUsed = LoginPathways.facebook;
-        LoginWithFacebookRequest request = new LoginWithFacebookRequest();
-        request.AccessToken = token;
-        request.TitleId = PlayFabSettings.TitleId;
-        request.CreateAccount = createAccount;
+        var request = new LoginWithFacebookRequest
+        {
+            AccessToken = token,
+            TitleId = PlayFabSettings.TitleId,
+            CreateAccount = createAccount
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
-        PlayFabClientAPI.LoginWithFacebook(request, OnLoginResult, (PlayFabError error) =>
-                                           {
-                                               if (errCallback != null && error.Error == PlayFabErrorCode.AccountNotFound)
-                                               {
-                                                   errCallback();
-                                                   PF_Bridge.RaiseCallbackError("Account not found, please select a login method to continue.", PlayFabAPIMethods.GenericLogin, MessageDisplayStyle.error);
-                                               }
-                                               else
-                                               {
-                                                   OnLoginError(error);
-                                               }
-
-                                           });
+        PlayFabClientAPI.LoginWithFacebook(request, OnLoginResult, error =>
+        {
+            if (errCallback != null && error.Error == PlayFabErrorCode.AccountNotFound)
+            {
+                errCallback();
+                PF_Bridge.RaiseCallbackError("Account not found, please select a login method to continue.", PlayFabAPIMethods.GenericLogin, MessageDisplayStyle.error);
+            }
+            else
+            {
+                OnLoginError(error);
+            }
+        });
     }
-
 
     /// <summary>
     /// Logins the with device identifier (iOS & Android only).
@@ -126,10 +111,12 @@ public static class PF_Authentication
                 if (!string.IsNullOrEmpty(android_id))
                 {
                     Debug.Log("Using Android Device ID: " + android_id);
-                    LoginWithAndroidDeviceIDRequest request = new LoginWithAndroidDeviceIDRequest();
-                    request.AndroidDeviceId = android_id;
-                    request.TitleId = PlayFabSettings.TitleId;
-                    request.CreateAccount = createAcount;
+                    var request = new LoginWithAndroidDeviceIDRequest
+                    {
+                        AndroidDeviceId = android_id,
+                        TitleId = PlayFabSettings.TitleId,
+                        CreateAccount = createAcount
+                    };
 
                     DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
                     PlayFabClientAPI.LoginWithAndroidDeviceID(request, OnLoginResult, (PlayFabError error) =>
@@ -149,10 +136,12 @@ public static class PF_Authentication
                 else if (!string.IsNullOrEmpty(ios_id))
                 {
                     Debug.Log("Using IOS Device ID: " + ios_id);
-                    LoginWithIOSDeviceIDRequest request = new LoginWithIOSDeviceIDRequest();
-                    request.DeviceId = ios_id;
-                    request.TitleId = PlayFabSettings.TitleId;
-                    request.CreateAccount = createAcount;
+                    var request = new LoginWithIOSDeviceIDRequest
+                    {
+                        DeviceId = ios_id,
+                        TitleId = PlayFabSettings.TitleId,
+                        CreateAccount = createAcount
+                    };
 
                     DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
                     PlayFabClientAPI.LoginWithIOSDeviceID(request, OnLoginResult, (PlayFabError error) =>
@@ -172,31 +161,31 @@ public static class PF_Authentication
             else
             {
                 Debug.Log("Using custom device ID: " + custom_id);
-                LoginWithCustomIDRequest request = new LoginWithCustomIDRequest();
-                request.CustomId = custom_id;
-                request.TitleId = PlayFabSettings.TitleId;
-                request.CreateAccount = createAcount;
+                var request = new LoginWithCustomIDRequest
+                {
+                    CustomId = custom_id,
+                    TitleId = PlayFabSettings.TitleId,
+                    CreateAccount = createAcount
+                };
 
                 DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
-                PlayFabClientAPI.LoginWithCustomID(request, OnLoginResult, (PlayFabError error) =>
-                                                      {
-                                                          if (errCallback != null && error.Error == PlayFabErrorCode.AccountNotFound)
-                                                          {
-                                                              errCallback();
-                                                              PF_Bridge.RaiseCallbackError("Account not found, please select a login method to continue.", PlayFabAPIMethods.GenericLogin, MessageDisplayStyle.none);
-                                                          }
-                                                          else
-                                                          {
-                                                              OnLoginError(error);
-                                                          }
-                                                      });
+                PlayFabClientAPI.LoginWithCustomID(request, OnLoginResult, error =>
+                {
+                    if (errCallback != null && error.Error == PlayFabErrorCode.AccountNotFound)
+                    {
+                        errCallback();
+                        PF_Bridge.RaiseCallbackError("Account not found, please select a login method to continue.", PlayFabAPIMethods.GenericLogin, MessageDisplayStyle.none);
+                    }
+                    else
+                    {
+                        OnLoginError(error);
+                    }
+                });
             }
         };
 
         processResponse(true);
         //DialogCanvasController.RequestConfirmationPrompt("Login With Device ID", "Logging in with device ID has some issue. Are you sure you want to contine?", processResponse);
-
-
     }
 
     /// <summary>
@@ -207,44 +196,34 @@ public static class PF_Authentication
         if (user.Length == 0 || pass1.Length == 0 || pass2.Length == 0 || email.Length == 0)
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("All fields are required.", MessageDisplayStyle.error);
-            }
             return;
         }
 
-        bool passwordCheck = ValidatePassword(pass1, pass2);
-        bool emailCheck = ValidateEmail(email);
+        var passwordCheck = ValidatePassword(pass1, pass2);
+        var emailCheck = ValidateEmail(email);
 
         if (!passwordCheck)
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("Passwords must match and be longer than 5 characters.", MessageDisplayStyle.error);
-            }
             return;
-
         }
         else if (!emailCheck)
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("Invalid Email format.", MessageDisplayStyle.error);
-            }
             return;
         }
         else
         {
-            RegisterPlayFabUserRequest request = new RegisterPlayFabUserRequest();
-            request.TitleId = PlayFabSettings.TitleId;
-            request.Username = user;
-            request.Email = email;
-            request.Password = pass1;
-
-            //			if(!string.IsNullOrEmpty(PlayFabLoginCalls.publisher_id))
-            //			{
-            //				request.PublisherId = PlayFabLoginCalls.publisher_id;
-            //			}
+            var request = new RegisterPlayFabUserRequest
+            {
+                TitleId = PlayFabSettings.TitleId,
+                Username = user,
+                Email = email,
+                Password = pass1
+            };
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
             PlayFabClientAPI.RegisterPlayFabUser(request, OnRegisterResult, OnLoginError);
         }
@@ -259,25 +238,20 @@ public static class PF_Authentication
     {
         if (user.Length > 0 && password.Length > 0)
         {
-            //LoginMethodUsed = LoginPathways.pf_username;
-            LoginWithPlayFabRequest request = new LoginWithPlayFabRequest();
-            request.Username = user;
-            request.Password = password;
-            request.TitleId = PlayFabSettings.TitleId;
+            var request = new LoginWithPlayFabRequest
+            {
+                Username = user,
+                Password = password,
+                TitleId = PlayFabSettings.TitleId
+            };
 
-            //			if(!string.IsNullOrEmpty(PlayFabLoginCalls.publisher_id))
-            //			{
-            //				request.PublisherId = PlayFabLoginCalls.publisher_id;
-            //			}
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
             PlayFabClientAPI.LoginWithPlayFab(request, OnLoginResult, OnLoginError);
         }
         else
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("User Name and Password cannot be blank.", MessageDisplayStyle.error);
-            }
         }
     }
 
@@ -291,15 +265,13 @@ public static class PF_Authentication
         if (user.Length > 0 && password.Length > 0 && ValidateEmail(user))
         {
             //LoginMethodUsed = LoginPathways.pf_email;
-            LoginWithEmailAddressRequest request = new LoginWithEmailAddressRequest();
-            request.Email = user;
-            request.Password = password;
-            request.TitleId = PlayFabSettings.TitleId;
+            var request = new LoginWithEmailAddressRequest
+            {
+                Email = user,
+                Password = password,
+                TitleId = PlayFabSettings.TitleId
+            };
 
-            //			if(!string.IsNullOrEmpty(PlayFabLoginCalls.publisher_id))
-            //			{
-            //				request.PublisherId = PlayFabLoginCalls.publisher_id;
-            //			}
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GenericLogin);
             PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginResult, OnLoginError);
 
@@ -307,14 +279,9 @@ public static class PF_Authentication
         else
         {
             if (OnLoginFail != null)
-            {
                 OnLoginFail("Username or Password is invalid. Check credentails and try again", MessageDisplayStyle.error);
-            }
         }
-
     }
-
-
 
     /// <summary>
     /// Gets the device identifier and updates the static variables
@@ -386,13 +353,6 @@ public static class PF_Authentication
     private static void OnLoginResult(PlayFab.ClientModels.LoginResult result) //LoginResult
     {
         PF_PlayerData.PlayerId = result.PlayFabId;
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-		PlayFabGoogleCloudMessaging._RegistrationReadyCallback += AccountStatusController.OnGCMReady;
-		PlayFabGoogleCloudMessaging._RegistrationCallback += AccountStatusController.OnGCMRegistration;
-		PlayFabAndroidPlugin.Init(PF_GameData.AndroidPushSenderId);
-#endif
-
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer || Application.isEditor)
         {
             if (!FB.IsInitialized)
@@ -491,12 +451,14 @@ public static class PF_Authentication
     /// <param name="email">Email to match</param>
     public static void SendAccountRecoveryEmail(string email)
     {
-        SendAccountRecoveryEmailRequest request = new SendAccountRecoveryEmailRequest();
-        request.Email = email;
-        request.TitleId = PlayFabSettings.TitleId;
+        var request = new SendAccountRecoveryEmailRequest
+        {
+            Email = email,
+            TitleId = PlayFabSettings.TitleId
+        };
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.SendAccountRecoveryEmail);
-        PlayFabClientAPI.SendAccountRecoveryEmail(request, (SendAccountRecoveryEmailResult result) =>
+        PlayFabClientAPI.SendAccountRecoveryEmail(request, result =>
         {
             PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.SendAccountRecoveryEmail, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
@@ -507,35 +469,27 @@ public static class PF_Authentication
     /// </summary>
     public static void LinkDeviceId()
     {
-        if (GetDeviceId())
+        if (!GetDeviceId())
+            return;
+
+        UnityAction<PlayFabError> onLinkError = error =>
         {
-            UnityAction<PlayFabError> onLinkError = (PlayFabError err) =>
-            {
-                PF_Bridge.RaiseCallbackError("Unable to link device: " + err.ErrorMessage, PlayFabAPIMethods.LinkDeviceID, MessageDisplayStyle.error);
-            };
+            PF_Bridge.RaiseCallbackError("Unable to link device: " + error.ErrorMessage, PlayFabAPIMethods.LinkDeviceID, MessageDisplayStyle.error);
+        };
 
-            if (!string.IsNullOrEmpty(android_id))
-            {
-                Debug.Log("Linking Android");
-                LinkAndroidDeviceIDRequest request = new LinkAndroidDeviceIDRequest();
-                request.AndroidDeviceId = android_id;
+        if (!string.IsNullOrEmpty(android_id))
+        {
+            Debug.Log("Linking Android");
+            var request = new LinkAndroidDeviceIDRequest { AndroidDeviceId = android_id };
 
-                PlayFabClientAPI.LinkAndroidDeviceID(request, null, (PlayFabError error) =>
-                {
-                    onLinkError(error);
-                });
-            }
-            else if (!string.IsNullOrEmpty(ios_id))
-            {
-                Debug.Log("Linking iOS");
-                LinkIOSDeviceIDRequest request = new LinkIOSDeviceIDRequest();
-                request.DeviceId = ios_id;
+            PlayFabClientAPI.LinkAndroidDeviceID(request, null, error => { onLinkError(error); });
+        }
+        else if (!string.IsNullOrEmpty(ios_id))
+        {
+            Debug.Log("Linking iOS");
+            var request = new LinkIOSDeviceIDRequest { DeviceId = ios_id };
 
-                PlayFabClientAPI.LinkIOSDeviceID(request, null, (PlayFabError error) =>
-                {
-                    onLinkError(error);
-                });
-            }
+            PlayFabClientAPI.LinkIOSDeviceID(request, null, error => { onLinkError(error); });
         }
     }
 
@@ -544,26 +498,25 @@ public static class PF_Authentication
     /// </summary>
     public static void UnlinkDeviceId()
     {
-        if (GetDeviceId())
-        {
-            //			if(!string.IsNullOrEmpty(android_id))
-            //			{
-            //				Debug.Log("Unlinking Android");
-            //				UnlinkAndroidDeviceIDRequest request = new UnlinkAndroidDeviceIDRequest();
-            //				PlayFabClientAPI.UnlinkAndroidDeviceID(request, OnUnlinkAndroidDeviceIdSuccess, OnPlayFabCallbackError);
-            //			}
-            //			else if (!string.IsNullOrEmpty(ios_id))
-            //			{
-            //				Debug.Log("Unlinking iOS");
-            //				UnlinkIOSDeviceIDRequest request = new UnlinkIOSDeviceIDRequest();
-            //				PlayFabClientAPI.UnlinkIOSDeviceID(request, OnUnlinkIosDeviceIdSuccess, OnPlayFabCallbackError);
-            //			}
-        }
+        if (!GetDeviceId())
+            return;
+
+        //if (!string.IsNullOrEmpty(android_id))
+        //{
+        //    Debug.Log("Unlinking Android");
+        //    UnlinkAndroidDeviceIDRequest request = new UnlinkAndroidDeviceIDRequest();
+        //    PlayFabClientAPI.UnlinkAndroidDeviceID(request, OnUnlinkAndroidDeviceIdSuccess, OnPlayFabCallbackError);
+        //}
+        //else if (!string.IsNullOrEmpty(ios_id))
+        //{
+        //    Debug.Log("Unlinking iOS");
+        //    UnlinkIOSDeviceIDRequest request = new UnlinkIOSDeviceIDRequest();
+        //    PlayFabClientAPI.UnlinkIOSDeviceID(request, OnUnlinkIosDeviceIdSuccess, OnPlayFabCallbackError);
+        //}
     }
     #endregion
 
     #region pf_callbacks
-
     /// <summary>
     /// Called on a successful registration result
     /// </summary>
@@ -571,13 +524,11 @@ public static class PF_Authentication
     private static void OnRegisterResult(RegisterPlayFabUserResult result)
     {
         if (OnLoginSuccess != null)
-        {
             OnLoginSuccess("New Account Registered", MessageDisplayStyle.none);
-        }
     }
 
     #endregion
-    
+
     #region helperfunctions
     /// <summary>
     /// Validates the email.
@@ -601,20 +552,16 @@ public static class PF_Authentication
     }
 
     #endregion
-    
+
     #region fb_helperfunctions
     // callback after FB.Init();
     public static void OnInitComplete()
     {
         Debug.Log("FB.Init completed: Is user logged in? " + FB.IsLoggedIn);
         if (FB.IsLoggedIn == false)
-        {
             CallFBLogin();
-        }
         else
-        {
             LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString);
-        }
     }
 
     // Handler for OnHideUnity Events

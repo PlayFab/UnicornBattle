@@ -1,17 +1,17 @@
 ManifestFileVersion: 0
-CRC: 2354458771
+CRC: 2980950122
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 4739b1d7a4150861a26ee3512b5404ac
+    Hash: 7906ac2de0392f95a86158795d2d12aa
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 6759894fca659e2049f05064db45ce61
+    Hash: c1642440719609290a7e09a50a7286f4
 HashAppended: 0
 ClassTypes:
 - Class: 28
   Script: {instanceID: 0}
 Assets:
-- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Background_Sales1Splash.jpg
-- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Background_Sales1Banner.jpg
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Sales/Background_Sales1Splash.jpg
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Sales/Background_Sales1Banner.jpg
 Dependencies: []

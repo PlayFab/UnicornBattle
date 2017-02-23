@@ -34,11 +34,6 @@ public static class PF_PlayerData
 
     public static readonly List<FriendInfo> playerFriends = new List<FriendInfo>();
 
-    public static readonly Dictionary<string, UB_AwardedOffer> pendingOffers = new Dictionary<string, UB_AwardedOffer>();
-
-    public static readonly List<ItemInstance> OfferContainers = new List<ItemInstance>();
-    public static readonly List<string> RedeemedOffers = new List<string>();
-
     public enum PlayerClassTypes { Bucephelous = 0, Nightmare = 1, PegaZeus = 2 }
 
     // The current character being played:
@@ -97,12 +92,6 @@ public static class PF_PlayerData
             {
                 foreach (var item in playerInventory)
                 {
-                    if (item.CatalogVersion == "Offers")
-                    {
-                        OfferContainers.Add(item);
-                        continue;
-                    }
-
                     if (inventoryByCategory.ContainsKey(item.ItemId))
                         continue;
 
@@ -112,12 +101,9 @@ public static class PF_PlayerData
 
                     var items = playerInventory.FindAll(x => { return x.ItemId.Equals(item.ItemId); });
                     var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
-                    var icon = GameController.Instance.iconManager.GetIconById(customIcon);
+                    var icon = GameController.Instance.iconManager.GetIconById(customIcon, IconManager.IconTypes.Item);
                     inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
                 }
-
-                if (OfferContainers.Count > 0)
-                    DialogCanvasController.RequestOfferPrompt();
             }
 
             if (callback != null)
@@ -211,25 +197,11 @@ public static class PF_PlayerData
             DialogCanvasController.RequestAccountSettings();
         }
 
-        RedeemedOffers.Clear();
-        if (result.InfoResultPayload.UserReadOnlyData.ContainsKey("RedeemedOffers"))
-        {
-            var newOffers = JsonWrapper.DeserializeObject<List<string>>(result.InfoResultPayload.UserReadOnlyData["RedeemedOffers"].Value);
-            foreach (var each in newOffers)
-                RedeemedOffers.Add(each);
-        }
-
         inventoryByCategory.Clear();
         if (PF_GameData.catalogItems.Count > 0)
         {
             foreach (var item in playerInventory)
             {
-                if (item.CatalogVersion == "Offers")
-                {
-                    OfferContainers.Add(item);
-                    continue;
-                }
-
                 if (inventoryByCategory.ContainsKey(item.ItemId))
                     continue;
 
@@ -239,12 +211,9 @@ public static class PF_PlayerData
 
                 var items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
                 var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
-                var icon = GameController.Instance.iconManager.GetIconById(customIcon);
+                var icon = GameController.Instance.iconManager.GetIconById(customIcon, IconManager.IconTypes.Item);
                 inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
             }
-
-            if (OfferContainers.Count > 0)
-                DialogCanvasController.RequestOfferPrompt();
         }
 
         if (PF_Authentication.GetDeviceId(true))
@@ -799,10 +768,8 @@ public static class PF_PlayerData
 #if UNITY_ANDROID
         if (!string.IsNullOrEmpty(pushToken))
         {
-            // success
             Debug.Log("GCM Init Success");
-            var request = new AndroidDevicePushNotificationRegistrationRequest();
-            request.DeviceToken = pushToken;
+            var request = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = pushToken };
 
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
             PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, result =>
@@ -815,7 +782,6 @@ public static class PF_PlayerData
         }
         else
         {
-            // error happened
             Debug.Log("Push Token was null or empty: ");
         }
 #endif

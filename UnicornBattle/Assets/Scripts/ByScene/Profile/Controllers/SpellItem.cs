@@ -41,7 +41,7 @@ public class SpellItem : MonoBehaviour {
 			ApplyStatus = sp.ApplyStatus
 		};
 		
-		this.spellIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(sp.Icon);
+		this.spellIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(sp.Icon, IconManager.IconTypes.Spell);
 		
 		if(lvl > 0)
 		{

@@ -26,17 +26,10 @@ public class UB_LevelData
     public string Description;
     public string Icon;
     public string StatsPrefix;
-    public int MinEntryLevel;
-    public bool IsLocked;
-    public bool IsHidden;
-    public Dictionary<string, int> MasteryRequired;
-    public Dictionary<string, int> EntryToken;
-    public Dictionary<string, int> EntryCurrency;
-    public string DisplayGroup;
-    public int DisplayOrder;
-    public string EndOfQuestStore;
+    public int? MinEntryLevel;
     public UB_LevelWinConditions WinConditions;
     public Dictionary<string, UB_LevelAct> Acts;
+    public string RestrictedToEventKey;
 }
 
 public class UB_LevelAct
@@ -54,7 +47,6 @@ public class UB_LevelAct
     public string IntroBossMonolog;
     public string OutroMonolog;
     public string FailureMonolog;
-    public UB_LevelActRewards RewardTable;
     public bool IsActCompleted;
 }
 
@@ -183,7 +175,6 @@ public class EnemySpellDetail
     public int SpellPriority;
 
     public UB_SpellDetail Detail;
-    public bool IsLocked;
     public bool IsOnCooldown;
     public int CdTurns;
 
@@ -198,7 +189,6 @@ public class EnemySpellDetail
         SpellName = prius.SpellName;
         SpellPriority = prius.SpellPriority;
         SpellLevel = prius.SpellLevel;
-        IsLocked = prius.IsLocked;
         IsOnCooldown = prius.IsOnCooldown;
         CdTurns = prius.CdTurns;
         Detail = new UB_SpellDetail(prius.Detail);
@@ -285,88 +275,23 @@ public class UB_AdData
     public AdPlacementDetails Details;
 }
 
-public enum PromotionType { Other, Active, Promoted, Upcomming }
-public class UB_SaleData
+public enum PromotionType
 {
-    public string SaleName;
-    public string SaleDescription;
-    public string StoreToUse;
-
-    //[JsonConverter(typeof(IsoDateTimeConverter))]
-    public DateTime StartDate;
-
-    //[JsonConverter(typeof(IsoDateTimeConverter))]
-    public DateTime EndDate;
-
-    public string BundleId;
-    public bool PromoteWithInterstitial;
-    public bool PromoteWithCarousel;
-    public UB_SalesOccurence Occurence;
-
-    public UB_UnpackedAssetBundle Assets;
-    public PromotionType PromoType;
-}
-
-public enum SalesAvailability { Null, Daily, Weekends }
-public class UB_SalesOccurence
-{
-    //[JsonConverter(typeof(StringEnumConverter))]
-    public SalesAvailability Availability;
-    public string OpensAt;
-    public string ClosesAt;
+    Inactive,
+    Active,
+    ActivePromoted,
 }
 
 public class UB_EventData
 {
+    public string EventKey;
     public string EventName;
     public string EventDescription;
     public string StoreToUse;
-    public DateTime StartDate;
-    public DateTime EndDate;
     public string BundleId;
-    public List<string> AssociatedLevels;
-    public UB_EventTrigger EventTrigger;
 
     public UB_UnpackedAssetBundle Assets;
-    public PromotionType PromoType;
 }
-
-public class UB_EventTrigger
-{
-    public string MinimumPlayerLevel;
-    public List<string> RequiredAchievements;
-}
-
-public enum OfferAppliesTo { Character, Player }
-public class UB_OfferData
-{
-    public string OfferName;
-    public string OfferDescription;
-    public string StoreToUse;
-    public string ItemToGrant;
-
-    public OfferAppliesTo AppliesTo;
-    public UB_OfferTrigger OfferTrigger;
-}
-
-public enum OfferOccurence { Single, Repeat }
-public class UB_OfferTrigger
-{
-    public int OnLevelGained;
-    public string OnAchievementGained;
-    public OfferOccurence Occurence;
-}
-
-public class UB_AwardedOffer
-{
-    public string OfferId;
-    public string AppliesToCharacter;
-
-    public UB_OfferTrigger Occurence;
-    public long AwardedOn;
-    public long RedeemedOn;
-}
-
 
 public class EncounterRewards
 {

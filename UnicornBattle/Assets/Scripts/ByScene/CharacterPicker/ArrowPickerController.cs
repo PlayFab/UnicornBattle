@@ -11,7 +11,7 @@ public class ArrowPickerController : SoftSingleton<ArrowPickerController>
     public ArrowUI Arrow2;
     public ArrowUI Arrow3;
     public ArrowUI selectedSlot;
-    public int maxPonySlots = 3;
+    public int maxUniSlots = 3;
     public Button confirmButton;
     public CharacterPicker cPicker;
     public SelectedPonyController selectedPonyUI;
@@ -38,13 +38,10 @@ public class ArrowPickerController : SoftSingleton<ArrowPickerController>
     {
         switch (method)
         {
-            case PlayFabAPIMethods.GetTitleData:
-                maxPonySlots = PF_GameData.Classes.Count;
-
-                if (maxPonySlots > 3)
-                {
-                    Debug.LogWarning("Currently configured to only allow 3 playable pony classes.");
-                }
+            case PlayFabAPIMethods.GetTitleData_General:
+                maxUniSlots = PF_GameData.Classes.Count;
+                if (maxUniSlots > 3)
+                    Debug.LogWarning("Currently configured to only allow 3 playable unicorn classes.");
 
                 Init();
                 break;
@@ -62,24 +59,24 @@ public class ArrowPickerController : SoftSingleton<ArrowPickerController>
             {
                 Arrow1.details = pair.Value;
                 Arrow1.ponyName.text = pair.Key;
-                Arrow1.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(pair.Value.Icon);
+                Arrow1.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(pair.Value.Icon, IconManager.IconTypes.Class);
             }
             else if (classCounter == 1)
             {
                 Arrow2.details = pair.Value;
                 Arrow2.ponyName.text = pair.Key;
-                Arrow2.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(pair.Value.Icon);
+                Arrow2.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(pair.Value.Icon, IconManager.IconTypes.Class);
             }
             else if (classCounter == 2)
             {
                 Arrow3.details = pair.Value;
                 Arrow3.ponyName.text = pair.Key;
-                Arrow3.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(pair.Value.Icon);
+                Arrow3.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(pair.Value.Icon, IconManager.IconTypes.Class);
             }
             classCounter++;
         }
         confirmButton.onClick.RemoveAllListeners();
-        confirmButton.onClick.AddListener(() => { cPicker.PonyPicked(selectedSlot); });
+        confirmButton.onClick.AddListener(() => { cPicker.UnicornPicked(selectedSlot); });
 
         TurnOnArrows();
     }

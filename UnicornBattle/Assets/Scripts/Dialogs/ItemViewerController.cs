@@ -71,7 +71,7 @@ public class ItemViewerController : MonoBehaviour
         // refresh the UI
 
         currentIconId = PF_GameData.GetIconByItemById(item.ItemId);
-        var icon = GameController.Instance.iconManager.GetIconById(currentIconId);
+        var icon = GameController.Instance.iconManager.GetIconById(currentIconId, IconManager.IconTypes.Item);
         CurrentIcon.overrideSprite = icon;
 
         if (openedBoxes.ContainsKey(selectedIndex))
@@ -84,7 +84,7 @@ public class ItemViewerController : MonoBehaviour
             }
             else
             {
-                CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId + "_Open");
+                CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId + "_Open", IconManager.IconTypes.Item);
             }
             EnableContainerMode(true);
         }
@@ -102,9 +102,9 @@ public class ItemViewerController : MonoBehaviour
                     {
                         var catalogItem = PF_GameData.GetCatalogItemById(award);
                         var awardIcon = PF_GameData.GetIconByItemById(award);
-                        items.Add(new ContainerResultItem()
+                        items.Add(new ContainerResultItem
                         {
-                            displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon),
+                            displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon, IconManager.IconTypes.Item),
                             displayName = catalogItem.DisplayName
                         });
                     }
@@ -116,7 +116,7 @@ public class ItemViewerController : MonoBehaviour
                     {
                         items.Add(new ContainerResultItem
                         {
-                            displayIcon = GameController.Instance.iconManager.GetIconById("DropTable"),
+                            displayIcon = GameController.Instance.iconManager.GetIconById("DropTable", IconManager.IconTypes.Misc),
                             displayName = string.Format("Drop Table: {0}", award)
                         });
                     }
@@ -128,7 +128,7 @@ public class ItemViewerController : MonoBehaviour
                     {
                         items.Add(new ContainerResultItem
                         {
-                            displayIcon = GameController.Instance.iconManager.GetIconById(award.Key),
+                            displayIcon = GameController.Instance.iconManager.GetIconById(award.Key, IconManager.IconTypes.Item),
                             displayName = string.Format("{1} Award: {0:n0}", award.Value, award.Key)
                         });
                     }
@@ -223,7 +223,7 @@ public class ItemViewerController : MonoBehaviour
             var awardIcon = PF_GameData.GetIconByItemById(award.ItemId);
             items.Add(new ContainerResultItem
             {
-                displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon),
+                displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon, IconManager.IconTypes.Item),
                 displayName = award.DisplayName
             });
         }
@@ -243,13 +243,13 @@ public class ItemViewerController : MonoBehaviour
 
                 items.Add(new ContainerResultItem
                 {
-                    displayIcon = GameController.Instance.iconManager.GetIconById(award.Key),
+                    displayIcon = GameController.Instance.iconManager.GetIconById(award.Key, IconManager.IconTypes.Item),
                     displayName = award.Value + " " + friendlyName
                 });
             }
         }
 
-        CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId + "_Open");
+        CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId + "_Open", IconManager.IconTypes.Item);
         openedBoxes.Add(selectedIndex, items);
         EnableUnlockedItemsView(items);
 

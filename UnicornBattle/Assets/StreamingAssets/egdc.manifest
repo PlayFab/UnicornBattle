@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 1893754004
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: ec90687f93ec9ac0280b78904ab8d60a
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c1642440719609290a7e09a50a7286f4
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+Assets:
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Events/Background_EventGdcSplash.jpg
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Events/Background_EventGdcBanner.jpg
+Dependencies: []

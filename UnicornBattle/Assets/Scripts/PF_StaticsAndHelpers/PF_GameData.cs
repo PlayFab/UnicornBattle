@@ -10,24 +10,20 @@ using PlayFab.Json;
 public static class PF_GameData
 {
     // General TitleData Containers
-    public static Dictionary<string, UB_SpellDetail> Spells = new Dictionary<string, UB_SpellDetail>();
-    public static Dictionary<string, UB_ClassDetail> Classes = new Dictionary<string, UB_ClassDetail>();
     public static Dictionary<string, UB_Achievement> Achievements = new Dictionary<string, UB_Achievement>();
-    public static Dictionary<string, UB_EventData> Events = new Dictionary<string, UB_EventData>();
-    public static Dictionary<string, UB_SaleData> Sales = new Dictionary<string, UB_SaleData>();
-    public static Dictionary<string, UB_OfferData> Offers = new Dictionary<string, UB_OfferData>();
+    public static List<string> ActiveEventKeys = new List<string>();
     public static Dictionary<string, int> CharacterLevelRamp = new Dictionary<string, int>();
-    public static Dictionary<string, UB_LevelData> Levels = new Dictionary<string, UB_LevelData>();
+    public static Dictionary<string, UB_ClassDetail> Classes = new Dictionary<string, UB_ClassDetail>();
     public static Dictionary<string, Dictionary<string, UB_EncounterData>> Encounters = new Dictionary<string, Dictionary<string, UB_EncounterData>>();
+    public static Dictionary<string, UB_EventData> Events = new Dictionary<string, UB_EventData>();
+    public static Dictionary<string, UB_LevelData> Levels = new Dictionary<string, UB_LevelData>();
+    public static Dictionary<string, UB_SpellDetail> Spells = new Dictionary<string, UB_SpellDetail>();
 
     public static List<string> StandardStores = new List<string>();
     public static int StartingCharacterSlots;
     public static float MinimumInterstitialWait;
     public static string CommunityWebsite = string.Empty;
     public static string AndroidPushSenderId = null;
-
-    // Contents from GetTitleNews
-    public static List<TitleNewsItem> RawNewsItems = new List<TitleNewsItem>();
 
     // all the items in our "Offers" catalog
     public static List<CatalogItem> offersCataogItems = new List<CatalogItem>();
@@ -43,11 +39,10 @@ public static class PF_GameData
     public static List<PlayerLeaderboardEntry> currentTop10LB = new List<PlayerLeaderboardEntry>();
     public static List<PlayerLeaderboardEntry> friendsLB = new List<PlayerLeaderboardEntry>();
 
-
     public static void GetTitleData()
     {
         var request = new GetTitleDataRequest { Keys = GlobalStrings.InitTitleKeys };
-        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData);
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData_General);
         PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
@@ -69,31 +64,36 @@ public static class PF_GameData
 
     private static void OnGetTitleDataSuccess(GetTitleDataResult result)
     {
-        AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
-
-        ExtractJsonTitleData(result.Data, "Classes", ref Classes);
-        ExtractJsonTitleData(result.Data, "Spells", ref Spells);
-        ExtractJsonTitleData(result.Data, "StartingCharacterSlots", ref StartingCharacterSlots);
-        ExtractJsonTitleData(result.Data, "MinimumInterstitialWait", ref MinimumInterstitialWait);
-        ExtractJsonTitleData(result.Data, "CharacterLevelRamp", ref CharacterLevelRamp);
-        ExtractJsonTitleData(result.Data, "Levels", ref Levels);
         ExtractJsonTitleData(result.Data, "Achievements", ref Achievements);
-        ExtractJsonTitleData(result.Data, "Sales", ref Sales);
+        ExtractJsonTitleData(result.Data, "ActiveEventKeys", ref ActiveEventKeys);
+        ExtractJsonTitleData(result.Data, "CharacterLevelRamp", ref CharacterLevelRamp);
+        ExtractJsonTitleData(result.Data, "Classes", ref Classes);
         ExtractJsonTitleData(result.Data, "Events", ref Events);
-        ExtractJsonTitleData(result.Data, "Offers", ref Offers);
+        ExtractJsonTitleData(result.Data, "Levels", ref Levels);
+        ExtractJsonTitleData(result.Data, "MinimumInterstitialWait", ref MinimumInterstitialWait);
+        ExtractJsonTitleData(result.Data, "Spells", ref Spells);
         ExtractJsonTitleData(result.Data, "StandardStores", ref StandardStores);
-        if (result.Data.ContainsKey("CommunityWebsite"))
-            CommunityWebsite = result.Data["CommunityWebsite"];
+        ExtractJsonTitleData(result.Data, "StartingCharacterSlots", ref StartingCharacterSlots);
+
+        DoExtraEventProcessing();
+
+        AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
         if (result.Data.ContainsKey("AndroidPushSenderId"))
             AndroidPushSenderId = result.Data["AndroidPushSenderId"];
-
-        DetermineSalesPromotionalTypes();
-        DetermineEventPromotionalTypes();
+        Debug.Log("AccountStatusController: Set AndroidPushSenderId from titleData: \"" + AndroidPushSenderId + "\"");
+        if (result.Data.ContainsKey("CommunityWebsite"))
+            CommunityWebsite = result.Data["CommunityWebsite"];
 
         BuildCDNRequests();
-        PF_Bridge.RaiseCallbackSuccess("Title Data Loaded", PlayFabAPIMethods.GetTitleData, MessageDisplayStyle.none);
+        PF_Bridge.RaiseCallbackSuccess("Title Data Loaded", PlayFabAPIMethods.GetTitleData_General, MessageDisplayStyle.none);
     }
 
+    // Fix part of the data that isn't properly set up
+    private static void DoExtraEventProcessing()
+    {
+        foreach (var eachEvent in Events)
+            eachEvent.Value.EventKey = eachEvent.Key;
+    }
 
     public static void BuildCDNRequests()
     {
@@ -106,25 +106,11 @@ public static class PF_GameData
         else if (Application.platform == RuntimePlatform.IPhonePlayer)
             keyPrefix = "iOS/";
 
-        foreach (var sale in Sales)
-        {
-            if (sale.Value.PromoType == PromotionType.Promoted)
-            {
-                requests.Add(new AssetBundleHelperObject()
-                {
-                    MimeType = mime,
-                    ContentKey = keyPrefix + sale.Value.BundleId,
-                    FileName = sale.Key,
-                    Unpacked = new UB_UnpackedAssetBundle(),
-                });
-            }
-        }
-
         foreach (var ev in Events)
         {
-            if (ev.Value.PromoType == PromotionType.Promoted && !string.IsNullOrEmpty(ev.Value.BundleId))
+            if (IsEventActive(ev.Key) == PromotionType.Active && !string.IsNullOrEmpty(ev.Value.BundleId))
             {
-                requests.Add(new AssetBundleHelperObject()
+                requests.Add(new AssetBundleHelperObject
                 {
                     MimeType = mime,
                     ContentKey = keyPrefix + ev.Value.BundleId,
@@ -158,52 +144,14 @@ public static class PF_GameData
         }
     }
 
-    public static void DetermineSalesPromotionalTypes()
-    {
-        if (Sales.Count == 0)
-            return;
-
-        var today = DateTime.Now;
-        var bounds = today.AddDays(30);
-        foreach (var sale in Sales)
-        {
-            if ((sale.Value.StartDate <= today && sale.Value.EndDate >= today))
-            {
-                if (sale.Value.PromoteWithCarousel || sale.Value.PromoteWithInterstitial)
-                    sale.Value.PromoType = PromotionType.Promoted;
-                else
-                    sale.Value.PromoType = PromotionType.Active;
-            }
-
-            if (sale.Value.StartDate > today && sale.Value.StartDate < bounds)
-                sale.Value.PromoType = PromotionType.Upcomming;
-        }
-    }
-
-    public static void DetermineEventPromotionalTypes()
-    {
-        if (Events.Count == 0)
-            return;
-
-        var today = DateTime.Now;
-        var bounds = today.AddDays(30);
-        foreach (var each in Events)
-        {
-            if (each.Value.StartDate <= today && each.Value.EndDate >= today)
-                each.Value.PromoType = PromotionType.Promoted;
-            if (each.Value.StartDate > today && each.Value.StartDate < bounds)
-                each.Value.PromoType = PromotionType.Upcomming;
-        }
-    }
-
     public static void GetEncounterLists(List<string> encounters)
     {
         var request = new GetTitleDataRequest { Keys = encounters };
 
-        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData);
-        PlayFabClientAPI.GetTitleData(request, (result) =>
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData_Specific);
+        PlayFabClientAPI.GetTitleData(request, result =>
         {
-            //clear encounters for now (until we have reasons to merge dicts);
+            // Clear encounters for now (until we have reasons to merge dicts);
             PF_GamePlay.ClearQuestProgress();
             Encounters.Clear();
 
@@ -211,16 +159,13 @@ public static class PF_GameData
                 if (result.Data.ContainsKey(item))
                     Encounters.Add(item, JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
 
-            PF_Bridge.RaiseCallbackSuccess("Encounters Loaded!", PlayFabAPIMethods.GetTitleData, MessageDisplayStyle.none);
-
+            PF_Bridge.RaiseCallbackSuccess("Encounters Loaded!", PlayFabAPIMethods.GetTitleData_Specific, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void GetOffersCatalog()
     {
-        var request = new GetCatalogItemsRequest();
-        request.CatalogVersion = "Offers";
-
+        var request = new GetCatalogItemsRequest { CatalogVersion = "Offers" };
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetOffersCatalog);
         PlayFabClientAPI.GetCatalogItems(request, OnGetOffersCatalogSuccess, PF_Bridge.PlayFabErrorCallback);
     }
@@ -246,6 +191,35 @@ public static class PF_GameData
         PF_PlayerData.GetUserAccountInfo();
     }
 
+    public static PromotionType IsEventActive(string eventKey)
+    {
+        if (string.IsNullOrEmpty(eventKey))
+            return PromotionType.Active;
+        foreach (var eachKey in ActiveEventKeys)
+            if (eventKey == eachKey)
+                return PromotionType.Active;
+        return PromotionType.Inactive;
+    }
+    
+    public static List<string> GetEventAssociatedLevels(string eventKey)
+    {
+        var levelNames = new List<string>();
+        foreach(var eachPair in Levels)
+            if (eachPair.Value.RestrictedToEventKey == eventKey)
+                levelNames.Add(eachPair.Key);
+        return levelNames;
+    }
+
+    public static string GetEventSaleStore(string eventKey)
+    {
+        UB_EventData eventData;
+        if (string.IsNullOrEmpty(eventKey) || IsEventActive(eventKey) != PromotionType.Active || !Events.TryGetValue(eventKey, out eventData))
+            return null;
+
+        // To match previous usage, this just returns the first one - Later we should allow multiple
+        return string.IsNullOrEmpty(eventData.StoreToUse) ? null : eventData.StoreToUse;
+    }
+
     public static void GetTitleNews()
     {
         var request = new GetTitleNewsRequest { Count = 15 };
@@ -261,20 +235,18 @@ public static class PF_GameData
 
         foreach (var item in result.News)
         {
-            int endTagsIndex = item.Title.LastIndexOf('}');
-
-            var pItem = new UB_PromotionalItem();
-            pItem.TimeStamp = item.Timestamp;
-            pItem.PromoBody = item.Body;
-            pItem.PromoTitle = item.Title.Substring(endTagsIndex + 1);
-            pItem.PromoType = PromotionalItemTypes.Tip;
-
-            promoItems.Add(pItem);
+            var endTagsIndex = item.Title.LastIndexOf('}');
+            promoItems.Add(new UB_PromotionalItem
+            {
+                TimeStamp = item.Timestamp,
+                PromoBody = item.Body,
+                PromoTitle = item.Title.Substring(endTagsIndex + 1),
+                PromoType = PromotionalItemTypes.Tip
+            });
         }
 
         PF_Bridge.RaiseCallbackSuccess("Title News Loaded", PlayFabAPIMethods.GetTitleNews, MessageDisplayStyle.none);
     }
-
 
     public static void TryOpenContainer(string containerId, UnityAction<UnlockContainerItemResult> callback = null)
     {
@@ -297,12 +269,10 @@ public static class PF_GameData
         return output;
     }
 
-    public static string GetIconByItemById(string id, string iconDefault = "Default")
+    public static string GetIconByItemById(string catalogItemId, string iconDefault = "Default")
     {
-        if (string.IsNullOrEmpty(id))
-            return null;
-        CatalogItem catalogItem;
-        if (!catalogItems.TryGetValue(id, out catalogItem))
+        var catalogItem = GetCatalogItemById(catalogItemId);
+        if (catalogItem == null)
             return null;
         var iconName = iconDefault;
         try
@@ -382,7 +352,3 @@ public static class PF_GameData
         }, PF_Bridge.PlayFabErrorCallback);
     }
 }
-
-
-
-

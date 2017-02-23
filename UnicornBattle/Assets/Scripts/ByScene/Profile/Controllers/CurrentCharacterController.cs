@@ -28,51 +28,32 @@ public class CurrentCharacterController : MonoBehaviour
         dp.text = "" + PF_PlayerData.activeCharacter.PlayerVitals.MaxDefense;
         sp.text = "" + PF_PlayerData.activeCharacter.PlayerVitals.MaxSpeed;
 
-        var icon = PF_PlayerData.activeCharacter.characterData.CustomAvatar == null ? GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon) : GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.characterData.CustomAvatar);
+        var icon = PF_PlayerData.activeCharacter.characterData.CustomAvatar == null ? GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon, IconManager.IconTypes.Class) : GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.characterData.CustomAvatar, IconManager.IconTypes.Class);
         displayImage.overrideSprite = icon;
 
         if (PF_GameData.CharacterLevelRamp.Count > 0)
         {
-            var key = string.Format("{0}", PF_PlayerData.activeCharacter.characterData.CharacterLevel + 1);
+            var key = (PF_PlayerData.activeCharacter.characterData.CharacterLevel + 1).ToString();
             if (PF_GameData.CharacterLevelRamp.ContainsKey(key))
                 expBar.maxValue = PF_GameData.CharacterLevelRamp[key];
             expBar.currentValue = PF_PlayerData.activeCharacter.characterData.ExpThisLevel;
         }
 
-        if (PF_GameData.Spells.ContainsKey(PF_PlayerData.activeCharacter.baseClass.Spell1))
+        SetSpellDetails(PF_PlayerData.activeCharacter.baseClass.Spell1, spell1, PF_PlayerData.activeCharacter.characterData.Spell1_Level, 1);
+        SetSpellDetails(PF_PlayerData.activeCharacter.baseClass.Spell2, spell2, PF_PlayerData.activeCharacter.characterData.Spell2_Level, 2);
+        SetSpellDetails(PF_PlayerData.activeCharacter.baseClass.Spell3, spell3, PF_PlayerData.activeCharacter.characterData.Spell3_Level, 3);
+    }
+
+    private static void SetSpellDetails(string spellName, SpellItem spellItem, int spellLevel, int index)
+    {
+        if (PF_GameData.Spells.ContainsKey(spellName))
         {
-            var spellDetail1 = PF_GameData.Spells[PF_PlayerData.activeCharacter.baseClass.Spell1];
-            spell1.LoadSpell(PF_PlayerData.activeCharacter.baseClass.Spell1, spellDetail1, PF_PlayerData.activeCharacter.characterData.Spell1_Level);
+            var eachSpellDetail = PF_GameData.Spells[spellName];
+            spellItem.LoadSpell(spellName, eachSpellDetail, spellLevel);
         }
         else
         {
-            // something went wrong, could not find the spell
-            Debug.Log("something went wrong, could not find spell 1");
+            Debug.Log("something went wrong, could not find spell " + index);
         }
-
-        // test spell 2
-        if (PF_GameData.Spells.ContainsKey(PF_PlayerData.activeCharacter.baseClass.Spell2))
-        {
-            var spellDetail2 = PF_GameData.Spells[PF_PlayerData.activeCharacter.baseClass.Spell2];
-            spell2.LoadSpell(PF_PlayerData.activeCharacter.baseClass.Spell2, spellDetail2, PF_PlayerData.activeCharacter.characterData.Spell2_Level);
-        }
-        else
-        {
-            // something went wrong, could not find the spell
-            Debug.Log("something went wrong, could not find spell 2");
-        }
-
-        // test spell 3
-        if (PF_GameData.Spells.ContainsKey(PF_PlayerData.activeCharacter.baseClass.Spell3))
-        {
-            var spellDetail3 = PF_GameData.Spells[PF_PlayerData.activeCharacter.baseClass.Spell3];
-            spell3.LoadSpell(PF_PlayerData.activeCharacter.baseClass.Spell3, spellDetail3, PF_PlayerData.activeCharacter.characterData.Spell3_Level);
-        }
-        else
-        {
-            // something went wrong, could not find the spell
-            Debug.Log("something went wrong, could not find spell 3");
-        }
-
     }
 }

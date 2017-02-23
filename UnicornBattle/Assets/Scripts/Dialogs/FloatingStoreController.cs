@@ -73,7 +73,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
     private static void GetItemIcon(StoreItem storeItem, out Sprite icon)
     {
         var iconName = PF_GameData.GetIconByItemById(storeItem.ItemId);
-        icon = GameController.Instance.iconManager.GetIconById(iconName);
+        icon = GameController.Instance.iconManager.GetIconById(iconName, IconManager.IconTypes.Item);
     }
 
     public void ShowSelectedItem()

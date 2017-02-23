@@ -30,8 +30,6 @@ public class AuthenticationController : MonoBehaviour
         PF_Authentication.OnLoginSuccess -= HandleOnLoginSuccess;
     }
 
-
-    // Use this for initialization
     void Start()
     {
         if (this.useDevLogin)

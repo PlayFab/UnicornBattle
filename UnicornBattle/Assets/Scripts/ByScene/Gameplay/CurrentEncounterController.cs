@@ -37,7 +37,7 @@ public class CurrentEncounterController : MonoBehaviour {
 		}
 		
 		// change icon
-		this.encounterIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(encounter.Data.Icon);
+		this.encounterIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(encounter.Data.Icon, IconManager.IconTypes.Encounter);
 		
 		// change name
 		this.encounterName.text = encounter.DisplayName;

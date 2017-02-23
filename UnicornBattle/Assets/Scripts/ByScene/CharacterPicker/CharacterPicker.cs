@@ -45,9 +45,9 @@ public class CharacterPicker : MonoBehaviour
     {
         switch (method)
         {
-            case PlayFabAPIMethods.GetTitleData:
+            case PlayFabAPIMethods.GetTitleData_General:
             case PlayFabAPIMethods.GetAccountInfo:
-                isTitleDataLoaded |= method == PlayFabAPIMethods.GetTitleData;
+                isTitleDataLoaded |= method == PlayFabAPIMethods.GetTitleData_General;
                 isPlayerInventoryLoaded |= method == PlayFabAPIMethods.GetAccountInfo;
 
                 int extraCount = 0;
@@ -89,10 +89,7 @@ public class CharacterPicker : MonoBehaviour
     void CheckToInit()
     {
         if (isPlayerCharatersLoaded && isTitleDataLoaded && isPlayerInventoryLoaded && isCharacterDataLoaded && isUserStatsLoaded && maxCharacterSlots > 0)
-        {
-            Debug.Log("CharSelect Check Passed!");
             Init();
-        }
     }
 
     void Init()
@@ -212,12 +209,12 @@ public class CharacterPicker : MonoBehaviour
                 }
                 else
                 {
-                    var ponyType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), selectedSlot.saved.baseClass.CatalogCode);
+                    var classType = (PF_PlayerData.PlayerClassTypes)Enum.Parse(typeof(PF_PlayerData.PlayerClassTypes), selectedSlot.saved.baseClass.CatalogCode);
 
                     var afterSelect = new UnityEvent();
                     afterSelect.AddListener(ShowPickedPonyDetails);
 
-                    switch ((int)ponyType)
+                    switch ((int)classType)
                     {
                         case 0:
                             pPicker.SelectArrow(0, afterSelect);
@@ -281,7 +278,7 @@ public class CharacterPicker : MonoBehaviour
         DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.DEL_CHAR_PROMPT, string.Format(GlobalStrings.DEL_CHAR_MSG, selectedSlot.ponyName.text), processResponse);
     }
 
-    public void PonyPicked(ArrowUI pony)
+    public void UnicornPicked(ArrowUI pony)
     {
         Action<string> processResponse = (string response) =>
         {

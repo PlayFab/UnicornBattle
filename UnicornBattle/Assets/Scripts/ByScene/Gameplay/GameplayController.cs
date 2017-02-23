@@ -164,7 +164,7 @@ public class GameplayController : MonoBehaviour
         };
 
         //Make our callout
-        var spellIcon = GameController.Instance.iconManager.GetIconById(spellRecord.Detail.Icon);
+        var spellIcon = GameController.Instance.iconManager.GetIconById(spellRecord.Detail.Icon, IconManager.IconTypes.Spell);
         enemyController.Callout(spellIcon, string.Format("{0} casts {1}", turnController.currentEncounter.DisplayName, spellRecord.SpellName), applyDamage);
     }
 

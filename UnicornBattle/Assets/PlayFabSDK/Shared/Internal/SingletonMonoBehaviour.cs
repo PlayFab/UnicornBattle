@@ -37,17 +37,17 @@ namespace PlayFab.Internal
             }
         }
 
-        public virtual void Awake ()
+        public virtual void Awake()
         {
             if (Application.isPlaying)
             {
                 DontDestroyOnLoad(this);
             }
-            
+
             //check if instance already exists when reloading original scene
             if (_instance != null)
             {
-                DestroyImmediate (gameObject);
+                DestroyImmediate(gameObject);
             }
         }
 

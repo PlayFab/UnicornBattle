@@ -35,10 +35,9 @@ public class GameplayEnemyController : MonoBehaviour
     {
     }
 
-    // Use this for initialization
     void Start()
     {
-        myRT = (RectTransform)GetComponent<RectTransform>();
+        myRT = GetComponent<RectTransform>();
     }
 
     public void Callout(Sprite sprite, string message, UnityAction callback)

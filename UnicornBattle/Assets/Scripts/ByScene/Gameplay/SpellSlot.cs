@@ -97,7 +97,7 @@ public class SpellSlot : MonoBehaviour {
 			ApplyStatus = sp.ApplyStatus
 		};
 		
-		this.SpellIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(sp.Icon);
+		this.SpellIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(sp.Icon, IconManager.IconTypes.Spell);
 		
 		if(spLvl > 0)
 		{

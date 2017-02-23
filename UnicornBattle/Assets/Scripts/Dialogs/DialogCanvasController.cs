@@ -1,4 +1,3 @@
-using PlayFab.ClientModels;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,7 +24,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public ItemViewerController itemViewerPrompt;
     public FloatingStoreController floatingStorePrompt;
     public FloatingInventoryController floatingInvPrompt;
-    public OfferPromptController offerPrompt;
     public LeaderboardPaneController socialPrompt;
     public AccountStatusController accountSettingsPrompt;
 
@@ -65,9 +63,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public delegate void RequestSocialHandler();
     public static event RequestSocialHandler RaiseSocialRequest;
 
-    public delegate void RequestOfferPromptHandler();
-    public static event RequestOfferPromptHandler RaiseOfferRequest;
-
     void OnEnable()
     {
         PF_Bridge.OnPlayFabCallbackError += HandleCallbackError;
@@ -86,7 +81,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         RaiseAccountSettingsRequest += HandleRaiseAccountSettingsRequest;
         RaiseSelectorPromptRequest += HandleSelectorPromptRequest;
         RaiseSocialRequest += HandleSocialRequest;
-        RaiseOfferRequest += HandleOfferPromptRequest;
     }
 
     void OnDisable()
@@ -107,19 +101,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         RaiseAccountSettingsRequest -= HandleRaiseAccountSettingsRequest;
         RaiseSelectorPromptRequest -= HandleSelectorPromptRequest;
         RaiseSocialRequest -= HandleSocialRequest;
-        RaiseOfferRequest -= HandleOfferPromptRequest;
-    }
-
-    void HandleOfferPromptRequest()
-    {
-        offerPrompt.gameObject.SetActive(true);
-        offerPrompt.Init();
-    }
-
-    public static void RequestOfferPrompt()
-    {
-        if (RaiseOfferRequest != null)
-            RaiseOfferRequest();
     }
 
     void HandleSocialRequest()
@@ -157,7 +138,6 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         accountSettingsPrompt.gameObject.SetActive(true);
         accountSettingsPrompt.Init();
     }
-
 
     public static void RequestInventoryPrompt(Action<string> callback = null, InventoryFilters filter = InventoryFilters.AllItems)
     {
@@ -400,12 +380,11 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
             }
 
             // tick once per second while we have outbound requests. (keep enabled while debugging this feature)
-            Debug.Log(string.Format("{0}", (int)Time.time % 2 == 0 ? "Tick" : "Tock"));
+            Debug.Log((int)Time.time % 2 == 0 ? "Tick" : "Tock");
             yield return new WaitForSeconds(1f);
         }
 
         // outgoing request queue empty
         _timeOutCallback = null;
-        yield break;
     }
 }

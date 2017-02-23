@@ -39,7 +39,7 @@ public class InventoryCurrencyBarController : MonoBehaviour
         var go = Instantiate(CurrencyDisplayItemPrefab);
         go.SetParent(DisplayContainer, false);
         var comp = go.GetComponent<CurrencyDisplayItem>();
-        comp.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(key);
+        comp.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(key, IconManager.IconTypes.Misc);
         int playerBalance;
         vcBalances.TryGetValue(key, out playerBalance);
         comp.value.text = string.Format("{0:n0}", playerBalance);

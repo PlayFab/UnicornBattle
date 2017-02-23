@@ -16,7 +16,7 @@ namespace PlayFab
 
         public static void Init(string senderId)
         {
-            Debug.LogFormat("senderId: {0}", senderId);
+            Debug.Log("senderId: " + senderId);
             if (Initted)
             {
                 Debug.LogFormat("Android has already been initialized");

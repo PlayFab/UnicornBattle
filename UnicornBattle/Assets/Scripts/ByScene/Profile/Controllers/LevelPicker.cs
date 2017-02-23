@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class LevelPicker : MonoBehaviour
 {
-    public int numberOfLevels = 6;
     public Transform levelButtonPrefab;
     public Transform overworldSceneObject;
     public Transform gridView;
@@ -43,7 +42,7 @@ public class LevelPicker : MonoBehaviour
 
     public void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
-        if (details.Contains("Encounters Loaded!") && method == PlayFabAPIMethods.GetTitleData)
+        if (details.Contains("Encounters Loaded!") && method == PlayFabAPIMethods.GetTitleData_Specific)
             isEncounterListAvailable = true;
 
         CheckToContinue();
@@ -51,13 +50,13 @@ public class LevelPicker : MonoBehaviour
 
     void CheckToContinue()
     {
-        if (isEncounterListAvailable)
-        {
-            PF_GamePlay.encounters = BuildEncounterList();
-            PF_GamePlay.ActiveQuest = selectedLevel.GetLevelItemData();
-            SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Gameplay, .333f);
-            ResetDataChecks();
-        }
+        if (!isEncounterListAvailable)
+            return;
+
+        PF_GamePlay.encounters = BuildEncounterList();
+        PF_GamePlay.ActiveQuest = selectedLevel.GetLevelItemData();
+        SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Gameplay, .333f);
+        ResetDataChecks();
     }
 
     public List<UB_GamePlayEncounter> BuildEncounterList()
@@ -66,191 +65,58 @@ public class LevelPicker : MonoBehaviour
         {
             // need to change this list to have another type of class, but for now this will do.
             // TODO add markers for end / beginning of acts (will usually be with boss)
-            List<UB_GamePlayEncounter> EncounterOrder = new List<UB_GamePlayEncounter>();
+            List<UB_GamePlayEncounter> outputEncounters = new List<UB_GamePlayEncounter>();
 
             foreach (var act in selectedLevel.levelData.Acts)
             {
-                List<UB_GamePlayEncounter> ActEncounters = new List<UB_GamePlayEncounter>();
+                AddEncountersFromPool(act.Value.CreepEncounters, ref outputEncounters);
+                AddEncountersFromPool(act.Value.MegaCreepEncounters, ref outputEncounters);
+                AddEncountersFromPool(act.Value.RareCreepEncounters, ref outputEncounters);
+                AddEncountersFromPool(act.Value.StoreEncounters, ref outputEncounters);
+                AddEncountersFromPool(act.Value.HeroEncounters, ref outputEncounters);
+                // shuffle deck here
+                outputEncounters.Shuffle();
 
-                //Build Creep Set
-                if (PF_GameData.Encounters.ContainsKey(act.Value.CreepEncounters.EncounterPool))
-                {
-                    Dictionary<string, UB_EncounterData> pool = PF_GameData.Encounters[act.Value.CreepEncounters.EncounterPool];
-
-                    // used to access these by index
-                    List<string> name_list = pool.Keys.ToList();
-                    List<UB_EncounterData> encounter_list = pool.Values.ToList();
-                    int creepCount = act.Value.CreepEncounters.MinQuantity;
-
-                    // try to add the specific creeps
-                    foreach (var id in act.Value.CreepEncounters.SpawnSpecificEncountersByID)
-                    {
-
-                        // start back here start with creating the new()s
-                        if (pool.ContainsKey(id))
-                        {
-                            ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = id, Data = new UB_EncounterData(pool[id]) });
-                            creepCount--;
-                        }
-                    }
-
-                    while (creepCount > 0)
-                    {
-                        int rng = Random.Range(0, pool.Count);
-                        ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = name_list[rng], Data = new UB_EncounterData(encounter_list[rng]) });
-                        creepCount--;
-                    }
-                }
-
-                //Build MegaCreep Set
-                if (PF_GameData.Encounters.ContainsKey(act.Value.MegaCreepEncounters.EncounterPool))
-                {
-                    Dictionary<string, UB_EncounterData> pool = PF_GameData.Encounters[act.Value.MegaCreepEncounters.EncounterPool];
-
-                    // used to access these by index
-                    List<string> name_list = pool.Keys.ToList();
-                    List<UB_EncounterData> encounter_list = pool.Values.ToList();
-                    int creepCount = act.Value.MegaCreepEncounters.MinQuantity;
-
-                    // try to add the specific creeps
-                    foreach (var id in act.Value.MegaCreepEncounters.SpawnSpecificEncountersByID)
-                    {
-                        if (pool.ContainsKey(id))
-                        {
-                            ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = id, Data = new UB_EncounterData(pool[id]) });
-                            creepCount--;
-                        }
-                    }
-
-                    while (creepCount > 0)
-                    {
-                        int rng = Random.Range(0, pool.Count);
-                        ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = name_list[rng], Data = new UB_EncounterData(encounter_list[rng]) });
-                        creepCount--;
-                    }
-                }
-
-                //Build RareCreep Set
-                if (PF_GameData.Encounters.ContainsKey(act.Value.RareCreepEncounters.EncounterPool))
-                {
-                    Dictionary<string, UB_EncounterData> pool = PF_GameData.Encounters[act.Value.RareCreepEncounters.EncounterPool];
-
-                    // used to access these by index
-                    List<string> name_list = pool.Keys.ToList();
-                    List<UB_EncounterData> encounter_list = pool.Values.ToList();
-                    int creepCount = act.Value.RareCreepEncounters.MinQuantity;
-
-                    // try to add the specific creeps
-                    foreach (var id in act.Value.RareCreepEncounters.SpawnSpecificEncountersByID)
-                    {
-                        if (pool.ContainsKey(id))
-                        {
-                            ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = id, Data = new UB_EncounterData(pool[id]) });
-                            creepCount--;
-                        }
-                    }
-
-                    while (creepCount > 0)
-                    {
-                        int rng = Random.Range(0, pool.Count);
-                        ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = name_list[rng], Data = new UB_EncounterData(encounter_list[rng]) });
-                        creepCount--;
-                    }
-                }
-
-                //Build Store Set
-                if (PF_GameData.Encounters.ContainsKey(act.Value.StoreEncounters.EncounterPool))
-                {
-                    Dictionary<string, UB_EncounterData> pool = PF_GameData.Encounters[act.Value.StoreEncounters.EncounterPool];
-
-                    // used to access these by index
-                    List<string> name_list = pool.Keys.ToList();
-                    List<UB_EncounterData> encounter_list = pool.Values.ToList();
-                    int creepCount = act.Value.StoreEncounters.MinQuantity;
-
-                    // try to add the specific creeps
-                    foreach (var id in act.Value.StoreEncounters.SpawnSpecificEncountersByID)
-                    {
-                        if (pool.ContainsKey(id))
-                        {
-                            ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = id, Data = new UB_EncounterData(pool[id]) });
-                            creepCount--;
-                        }
-                    }
-
-                    while (creepCount > 0)
-                    {
-                        int rng = Random.Range(0, pool.Count);
-                        ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = name_list[rng], Data = new UB_EncounterData(encounter_list[rng]) });
-                        creepCount--;
-                    }
-                }
-
-                //Build Hero Set
-                if (PF_GameData.Encounters.ContainsKey(act.Value.HeroEncounters.EncounterPool))
-                {
-                    Dictionary<string, UB_EncounterData> pool = PF_GameData.Encounters[act.Value.HeroEncounters.EncounterPool];
-
-                    // used to access these by index
-                    List<string> name_list = pool.Keys.ToList();
-                    List<UB_EncounterData> encounter_list = pool.Values.ToList();
-                    int creepCount = act.Value.HeroEncounters.MinQuantity;
-
-                    // try to add the specific creeps
-                    foreach (var id in act.Value.HeroEncounters.SpawnSpecificEncountersByID)
-                    {
-                        if (pool.ContainsKey(id))
-                        {
-                            ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = id, Data = new UB_EncounterData(pool[id]) });
-                            creepCount--;
-                        }
-                    }
-
-                    while (creepCount > 0)
-                    {
-                        int rng = Random.Range(0, pool.Count);
-                        ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = name_list[rng], Data = new UB_EncounterData(encounter_list[rng]) });
-                        creepCount--;
-                    }
-                }
-
-                // shuffle deck here?
-                //EncounterOrder = EncounterOrder.shuffle();
-                ActEncounters.Shuffle();
-
-                //Build Boss Set
-                if (PF_GameData.Encounters.ContainsKey(act.Value.BossCreepEncounters.EncounterPool))
-                {
-                    Dictionary<string, UB_EncounterData> pool = PF_GameData.Encounters[act.Value.BossCreepEncounters.EncounterPool];
-
-                    // used to access these by index
-                    List<string> name_list = pool.Keys.ToList();
-                    List<UB_EncounterData> encounter_list = pool.Values.ToList();
-                    int creepCount = act.Value.BossCreepEncounters.MinQuantity;
-
-                    // try to add the specific creeps
-                    foreach (var id in act.Value.BossCreepEncounters.SpawnSpecificEncountersByID)
-                    {
-                        if (pool.ContainsKey(id))
-                        {
-                            ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = id, Data = new UB_EncounterData(pool[id]) });
-                            creepCount--;
-                        }
-                    }
-
-                    while (creepCount > 0)
-                    {
-                        int rng = Random.Range(0, pool.Count);
-                        ActEncounters.Add(new UB_GamePlayEncounter() { DisplayName = name_list[rng], Data = new UB_EncounterData(encounter_list[rng]) });
-                        creepCount--;
-                    }
-                }
-                ActEncounters.Last().isEndOfAct = true;
-                EncounterOrder.AddRange(ActEncounters);
+                AddEncountersFromPool(act.Value.BossCreepEncounters, ref outputEncounters);
+                outputEncounters[outputEncounters.Count - 1].isEndOfAct = true;
             }
-            return EncounterOrder;
+            return outputEncounters;
         }
         return null;
+    }
+
+    private static void AddEncountersFromPool(UB_LevelEncounters encounterData, ref List<UB_GamePlayEncounter> outputEncounters)
+    {
+        var poolKey = encounterData.EncounterPool;
+        Dictionary<string, UB_EncounterData> encounterPool;
+        if (!PF_GameData.Encounters.TryGetValue(poolKey, out encounterPool))
+            return;
+
+        // used to access these by index
+        var creepCount = encounterData.MinQuantity;
+        var nameList = new List<string>();
+        nameList.AddRange(encounterPool.Keys);
+        var encounterList = new List<UB_EncounterData>();
+        encounterList.AddRange(encounterPool.Values);
+
+        // try to add the specific creeps
+        foreach (var id in encounterData.SpawnSpecificEncountersByID)
+        {
+            // start back here start with creating the new()s
+            if (!encounterPool.ContainsKey(id))
+                continue;
+
+            outputEncounters.Add(new UB_GamePlayEncounter { DisplayName = id, Data = new UB_EncounterData(encounterPool[id]) });
+            creepCount--;
+        }
+
+        // Fill up the rest with randoms
+        while (creepCount > 0)
+        {
+            var rng = Random.Range(0, encounterPool.Count);
+            outputEncounters.Add(new UB_GamePlayEncounter { DisplayName = nameList[rng], Data = new UB_EncounterData(encounterList[rng]) });
+            creepCount--;
+        }
     }
 
     void ResetDataChecks()
@@ -258,40 +124,33 @@ public class LevelPicker : MonoBehaviour
         isEncounterListAvailable = false;
     }
 
+    private void SetCheckBoxSprite(Image image, bool isChecked)
+    {
+        image.overrideSprite = isChecked ? checkBoxChecked : checkBox;
+    }
+
     public void ToggleRaidMode()
     {
         PF_GamePlay.UseRaidMode = !PF_GamePlay.UseRaidMode;
-        if (PF_GamePlay.UseRaidMode)
-        {
-            RaidMode.GetComponent<Image>().overrideSprite = checkBoxChecked;
-        }
-        else
-        {
-            RaidMode.GetComponent<Image>().overrideSprite = checkBox;
-        }
+        SetCheckBoxSprite(RaidMode.GetComponent<Image>(), PF_GamePlay.UseRaidMode);
     }
 
     public void ToggleHardMode()
     {
         PF_GamePlay.isHardMode = !PF_GamePlay.isHardMode;
-
-        if (PF_GamePlay.isHardMode)
-        {
-            HardMode.GetComponent<Image>().overrideSprite = checkBoxChecked;
-        }
-        else
-        {
-            HardMode.GetComponent<Image>().overrideSprite = checkBox;
-        }
+        SetCheckBoxSprite(HardMode.GetComponent<Image>(), PF_GamePlay.isHardMode);
     }
 
-
-    public void LevelItemClicked(LevelItem item)
+    public void LevelItemClicked(string levelname)
     {
-        if (item == selectedLevel)
-            return;
-
         DeselectLevelItems();
+
+        LevelItem item = null;
+        foreach (var eachLevel in levelItems)
+            if (eachLevel.levelName == levelname)
+                item = eachLevel;
+        if (item == null || item == selectedLevel)
+            return;
 
         selectedLevel = item;
         selectedLevel.GetComponent<Image>().color = selectedColor;
@@ -302,18 +161,10 @@ public class LevelPicker : MonoBehaviour
         Dictionary<string, int> charStats = PF_PlayerData.characterStatistics[PF_PlayerData.activeCharacter.characterDetails.CharacterId];
         if (PF_PlayerData.characterStatistics.Count > 0)
         {
-            if (charStats.ContainsKey(selectedLevel.levelData.StatsPrefix + "Complete"))
-            {
-                if (PF_GamePlay.isHardMode)
-                    HardMode.GetComponent<Image>().overrideSprite = checkBoxChecked;
-                else
-                    HardMode.GetComponent<Image>().overrideSprite = checkBox;
-                HardMode.gameObject.SetActive(true);
-            }
-            else
-            {
-                HardMode.gameObject.SetActive(false);
-            }
+            var hardModeAvailable = charStats.ContainsKey(selectedLevel.levelData.StatsPrefix + "Complete");
+            HardMode.gameObject.SetActive(hardModeAvailable);
+            if (hardModeAvailable)
+                SetCheckBoxSprite(HardMode.GetComponent<Image>(), PF_GamePlay.isHardMode);
         }
         else
         {
@@ -401,38 +252,34 @@ public class LevelPicker : MonoBehaviour
         //TODO Set difficulty level on the selected level item.
     }
 
-
     public void Init()
     {
-        for (int z = 0; z < levelItems.Count; z++)
+        SetCheckBoxSprite(RaidMode.GetComponent<Image>(), PF_GamePlay.UseRaidMode);
+
+        for (var z = 0; z < levelItems.Count; z++)
             Destroy(levelItems[z].gameObject);
         levelItems.Clear();
+        if (PF_GameData.Levels.Count == 0)
+            return;
 
-        if (PF_GameData.Levels.Count > 0)
+        foreach (var levelData in PF_GameData.Levels)
         {
-            foreach (var item in PF_GameData.Levels)
-            {
-                if (item.Value.IsHidden == false)
-                {
-                    //TODO add locked levels
+            //TODO show locked levels
+            if (levelData.Value.MinEntryLevel != null && levelData.Value.MinEntryLevel.Value > PF_PlayerData.activeCharacter.characterData.CharacterLevel)
+                continue; // Hide high level dungeons
+            if (PF_GameData.IsEventActive(levelData.Value.RestrictedToEventKey) != PromotionType.Active)
+                continue;
 
-                    var slot = Instantiate(levelButtonPrefab);
-                    slot.SetParent(gridView, false);
-                    var li = slot.GetComponent<LevelItem>();
-                    li.levelData = item.Value;
-                    li.levelName = item.Key;
-                    li.levelIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(item.Value.Icon);
-                    levelItems.Add(li);
-                }
-            }
-
-            LevelItemClicked(levelItems[0]);
+            var slot = Instantiate(levelButtonPrefab);
+            slot.SetParent(gridView, false);
+            var li = slot.GetComponent<LevelItem>();
+            li.levelData = levelData.Value;
+            li.levelName = levelData.Key;
+            li.levelIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(levelData.Value.Icon, IconManager.IconTypes.Misc);
+            levelItems.Add(li);
         }
 
-        if (PF_GamePlay.UseRaidMode)
-            RaidMode.GetComponent<Image>().overrideSprite = checkBoxChecked;
-        else
-            RaidMode.GetComponent<Image>().overrideSprite = checkBox;
+        LevelItemClicked(levelItems[0].levelName);
     }
 }
 

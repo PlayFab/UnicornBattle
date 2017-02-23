@@ -44,10 +44,8 @@ public class InterstitialController : MonoBehaviour
             ThanksForPlaying.gameObject.SetActive(false);
 
             int rng = UnityEngine.Random.Range(0, PF_GameData.PromoAssets.Count);
-
-            UB_UnpackedAssetBundle assets = GameController.Instance.cdnController.GetAssetsByID(PF_GameData.PromoAssets[rng].PromoId);
+            var assets = GameController.Instance.cdnController.GetAssetsByID(PF_GameData.PromoAssets[rng].PromoId);
             mainImage.overrideSprite = Sprite.Create(assets.Splash, new Rect(0, 0, assets.Splash.width, assets.Splash.height), new Vector2(0.5f, 0.5f));
-
         }
         else
         {

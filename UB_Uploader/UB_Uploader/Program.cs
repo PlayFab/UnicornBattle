@@ -31,6 +31,15 @@ namespace UB_Uploader
         private static FileInfo logFile;
         private static StreamWriter logStream;
 
+        // CDN
+        public enum CdnPlatform { Desktop, iOS, Android }
+        public static readonly Dictionary<CdnPlatform, string> cdnPlatformSubfolder = new Dictionary<CdnPlatform, string> {
+            { CdnPlatform.Desktop, "" },
+            { CdnPlatform.iOS, "iOS/" },
+            { CdnPlatform.Android, "Android/" },
+        };
+        public static string cdnPath = "./PlayFabData/AssetBundles/";
+
         /// <summary>
         /// This app parses the textfiles(defined above) and uploads the contents into a PlayFab title (defined in titleSettingsPath);
         /// </summary>
@@ -50,19 +59,14 @@ namespace UB_Uploader
                 // start uploading
                 if (!UploadTitleData())
                     throw new Exception("\tFailed to upload TitleData.");
-
                 if (!UploadEconomyData())
                     throw new Exception("\tFailed to upload Economy Data.");
-
                 if (!UploadCloudScript())
                     throw new Exception("\tFailed to upload CloudScript.");
-
                 if (!UploadTitleNews())
                     throw new Exception("\tFailed to upload TitleNews.");
-
                 if (!UploadStatisticDefinitions())
                     throw new Exception("\tFailed to upload Statistics Definitions.");
-
                 if (!UploadCdnAssets())
                     throw new Exception("\tFailed to upload CDN Assets.");
             }
@@ -76,11 +80,32 @@ namespace UB_Uploader
                 var status = hitErrors ? "ended with errors. See PreviousUploadLog.txt for details" : "ended successfully!";
                 var color = hitErrors ? ConsoleColor.Red : ConsoleColor.White;
 
-                LogToFile(string.Format("UB_Uploader.exe {0}", status), color);
+                LogToFile("UB_Uploader.exe " + status, color);
                 logStream.Close();
                 Console.WriteLine("Press return to exit.");
                 Console.ReadLine();
             }
+        }
+
+        private static bool GetTitleSettings()
+        {
+            var parsedFile = ParseFile(titleSettingsPath);
+
+            var titleSettings = JsonWrapper.DeserializeObject<Dictionary<string, string>>(parsedFile);
+
+            if (titleSettings != null &&
+                titleSettings.TryGetValue("TitleId", out PlayFabSettings.TitleId) && !string.IsNullOrEmpty(PlayFabSettings.TitleId) &&
+                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.DeveloperSecretKey) && !string.IsNullOrEmpty(PlayFabSettings.DeveloperSecretKey) &&
+                titleSettings.TryGetValue("CatalogName", out defaultCatalog))
+            {
+                LogToFile("Setting Destination TitleId to: " + PlayFabSettings.TitleId);
+                LogToFile("Setting DeveloperSecretKey to: " + PlayFabSettings.DeveloperSecretKey);
+                LogToFile("Setting defaultCatalog name to: " + defaultCatalog);
+                return true;
+            }
+
+            LogToFile("An error occurred when trying to parse TitleSettings.json", ConsoleColor.Red);
+            return false;
         }
 
         #region Uploading Functions -- these are straightforward calls that push the data to the backend
@@ -121,7 +146,7 @@ namespace UB_Uploader
 
             foreach (var item in statisticDefinitions)
             {
-                LogToFile(string.Format("\tUploading: {0}", item.StatisticName));
+                LogToFile("\tUploading: " + item.StatisticName);
 
                 var request = new CreatePlayerStatisticDefinitionRequest()
                 {
@@ -137,7 +162,7 @@ namespace UB_Uploader
                 {
                     if (createStatTask.Result.Error.Error == PlayFabErrorCode.StatisticNameConflict)
                     {
-                        LogToFile(string.Format("\tStatistic Already Exists, Updating values: {0}", item.StatisticName), ConsoleColor.DarkYellow);
+                        LogToFile("\tStatistic Already Exists, Updating values: " + item.StatisticName, ConsoleColor.DarkYellow);
                         var updateRequest = new UpdatePlayerStatisticDefinitionRequest()
                         {
                             StatisticName = item.StatisticName,
@@ -148,23 +173,18 @@ namespace UB_Uploader
                         var updateStatTask = PlayFabAdminAPI.UpdatePlayerStatisticDefinitionAsync(updateRequest);
                         updateStatTask.Wait();
                         if (updateStatTask.Result.Error != null)
-                        {
                             OutputPlayFabError("\t\tStatistics Definition Error: " + item.StatisticName, updateStatTask.Result.Error);
-                        }
                         else
-                        {
-                            LogToFile(string.Format("\t\tStatistics Definition: {0} Updated ", item.StatisticName), ConsoleColor.Green);
-                        }
+                            LogToFile("\t\tStatistics Definition:" + item.StatisticName + " Updated", ConsoleColor.Green);
                     }
                     else
                     {
                         OutputPlayFabError("\t\tStatistics Definition Error: " + item.StatisticName, createStatTask.Result.Error);
                     }
-
                 }
                 else
                 {
-                    LogToFile(string.Format("\t\tStatistics Definition: {0} Created ", item.StatisticName), ConsoleColor.Green);
+                    LogToFile("\t\tStatistics Definition: " + item.StatisticName + " Created", ConsoleColor.Green);
                 }
             }
             return true;
@@ -182,7 +202,7 @@ namespace UB_Uploader
 
             foreach (var item in titleNewsItems)
             {
-                LogToFile(string.Format("\tUploading: {0}", item.Title));
+                LogToFile("\tUploading: " + item.Title);
 
                 var request = new AddNewsRequest()
                 {
@@ -194,13 +214,9 @@ namespace UB_Uploader
                 addNewsTask.Wait();
 
                 if (addNewsTask.Result.Error != null)
-                {
                     OutputPlayFabError("\t\tTitleNews Upload: " + item.Title, addNewsTask.Result.Error);
-                }
                 else
-                {
-                    LogToFile(string.Format("\t\t{0} Uploaded.", item.Title), ConsoleColor.Green);
-                }
+                    LogToFile("\t\t" + item.Title + " Uploaded.", ConsoleColor.Green);
             }
 
             return true;
@@ -246,27 +262,6 @@ namespace UB_Uploader
             return true;
         }
 
-        private static bool GetTitleSettings()
-        {
-            var parsedFile = ParseFile(titleSettingsPath);
-
-            var titleSettings = JsonWrapper.DeserializeObject<Dictionary<string, string>>(parsedFile);
-
-            if (titleSettings != null &&
-                titleSettings.TryGetValue("TitleId", out PlayFabSettings.TitleId) &&
-                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.DeveloperSecretKey) &&
-                titleSettings.TryGetValue("CatalogName", out defaultCatalog))
-            {
-                LogToFile(string.Format("Setting Destination TitleId to:{0}", PlayFabSettings.TitleId));
-                LogToFile(string.Format("Setting DeveloperSecretKey to:{0}", PlayFabSettings.DeveloperSecretKey));
-                LogToFile(string.Format("Setting defaultCatalog name to:{0}", defaultCatalog));
-                return true;
-            }
-
-            LogToFile("An error occurred when trying to parse TitleSettings.json", ConsoleColor.Red);
-            return false;
-        }
-
         private static bool UploadTitleData()
         {
             if (string.IsNullOrEmpty(titleDataPath))
@@ -278,7 +273,7 @@ namespace UB_Uploader
 
             foreach (var kvp in titleDataDict)
             {
-                LogToFile(string.Format("\tUploading: {0}", kvp.Key));
+                LogToFile("\tUploading: " + kvp.Key);
 
                 var request = new SetTitleDataRequest()
                 {
@@ -290,13 +285,9 @@ namespace UB_Uploader
                 setTitleDataTask.Wait();
 
                 if (setTitleDataTask.Result.Error != null)
-                {
                     OutputPlayFabError("\t\tTitleData Upload: " + kvp.Key, setTitleDataTask.Result.Error);
-                }
                 else
-                {
-                    LogToFile(string.Format("\t\t{0} Uploaded.", kvp.Key), ConsoleColor.Green);
-                }
+                    LogToFile("\t\t" + kvp.Key + " Uploaded.", ConsoleColor.Green);
             }
 
             return true;
@@ -411,7 +402,7 @@ namespace UB_Uploader
 
             foreach (var kvp in storesDict)
             {
-                LogToFile(string.Format("\tUploading: {0}", kvp.Key));
+                LogToFile("\tUploading: " + kvp.Key);
 
                 var request = new UpdateStoreItemsRequest()
                 {
@@ -424,13 +415,9 @@ namespace UB_Uploader
                 updateStoresTask.Wait();
 
                 if (updateStoresTask.Result.Error != null)
-                {
                     OutputPlayFabError("\t\tStore Upload: " + kvp.Key, updateStoresTask.Result.Error);
-                }
                 else
-                {
-                    LogToFile(string.Format("\t\tStore: {0} Uploaded.", kvp.Key), ConsoleColor.Green);
-                }
+                    LogToFile("\t\tStore: " + kvp.Key + " Uploaded. ", ConsoleColor.Green);
             }
             return true;
         }
@@ -442,17 +429,18 @@ namespace UB_Uploader
 
             LogToFile("Uploading CDN AssetBundles...");
             var parsedFile = ParseFile(cdnAssetsPath);
+            var bundleNames = JsonWrapper.DeserializeObject<List<string>>(parsedFile); // TODO: This could probably just read the list of files from the directory
 
-            var assetData = JsonWrapper.DeserializeObject<List<CdnAssetData>>(parsedFile);
-
-            if (assetData != null)
+            if (bundleNames != null)
             {
-                foreach (var item in assetData)
+                foreach (var bundleName in bundleNames)
                 {
-                    string key = string.Format("{0}{1}/{2}", item.Platform == "Desktop" ? "" : item.Platform + "/", item.Key,
-                        item.Name);
-                    string path = item.Path + item.Name;
-                    UploadAsset(key, path);
+                    foreach (CdnPlatform eachPlatform in Enum.GetValues(typeof(CdnPlatform)))
+                    {
+                        var key = cdnPlatformSubfolder[eachPlatform] + bundleName;
+                        var path = cdnPath + key;
+                        UploadAsset(key, path);
+                    }
                 }
             }
             else
@@ -477,7 +465,7 @@ namespace UB_Uploader
         static void OutputPlayFabError(string context, PlayFabError err)
         {
             hitErrors = true;
-            LogToFile(string.Format("\t An error occurred during: {0}", context), ConsoleColor.Red);
+            LogToFile("\tAn error occurred during: " + context, ConsoleColor.Red);
 
             var details = string.Empty;
             if (err.ErrorDetails != null)
@@ -610,16 +598,4 @@ namespace UB_Uploader
         }
         #endregion
     }
-}
-
-
-/// <summary>
-/// Used as a helper class for deserializing CDN JSON.
-/// </summary>
-public class CdnAssetData
-{
-    public string Name;
-    public string Key;
-    public string Path;
-    public string Platform;
 }

@@ -23,19 +23,19 @@ public class PromotionController : MonoBehaviour
 
     private float _timeSinceMove = 99999999f;
     private float rotateDelay = 8f;
-
-    public enum PromotionFilter { All = 0, Sales = 1, Events = 2, News = 3, RewardAd = 4 }
-    //public PromotionFilter activeFilter = PromotionFilter.All;
-    //public Text titleText;
     private float _watchCD = 0.5f;
     private float _watchLastClickedAt = 0;
+    private int displayPromoIndex = 0;
+
+    private LevelPicker _levelPicker;
 
     // Use this for initialization
     void Start()
     {
         // Set up the default display
         SetAdSlotCount(1);
-        SelectBanner(UB_PromoDisplay.EMPTY_PROMO, 0);
+        SelectBanner();
+        _levelPicker = FindObjectOfType<LevelPicker>();
     }
 
     void OnEnable()
@@ -65,7 +65,7 @@ public class PromotionController : MonoBehaviour
                     Debug.Log(string.IsNullOrEmpty(adpromo.assets.PromoId) ? "AdPromo was not null... removing: " + adpromo.assets.PromoId : "Unknown");
                     promos.Remove(adpromo);
                     SetAdSlotCount(promos.Count);
-                    SelectBanner(promos[0], 0);
+                    SelectBanner();
                     Debug.Log("Promo Count: " + promos.Count);
                 }
                 else
@@ -121,7 +121,7 @@ public class PromotionController : MonoBehaviour
             {
                 promos.Remove(adpromo);
                 SetAdSlotCount(promos.Count);
-                SelectBanner(promos[0], 0);
+                SelectBanner();
             }
         }
     }
@@ -135,41 +135,30 @@ public class PromotionController : MonoBehaviour
 
     public void Init()
     {
-        // load sales or load default banners
-        // set up ad circles
         _timeSinceMove = Time.time;
 
-        if (PF_GameData.PromoAssets.Count > 0)
+        if (PF_GameData.PromoAssets.Count == 0)
+            return;
+
+        promos.Clear();
+        foreach (var item in PF_GameData.PromoAssets)
         {
-            promos.Clear();
-            foreach (var item in PF_GameData.PromoAssets)
+            var promo = new UB_PromoDisplay { assets = item };
+
+            UB_EventData ev;
+            if (PF_GameData.Events.TryGetValue(item.PromoId, out ev))
             {
-                var promo = new UB_PromoDisplay { assets = item };
-
-                if (item.ContentKey.Contains("events"))
-                {
-                    UB_EventData ev;
-                    PF_GameData.Events.TryGetValue(item.PromoId, out ev);
-                    promo.linkedEvent = ev;
-                    promo.linkedSale = null;
-                }
-                else
-                {
-                    UB_SaleData sl;
-                    PF_GameData.Sales.TryGetValue(item.PromoId, out sl);
-                    promo.linkedSale = sl;
-                    promo.linkedEvent = null;
-                }
-
+                promo.EventKey = ev.EventKey;
+                promo.Title = ev.EventName;
+                promo.Description = ev.EventDescription;
                 promos.Add(promo);
             }
-
-            SetAdSlotCount(promos.Count);
-            SelectBanner(promos[0], 0);
-            CheckForPlayFabPlacement();
         }
-    }
 
+        SetAdSlotCount(promos.Count);
+        SelectBanner();
+        CheckForPlayFabPlacement();
+    }
 
     // Update is called once per frame
     void Update()
@@ -181,13 +170,11 @@ public class PromotionController : MonoBehaviour
     public void NextBanner()
     {
         _timeSinceMove = Time.time;
-        int index = promos.FindIndex((z) => { return z.assets.PromoId == activePromo.assets.PromoId; });
-        index = (index + 1) % promos.Count;
-        var newPromo = index < promos.Count ? promos[index] : UB_PromoDisplay.EMPTY_PROMO;
+        displayPromoIndex += 1;
 
         UnityAction afterFadeOut = () =>
         {
-            SelectBanner(newPromo, index);
+            SelectBanner();
             FadeAdsIn();
         };
         FadeAdsOut(afterFadeOut);
@@ -196,13 +183,11 @@ public class PromotionController : MonoBehaviour
     public void PrevBanner()
     {
         _timeSinceMove = Time.time;
-        var index = promos.FindIndex((z) => { return z.assets.PromoId == activePromo.assets.PromoId; });
-        index = (index + promos.Count - 1) % promos.Count;
-        var newPromo = index < promos.Count ? promos[index] : UB_PromoDisplay.EMPTY_PROMO;
+        displayPromoIndex += promos.Count - 1;
 
         UnityAction afterFadeOut = () =>
         {
-            SelectBanner(newPromo, index);
+            SelectBanner();
             FadeAdsIn();
         };
         FadeAdsOut(afterFadeOut);
@@ -213,9 +198,7 @@ public class PromotionController : MonoBehaviour
         PF_GamePlay.OutroPane(AdObject, .5f, () =>
         {
             if (callback != null)
-            {
                 callback();
-            }
         });
     }
 
@@ -224,19 +207,16 @@ public class PromotionController : MonoBehaviour
         PF_GamePlay.IntroPane(AdObject, .5f, () =>
         {
             if (callback != null)
-            {
                 callback();
-            }
         });
     }
 
     public void ViewSale()
     {
-        var storeId = (activePromo.linkedEvent != null) ? activePromo.linkedEvent.StoreToUse : activePromo.linkedSale.StoreToUse;
+        var storeId = PF_GameData.GetEventSaleStore(activePromo.EventKey);
         DialogCanvasController.RequestStore(storeId);
 
-        Dictionary<string, object> eventData = new Dictionary<string, object>()
-        {
+        Dictionary<string, object> eventData = new Dictionary<string, object> {
             { "SalePromo", activePromo.assets.PromoId },
             { "Character_ID", PF_PlayerData.activeCharacter.characterDetails.CharacterId }
         };
@@ -246,31 +226,26 @@ public class PromotionController : MonoBehaviour
 
     public void PlayEvent()
     {
-        UnityAction<int> afterSelect = response =>
-        {
-            Debug.Log("Starting Event #" + response + "...");
+        var levelNames = PF_GameData.GetEventAssociatedLevels(activePromo.EventKey);
+
+        UnityAction<int> playEventIndex = index => {
+            _levelPicker.LevelItemClicked(levelNames[index]);
+            _levelPicker.PlaySelectedLevel();
         };
 
-        if (activePromo.linkedEvent.AssociatedLevels.Count > 1)
-        {
-            DialogCanvasController.RequestSelectorPrompt(GlobalStrings.QUEST_SELECTOR_PROMPT, activePromo.linkedEvent.AssociatedLevels, afterSelect);
-        }
-        else
-        {
-            afterSelect(0);
-        }
+        if (levelNames.Count > 1)
+            DialogCanvasController.RequestSelectorPrompt(GlobalStrings.QUEST_SELECTOR_PROMPT, levelNames, playEventIndex);
+        else if (levelNames.Count == 1)
+            playEventIndex(0);
     }
 
     public void WatchAd()
     {
 
-        if (activePromo != null && activePromo.linkedAd != null && SupersonicEvents.rewardedVideoAvailability)
+        if (activePromo != null && activePromo.linkedAd != null && SupersonicEvents.rewardedVideoAvailability && Time.time > _watchLastClickedAt + _watchCD)
         {
-            if (Time.time > _watchLastClickedAt + _watchCD)
-            {
-                _watchLastClickedAt = Time.time;
-                SupersonicEvents.ShowRewardedVideo(activePromo.linkedAd.Details);
-            }
+            _watchLastClickedAt = Time.time;
+            SupersonicEvents.ShowRewardedVideo(activePromo.linkedAd.Details);
         }
         else
         {
@@ -278,26 +253,20 @@ public class PromotionController : MonoBehaviour
         }
     }
 
-    public void SelectBanner(UB_PromoDisplay newPromo, int index)
+    public void SelectBanner()
     {
-        activePromo = newPromo;
-        AdjustSlotDisplay(index);
+        displayPromoIndex = promos.Count == 0 ? 0 : displayPromoIndex % promos.Count;
+        activePromo = promos.Count == 0 ? UB_PromoDisplay.EMPTY_PROMO : promos[displayPromoIndex];
+        AdjustSlotDisplay(displayPromoIndex);
 
-        ViewSaleBtn.SetActive(activePromo.linkedSale != null || (activePromo.linkedEvent != null && !string.IsNullOrEmpty(activePromo.linkedEvent.StoreToUse)));
-        PlayEventBtn.SetActive(activePromo.linkedEvent != null);
+        ViewSaleBtn.SetActive(!string.IsNullOrEmpty(PF_GameData.GetEventSaleStore(activePromo.EventKey)));
+        PlayEventBtn.SetActive(activePromo.linkedAd == null && PF_GameData.GetEventAssociatedLevels(activePromo.EventKey).Count > 0);
         WatchAdBtn.SetActive(activePromo.linkedAd != null);
 
-        if (activePromo.linkedSale != null) // Sale Type
+        if (activePromo.EventKey != null) // Event Type
         {
-            selectedDesc.text = activePromo.linkedSale.SaleDescription;
-            selectedTitle.text = activePromo.linkedSale.SaleName;
-
-        }
-        else if (activePromo.linkedEvent != null) // Event Type
-        {
-            selectedDesc.text = activePromo.linkedEvent.EventDescription;
-            selectedTitle.text = activePromo.linkedEvent.EventName;
-
+            selectedDesc.text = activePromo.Description;
+            selectedTitle.text = activePromo.Title;
         }
         else if (activePromo.linkedAd != null)  // Ad Type
         {
@@ -317,19 +286,16 @@ public class PromotionController : MonoBehaviour
 
     public void AddAdPromo(AdPlacementDetails details)
     {
-        var promo = new UB_PromoDisplay();
-        promo.linkedAd = new UB_AdData()
-        {
-            Details = details
-        };
-        promo.assets = new UB_UnpackedAssetBundle();
-        promo.assets.Banner = this.defaultVideoBanner;
-        promo.assets.PromoId = details.PlacementId;
-        promos.Add(promo);
+        var adPromo = new UB_PromoDisplay();
+        adPromo.linkedAd = new UB_AdData { Details = details };
+        adPromo.assets = new UB_UnpackedAssetBundle();
+        adPromo.assets.Banner = defaultVideoBanner;
+        adPromo.assets.PromoId = details.PlacementId;
+        promos.Add(adPromo);
 
         SetAdSlotCount(promos.Count);
-        SelectBanner(promo, promos.Count - 1);
-
+        displayPromoIndex = promos.Count - 1;
+        SelectBanner();
     }
 
     public void AdjustSlotDisplay(int selected)
@@ -378,19 +344,24 @@ public class UB_PromoDisplay
 
     static UB_PromoDisplay()
     {
-        EMPTY_PROMO = new UB_PromoDisplay();
-        EMPTY_PROMO.assets = new UB_UnpackedAssetBundle();
-        EMPTY_PROMO.assets.Banner = null;
-        EMPTY_PROMO.assets.ContentKey = "none";
-        EMPTY_PROMO.assets.PromoId = "none";
-        EMPTY_PROMO.assets.Splash = null;
-        EMPTY_PROMO.linkedEvent = null;
-        EMPTY_PROMO.linkedSale = null;
-        EMPTY_PROMO.linkedAd = null;
+        EMPTY_PROMO = new UB_PromoDisplay {
+            assets = new UB_UnpackedAssetBundle {
+                Banner = null,
+                ContentKey = "none",
+                PromoId = "none",
+                Splash = null
+            },
+            linkedAd = null,
+            EventKey = null,
+            Title = null,
+            Description = null
+        };
     }
 
     public UB_UnpackedAssetBundle assets;
-    public UB_EventData linkedEvent;
-    public UB_SaleData linkedSale;
     public UB_AdData linkedAd;
+
+    public string EventKey;
+    public string Title;
+    public string Description;
 }

@@ -9,31 +9,26 @@ public class PF_Advertising
     public static void GetAdPlacements(GetAdPlacementsRequest request, Action<GetAdPlacementsResult> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null)
     {
         if (!PlayFabHttp.IsClientLoggedIn()) throw new Exception("Must be logged in to call this method");
-
-        PlayFabHttp.MakeApiCall<GetAdPlacementsResult>("/Client/GetAdPlacements", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
+        PlayFabHttp.MakeApiCall("/Client/GetAdPlacements", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
     }
 
     public static void ReportAdActivity(ReportAdActivityRequest request, Action<ReportAdActivityResponse> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null)
     {
         if (!PlayFabHttp.IsClientLoggedIn()) throw new Exception("Must be logged in to call this method");
-
-        PlayFabHttp.MakeApiCall<ReportAdActivityResponse>("/Client/ReportAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
+        PlayFabHttp.MakeApiCall("/Client/ReportAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
     }
 
     public static void RewardAdActivity(RewardAdActivityRequest request, Action<RewardAdActivityResponse> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null)
     {
         if (!PlayFabHttp.IsClientLoggedIn()) throw new Exception("Must be logged in to call this method");
-
-        PlayFabHttp.MakeApiCall<RewardAdActivityResponse>("/Client/RewardAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
+        PlayFabHttp.MakeApiCall("/Client/RewardAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
     }
 }
 
 public class ReportAdActivityRequest : PlayFabRequestCommon
 {
     public string PlacementId { get; set; }
-
     public string RewardId { get; set; }
-
     public AdActivity Activity { get; set; }
 }
 
@@ -45,8 +40,7 @@ public enum AdActivity
     End
 }
 
-public class ReportAdActivityResponse : PlayFabResultCommon
-{ }
+public class ReportAdActivityResponse : PlayFabResultCommon { }
 
 
 public class GetAdPlacementsRequest : PlayFabRequestCommon
@@ -60,7 +54,6 @@ public class NameIdentifier
 {
     public string Name { get; set; }
     public string Id { get; set; }
-
 }
 
 public class GetAdPlacementsResult : PlayFabResultCommon

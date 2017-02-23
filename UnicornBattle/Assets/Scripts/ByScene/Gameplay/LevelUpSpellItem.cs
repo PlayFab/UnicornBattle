@@ -36,7 +36,7 @@ public class LevelUpSpellItem : MonoBehaviour
             ApplyStatus = sp.ApplyStatus
         };
 
-        SpellIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(sp.Icon);
+        SpellIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(sp.Icon, IconManager.IconTypes.Spell);
 
         if (lvl > 0)
             UpgradeSpell(lvl);

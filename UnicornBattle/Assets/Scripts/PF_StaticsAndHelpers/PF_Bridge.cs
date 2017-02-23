@@ -26,9 +26,7 @@ public static class PF_Bridge
     public static void RaiseCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
         if (OnPlayfabCallbackSuccess != null)
-        {
             OnPlayfabCallbackSuccess(details, method, style);
-        }
     }
 
     /// <summary>
@@ -40,9 +38,7 @@ public static class PF_Bridge
     public static void RaiseCallbackError(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
         if (OnPlayFabCallbackError != null)
-        {
             OnPlayFabCallbackError(details, method, style);
-        }
     }
 
     /// <summary>
@@ -52,47 +48,16 @@ public static class PF_Bridge
     public static void PlayFabErrorCallback(PlayFab.PlayFabError error)
     {
         if (OnPlayFabCallbackError != null)
-        {
             OnPlayFabCallbackError(error.ErrorMessage, PlayFabAPIMethods.Generic, MessageDisplayStyle.error);
-        }
     }
 
 
     public static bool VerifyErrorFreeCloudScriptResult(ExecuteCloudScriptResult result)
     {
         if (result.Error != null)
-        {
             OnPlayFabCallbackError(string.Format("{0}: ERROR: [{1}] -- {2}", result.FunctionName, result.Error.Error, result.Error.Message), PlayFabAPIMethods.ExecuteCloudScript, MessageDisplayStyle.error);
-            return false;
-        }
-        return true;
+        return result.Error == null;
     }
-
-    //	/// <summary>
-    //	/// Makes sure we have a proper API endpoint to access Cloud Script
-    //	/// </summary>
-    //	/// <returns><c>true</c>, if cloud script was setup, <c>false</c> otherwise.</returns>
-    //	/// <param name="cb">callback to run after check is completed</param>
-    //	public static bool SetupCloudScript(Action cb = null)
-    //	{
-    //		if(string.IsNullOrEmpty(PlayFabSettings.LogicServerURL))
-    //		{
-    //			PlayFabClientAPI.GetCloudScriptUrl(new GetCloudScriptUrlRequest(), (s) => 
-    //			{ 
-    //				RaiseCallbackSuccess("CloudScript URL Loaded", PlayFabAPIMethods.GetCloudScriptUrl, MessageDisplayStyle.none);
-    //				if(cb != null)
-    //				{
-    //					cb();
-    //				}
-    //			}, 
-    //			PlayFabErrorCallback);
-    //			return false;
-    //		} 
-    //		else
-    //		{
-    //			return true;
-    //		}
-    //	}
 
     /// <summary>
     /// Validates the android IAP completed through the GooglePlay store.
@@ -158,13 +123,13 @@ public static class PF_Bridge
         PlayFabClientAPI.WritePlayerEvent(request, null, PlayFabErrorCallback);
 
         /* EXAMPLE OF eventData
-			new Dictionary<string,object >() 
-			{
-				{"monsters_killed", obj.kills},
-				{"gold_won", obj.currency},
-				{"result", "win" }  
-			};
-		*/
+            new Dictionary<string,object >() 
+            {
+                {"monsters_killed", obj.kills},
+                {"gold_won", obj.currency},
+                {"result", "win" }  
+            };
+        */
     }
 }
 
@@ -209,7 +174,8 @@ public enum PlayFabAPIMethods
     LoginWithFacebook,
     GetAccountInfo,
     GetCDNConent,
-    GetTitleData,
+    GetTitleData_General,
+    GetTitleData_Specific,
     GetTitleNews,
     GetCloudScriptUrl,
     GetAllUsersCharacters,

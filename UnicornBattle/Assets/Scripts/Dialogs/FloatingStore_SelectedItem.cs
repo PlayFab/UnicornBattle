@@ -31,7 +31,7 @@ public class FloatingStore_SelectedItem : MonoBehaviour
         itemDescription.text = item.catalogItem.Description;
 
         itemCost.text = string.Format(" x{0}", item.finalPrice);
-        currencyIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(item.currencyKey);
+        currencyIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(item.currencyKey, IconManager.IconTypes.Misc);
 
         if (item.catalogItem.Consumable.UsageCount != null)
             totalUses.text = string.Format(" x{0}", item.catalogItem.Consumable.UsageCount);
