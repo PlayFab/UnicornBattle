@@ -324,26 +324,26 @@ namespace UB_Uploader
             LogToFile("Uploading CatalogItems...");
             var parsedFile = ParseFile(catalogPath);
 
-            var catalogItems = JsonWrapper.DeserializeObject<List<CatalogItem>>(parsedFile);
-            if (catalogItems == null)
+            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
+            if (catalogWrapper == null)
             {
                 LogToFile("\tAn error occurred deserializing the Catalog.json file.", ConsoleColor.Red);
                 return false;
             }
-            for (var z = 0; z < catalogItems.Count; z++)
+            for (var z = 0; z < catalogWrapper.Catalog.Count; z++)
             {
-                if (catalogItems[z].Bundle != null || catalogItems[z].Container != null)
+                if (catalogWrapper.Catalog[z].Bundle != null || catalogWrapper.Catalog[z].Container != null)
                 {
-                    var original = catalogItems[z];
+                    var original = catalogWrapper.Catalog[z];
                     var strippedClone = CloneCatalogItemAndStripTables(original);
 
                     reUploadList.Add(original);
-                    catalogItems.Remove(original);
-                    catalogItems.Add(strippedClone);
+                    catalogWrapper.Catalog.Remove(original);
+                    catalogWrapper.Catalog.Add(strippedClone);
                 }
             }
 
-            return UpdateCatalog(catalogItems);
+            return UpdateCatalog(catalogWrapper.Catalog);
         }
 
         private static bool UploadDropTables()
@@ -398,26 +398,27 @@ namespace UB_Uploader
             LogToFile("Uploading Stores...");
             var parsedFile = ParseFile(storesPath);
 
-            var storesDict = JsonWrapper.DeserializeObject<Dictionary<string, List<StoreItem>>>(parsedFile);
+            var storesList = JsonWrapper.DeserializeObject<List<StoreWrapper>>(parsedFile);
 
-            foreach (var kvp in storesDict)
+            foreach (var eachStore in storesList)
             {
-                LogToFile("\tUploading: " + kvp.Key);
+                LogToFile("\tUploading: " + eachStore.StoreId);
 
-                var request = new UpdateStoreItemsRequest()
+                var request = new UpdateStoreItemsRequest
                 {
                     CatalogVersion = defaultCatalog,
-                    StoreId = kvp.Key,
-                    Store = kvp.Value
+                    StoreId = eachStore.StoreId,
+                    Store = eachStore.Store,
+                    MarketingData = eachStore.MarketingData
                 };
 
                 var updateStoresTask = PlayFabAdminAPI.SetStoreItemsAsync(request);
                 updateStoresTask.Wait();
 
                 if (updateStoresTask.Result.Error != null)
-                    OutputPlayFabError("\t\tStore Upload: " + kvp.Key, updateStoresTask.Result.Error);
+                    OutputPlayFabError("\t\tStore Upload: " + eachStore.StoreId, updateStoresTask.Result.Error);
                 else
-                    LogToFile("\t\tStore: " + kvp.Key + " Uploaded. ", ConsoleColor.Green);
+                    LogToFile("\t\tStore: " + eachStore.StoreId + " Uploaded. ", ConsoleColor.Green);
             }
             return true;
         }
@@ -518,7 +519,7 @@ namespace UB_Uploader
 
         private static bool UpdateCatalog(List<CatalogItem> catalog)
         {
-            var request = new UpdateCatalogItemsRequest()
+            var request = new UpdateCatalogItemsRequest
             {
                 CatalogVersion = defaultCatalog,
                 Catalog = catalog
@@ -598,4 +599,17 @@ namespace UB_Uploader
         }
         #endregion
     }
+}
+
+public class CatalogWrapper
+{
+    public string CatalogVersion;
+    public List<CatalogItem> Catalog;
+}
+
+public class StoreWrapper
+{
+    public string StoreId;
+    public List<StoreItem> Store;
+    public StoreMarketingModel MarketingData;
 }

@@ -33,7 +33,8 @@ public class FloatingStore_SelectedItem : MonoBehaviour
         itemCost.text = string.Format(" x{0}", item.finalPrice);
         currencyIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(item.currencyKey, IconManager.IconTypes.Misc);
 
-        if (item.catalogItem.Consumable.UsageCount != null)
-            totalUses.text = string.Format(" x{0}", item.catalogItem.Consumable.UsageCount);
+        var qty = PF_PlayerData.GetItemQty(itemData.catalogItem.ItemId);
+        if (qty != 1)
+            totalUses.text = " x" + qty;
     }
 }

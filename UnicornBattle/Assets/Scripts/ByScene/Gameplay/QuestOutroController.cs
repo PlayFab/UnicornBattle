@@ -186,10 +186,10 @@ public class QuestOutroController : MonoBehaviour
         //TODO update mastery stars to reflect difficulty.
         if (PF_GamePlay.QuestProgress != null)
         {
-            CreepEncountersText.text = string.Format("x{0}", PF_GamePlay.QuestProgress.CreepEncounters);
+            CreepEncountersText.text = "x" + PF_GamePlay.QuestProgress.CreepEncounters;
             GoldCollectedText.text = string.Format("+{0:n0}", PF_GamePlay.QuestProgress.GoldCollected);
             ItemsCollectedText.text = string.Format("+{0}", PF_GamePlay.QuestProgress.ItemsFound.Count);
-            HeroEncountersText.text = string.Format("x{0}", PF_GamePlay.QuestProgress.HeroRescues);
+            HeroEncountersText.text = "x" + PF_GamePlay.QuestProgress.HeroRescues;
             LivesLostText.text = string.Format("- {0}", PF_GamePlay.QuestProgress.Deaths);
 
             if (PF_GamePlay.QuestProgress.isQuestWon)

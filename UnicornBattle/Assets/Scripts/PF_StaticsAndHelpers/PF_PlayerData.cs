@@ -102,7 +102,7 @@ public static class PF_PlayerData
                     var items = playerInventory.FindAll(x => { return x.ItemId.Equals(item.ItemId); });
                     var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
                     var icon = GameController.Instance.iconManager.GetIconById(customIcon, IconManager.IconTypes.Item);
-                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
+                    inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon));
                 }
             }
 
@@ -212,7 +212,7 @@ public static class PF_PlayerData
                 var items = new List<ItemInstance>(playerInventory.FindAll((x) => { return x.ItemId.Equals(item.ItemId); }));
                 var customIcon = PF_GameData.GetIconByItemById(catalogItem.ItemId);
                 var icon = GameController.Instance.iconManager.GetIconById(customIcon, IconManager.IconTypes.Item);
-                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon, catalogItem.Consumable.UsageCount > 0));
+                inventoryByCategory.Add(item.ItemId, new InventoryCategory(item.ItemId, catalogItem, items, icon));
             }
         }
 
@@ -456,7 +456,7 @@ public static class PF_PlayerData
 
     #region Inventory Utilities
     /// <summary>
-    /// Return number of RemainingUses of an itemId in your inventory
+    /// Return number of RemainingUses of an stack of itemIds in your inventory
     /// </summary>
     /// <returns>
     /// -1 => Item does not exist in the inventory

@@ -1,7 +1,6 @@
 using PlayFab.ClientModels;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class ItemViewerController : MonoBehaviour
@@ -77,77 +76,69 @@ public class ItemViewerController : MonoBehaviour
         if (openedBoxes.ContainsKey(selectedIndex))
         {
             // this container has been opened, show the items...
-            if (selectedItem.Container != null && selectedItem.Container.ItemContents == null && selectedItem.Container.ResultTableContents == null && selectedItem.Container.VirtualCurrencyContents == null)
-            {
-                //is a bundle, dont change the icon.
-
-            }
-            else
-            {
+            if (PF_GameData.IsContainer(selectedItem.ItemId))
                 CurrentIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(currentIconId + "_Open", IconManager.IconTypes.Item);
-            }
             EnableContainerMode(true);
+            return;
         }
-        else
+
+        // test bundles here....
+        // if bundle, we need to show the contents, but not remove it from the list, as it will be unpacked and added automatically
+        if (selectedItem.Bundle != null && (selectedItem.Bundle.BundledItems != null || selectedItem.Bundle.BundledResultTables != null || selectedItem.Bundle.BundledVirtualCurrencies != null))
         {
-            // test bundles here....
-            // if bundle, we need to show the contents, but not remove it from the list, as it will be unpacked and added automatically
-            if (selectedItem.Bundle != null && (selectedItem.Bundle.BundledItems != null || selectedItem.Bundle.BundledResultTables != null || selectedItem.Bundle.BundledVirtualCurrencies != null))
+            var bundleItems = new List<ContainerResultItem>();
+
+            if (selectedItem.Bundle.BundledItems != null && selectedItem.Bundle.BundledItems.Count > 0)
             {
-                var items = new List<ContainerResultItem>();
-
-                if (selectedItem.Bundle.BundledItems != null && selectedItem.Bundle.BundledItems.Count > 0)
+                foreach (var award in selectedItem.Bundle.BundledItems)
                 {
-                    foreach (var award in selectedItem.Bundle.BundledItems)
+                    var catalogItem = PF_GameData.GetCatalogItemById(award);
+                    var awardIcon = PF_GameData.GetIconByItemById(award);
+                    bundleItems.Add(new ContainerResultItem
                     {
-                        var catalogItem = PF_GameData.GetCatalogItemById(award);
-                        var awardIcon = PF_GameData.GetIconByItemById(award);
-                        items.Add(new ContainerResultItem
-                        {
-                            displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon, IconManager.IconTypes.Item),
-                            displayName = catalogItem.DisplayName
-                        });
-                    }
-                }
-
-                if (selectedItem.Bundle.BundledResultTables != null && selectedItem.Bundle.BundledResultTables.Count > 0)
-                {
-                    foreach (var award in selectedItem.Bundle.BundledResultTables)
-                    {
-                        items.Add(new ContainerResultItem
-                        {
-                            displayIcon = GameController.Instance.iconManager.GetIconById("DropTable", IconManager.IconTypes.Misc),
-                            displayName = string.Format("Drop Table: {0}", award)
-                        });
-                    }
-                }
-
-                if (selectedItem.Bundle.BundledVirtualCurrencies != null && selectedItem.Bundle.BundledVirtualCurrencies.Count > 0)
-                {
-                    foreach (var award in selectedItem.Bundle.BundledVirtualCurrencies)
-                    {
-                        items.Add(new ContainerResultItem
-                        {
-                            displayIcon = GameController.Instance.iconManager.GetIconById(award.Key, IconManager.IconTypes.Item),
-                            displayName = string.Format("{1} Award: {0:n0}", award.Value, award.Key)
-                        });
-                    }
-                }
-
-                if (items.Count > 0)
-                {
-                    openedBoxes.Add(selectedIndex, items);
-                    EnableContainerMode(true);
-                    // dont fall through the rest of the logic.
-                    return;
+                        displayIcon = GameController.Instance.iconManager.GetIconById(awardIcon, IconManager.IconTypes.Item),
+                        displayName = catalogItem.DisplayName
+                    });
                 }
             }
 
-            if (selectedItem.Container != null && selectedItem.Container.ItemContents == null && selectedItem.Container.ResultTableContents == null && selectedItem.Container.VirtualCurrencyContents == null)
-                DisableContainerMode();
-            else
-                EnableContainerMode();
+            if (selectedItem.Bundle.BundledResultTables != null && selectedItem.Bundle.BundledResultTables.Count > 0)
+            {
+                foreach (var award in selectedItem.Bundle.BundledResultTables)
+                {
+                    bundleItems.Add(new ContainerResultItem
+                    {
+                        displayIcon = GameController.Instance.iconManager.GetIconById("DropTable", IconManager.IconTypes.Misc),
+                        displayName = string.Format("Drop Table: {0}", award)
+                    });
+                }
+            }
+
+            if (selectedItem.Bundle.BundledVirtualCurrencies != null && selectedItem.Bundle.BundledVirtualCurrencies.Count > 0)
+            {
+                foreach (var award in selectedItem.Bundle.BundledVirtualCurrencies)
+                {
+                    bundleItems.Add(new ContainerResultItem
+                    {
+                        displayIcon = GameController.Instance.iconManager.GetIconById(award.Key, IconManager.IconTypes.Item),
+                        displayName = string.Format("{1} Award: {0:n0}", award.Value, award.Key)
+                    });
+                }
+            }
+
+            if (bundleItems.Count > 0)
+            {
+                openedBoxes.Add(selectedIndex, bundleItems);
+                EnableContainerMode(true);
+                // dont fall through the rest of the logic.
+                return;
+            }
         }
+
+        if (PF_GameData.IsContainer(selectedItem.ItemId))
+            EnableContainerMode();
+        else
+            DisableContainerMode();
     }
 
     public void InitiateViewer(List<string> items) // need a new flag to determine if we should unpack to a player or a character

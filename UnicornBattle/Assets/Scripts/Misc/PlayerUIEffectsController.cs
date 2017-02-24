@@ -1,10 +1,9 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
+using PlayFab.Json;
 using System.Collections;
 using System.Collections.Generic;
-using System;
-using PlayFab.Json;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class PlayerUIEffectsController : MonoBehaviour
 {
@@ -135,8 +134,8 @@ public class PlayerUIEffectsController : MonoBehaviour
         {
             CreepEncountersText.text = string.Format("{0} / {1}", PF_GamePlay.QuestProgress.CreepEncounters, PF_GamePlay.QuestProgress.CreepEncounters > 0 ? PF_GamePlay.encounters.Count + PF_GamePlay.QuestProgress.CreepEncounters - 1 : PF_GamePlay.encounters.Count);
             GoldCollecteText.text = string.Format("x{0:n0}", PF_GamePlay.QuestProgress.GoldCollected);
-            ItemsCollectedText.text = string.Format("x{0}", PF_GamePlay.QuestProgress.ItemsFound.Count);
-            HeroEncountersText.text = string.Format("x{0}", PF_GamePlay.QuestProgress.HeroRescues);
+            ItemsCollectedText.text = "x" + PF_GamePlay.QuestProgress.ItemsFound.Count;
+            HeroEncountersText.text = "x" + PF_GamePlay.QuestProgress.HeroRescues;
         }
 
         if (PF_PlayerData.activeCharacter != null)
@@ -164,8 +163,8 @@ public class PlayerUIEffectsController : MonoBehaviour
     {
         ActionBar.FleeButton.interactable = gameplayController.turnController.currentEncounter.Data.EncounterType != EncounterTypes.BossCreep;
 
-        Text txt = ActionBar.UseItemButton.GetComponentInChildren<Text>();
-        Image img = ActionBar.UseItemButton.GetComponent<Image>();
+        var txt = ActionBar.UseItemButton.GetComponentInChildren<Text>();
+        var img = ActionBar.UseItemButton.GetComponent<Image>();
         ActionBar.UseItemButton.interactable = true;
         if (gameplayController.turnController.currentEncounter.Data.EncounterType == EncounterTypes.Store)
         {
@@ -224,75 +223,74 @@ public class PlayerUIEffectsController : MonoBehaviour
     {
         yield return new WaitForSeconds(seconds);
 
-        shaker.ResetToBeginning();     //new Vector3 (0,transform.position.y, transform.position.z);
+        shaker.ResetToBeginning();
         isShaking = false;
         shaker.enabled = false;
 
         if (effect == PF_GamePlay.ShakeEffects.DecreaseHealth)
         {
-            int remainingHP = LifeBar.currentValue - pendingValue;
-            yield return StartCoroutine(LifeBar.UpdateBar(remainingHP));
+            var remainingHp = LifeBar.currentValue - pendingValue;
+            yield return StartCoroutine(LifeBar.UpdateBar(remainingHp));
 
-            if (remainingHP > 0)
+            if (remainingHp > 0)
                 StartCoroutine(PF_GamePlay.Wait(1.0f, () => { GameplayController.RaiseGameplayEvent(GlobalStrings.ENEMY_TURN_END_EVENT, PF_GamePlay.GameplayEventTypes.EnemyTurnEnds); }));
             else
                 GameplayController.RaiseGameplayEvent(GlobalStrings.OUTRO_PLAYER_DEATH_EVENT, PF_GamePlay.GameplayEventTypes.OutroEncounter);
         }
         else if (effect == PF_GamePlay.ShakeEffects.IncreaseHealth)
         {
-            int remainingHP = LifeBar.currentValue + pendingValue;
-            yield return StartCoroutine(LifeBar.UpdateBar(remainingHP));
+            var remainingHp = LifeBar.currentValue + pendingValue;
+            yield return StartCoroutine(LifeBar.UpdateBar(remainingHp));
 
             StartCoroutine(PF_GamePlay.Wait(.5f, () => { GameplayController.RaiseGameplayEvent(GlobalStrings.PLAYER_TURN_END_EVENT, PF_GamePlay.GameplayEventTypes.PlayerTurnEnds); }));
         }
         else if (effect == PF_GamePlay.ShakeEffects.DecreaseMana)
         {
-            StartCoroutine(ManaBar.UpdateBar(LifeBar.currentValue - pendingValue));
+            StartCoroutine(ManaBar.UpdateBar(ManaBar.currentValue - pendingValue));
         }
         else if (effect == PF_GamePlay.ShakeEffects.IncreaseMana)
         {
-            StartCoroutine(ManaBar.UpdateBar(LifeBar.currentValue + pendingValue));
+            StartCoroutine(ManaBar.UpdateBar(ManaBar.currentValue + pendingValue));
         }
 
         pendingValue = 0;
     }
 
+    private void UseCombatItem(string item)
+    {
+        Debug.Log("Using " + item);
+
+        InventoryCategory obj;
+        if (!PF_PlayerData.inventoryByCategory.TryGetValue(item, out obj) || obj.count == 0)
+            return;
+
+        var attributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(obj.catalogRef.CustomData);
+        if (!attributes.ContainsKey("modifies")
+            || !attributes.ContainsKey("modifyPercent")
+            || !attributes.ContainsKey("target")
+            || !string.Equals(attributes["target"], "self"))
+            return;
+
+        // item effect applies to the player
+        var mod = attributes["modifies"];
+        var modPercent = float.Parse(attributes["modifyPercent"]);
+
+        switch (mod)
+        {
+            case "HP":
+                pendingValue = Mathf.CeilToInt(LifeBar.maxValue*modPercent);
+                PF_PlayerData.activeCharacter.PlayerVitals.Health += pendingValue;
+                RequestShake(defaultShakeTime, PF_GamePlay.ShakeEffects.IncreaseHealth);
+                break;
+        }
+
+        gameplayController.DecrementPlayerCDs();
+        PF_GamePlay.ConsumeItem(obj.inventory[0].ItemInstanceId);
+        PF_GamePlay.QuestProgress.ItemsUsed++;
+    }
+
     public void UseItem()
     {
-        Action<string> afterPickItem = (string item) =>
-        {
-            Debug.Log("Using " + item);
-
-            InventoryCategory obj;
-            if (!PF_PlayerData.inventoryByCategory.TryGetValue(item, out obj) || obj.count == 0)
-                return;
-
-            var attributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(obj.catalogRef.CustomData);
-            if (!attributes.ContainsKey("modifies")
-              || !attributes.ContainsKey("modifyPercent")
-              || !attributes.ContainsKey("target")
-              || !string.Equals(attributes["target"], "self"))
-                return;
-
-            // item effect applies to the player
-            var mod = attributes["modifies"];
-            var modPercent = float.Parse(attributes["modifyPercent"]);
-
-            switch (mod)
-            {
-                case "HP":
-                    pendingValue = Mathf.CeilToInt((float)LifeBar.maxValue * modPercent);
-                    Debug.Log(string.Format("Player Heals {0}", pendingValue));
-                    PF_PlayerData.activeCharacter.PlayerVitals.Health += pendingValue;
-                    RequestShake(defaultShakeTime, PF_GamePlay.ShakeEffects.IncreaseHealth);
-                    break;
-            }
-
-            gameplayController.DecrementPlayerCDs();
-            PF_GamePlay.ConsumeItem(obj.inventory[0].ItemInstanceId);
-            PF_GamePlay.QuestProgress.ItemsUsed++;
-        };
-
-        DialogCanvasController.RequestInventoryPrompt(afterPickItem, DialogCanvasController.InventoryFilters.UsableInCombat);
+        DialogCanvasController.RequestInventoryPrompt(UseCombatItem, DialogCanvasController.InventoryFilters.UsableInCombat);
     }
 }

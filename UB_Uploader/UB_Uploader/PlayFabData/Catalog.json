@@ -1,4 +1,6 @@
-[
+{
+  "CatalogVersion": "CharacterClasses",
+  "Catalog": [
     {
       "ItemId": "Bucephelous",
       "ItemClass": "CharacterToken",
@@ -793,4 +795,5 @@
       "IsLimitedEdition": false,
       "InitialLimitedEditionCount": 0
     }
-]
+  ]
+}

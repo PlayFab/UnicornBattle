@@ -146,11 +146,8 @@ public static class PF_GamePlay
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
 
-        //Debug.Log(result.ToString());
         QuestProgress.ItemsGranted = JsonWrapper.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
-
         QuestProgress.areItemsAwarded = true;
-
         PF_PlayerData.GetUserInventory();
 
         PF_Bridge.RaiseCallbackSuccess("Items granted", PlayFabAPIMethods.RetriveQuestItems, MessageDisplayStyle.none);

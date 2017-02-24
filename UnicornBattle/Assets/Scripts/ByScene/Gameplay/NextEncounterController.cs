@@ -115,7 +115,7 @@ public class NextEncounterController : MonoBehaviour
             }
 
             int encountersRemaining = PF_GamePlay.encounters.Count - 4 > 0 ? PF_GamePlay.encounters.Count - 4 : 0;
-            this.remainingText.text = string.Format("x{0}", encountersRemaining);
+            this.remainingText.text = "x" + encountersRemaining;
         }
     }
 

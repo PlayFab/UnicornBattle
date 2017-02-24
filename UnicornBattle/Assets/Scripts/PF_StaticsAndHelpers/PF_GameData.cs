@@ -3,6 +3,7 @@ using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using UnityEngine.Events;
 using PlayFab.Json;
@@ -189,6 +190,20 @@ public static class PF_GameData
             catalogItems[eachItem.ItemId] = eachItem;
 
         PF_PlayerData.GetUserAccountInfo();
+    }
+
+    public static bool IsContainer(string itemId)
+    {
+        CatalogItem catalogItem;
+        // Check for a container
+        if (!catalogItems.TryGetValue(itemId, out catalogItem) || catalogItem.Container == null)
+            return false;
+
+        // Check for empty container
+        var items = catalogItem.Container.ItemContents == null || catalogItem.Container.ItemContents.Count == 0;
+        var vcs = catalogItem.Container.VirtualCurrencyContents == null || catalogItem.Container.VirtualCurrencyContents.Count == 0;
+        var drops = catalogItem.Container.ResultTableContents == null || catalogItem.Container.ResultTableContents.Count == 0;
+        return !items | !vcs | !drops;
     }
 
     public static PromotionType IsEventActive(string eventKey)

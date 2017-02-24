@@ -98,19 +98,17 @@ public class UB_EncounterData
     public void SetSpellDetails()
     {
         if (Spells == null)
-        {
             Spells = new Dictionary<string, EnemySpellDetail>();
-        }
 
         foreach (var spell in Spells)
         {
-            UB_SpellDetail sp = PF_GameData.Spells.ContainsKey(spell.Value.SpellName) ? PF_GameData.Spells[spell.Value.SpellName] : null;
-            if (sp != null)
-            {
-                sp = UpgradeSpell(sp, spell.Value.SpellLevel);
-                spell.Value.Detail = sp;
-                Vitals.Spells.Add(spell.Value);
-            }
+            UB_SpellDetail sp;
+            if (!PF_GameData.Spells.TryGetValue(spell.Value.SpellName, out sp) || sp == null)
+                continue;
+
+            sp = UpgradeSpell(sp, spell.Value.SpellLevel);
+            spell.Value.Detail = sp;
+            Vitals.Spells.Add(spell.Value);
         }
     }
 
@@ -242,31 +240,19 @@ public class EnemyVitals
         MaxDefense = prius.MaxDefense;
 
         if (prius.UsableItems != null && prius.UsableItems.Count > 0)
-        {
             UsableItems = prius.UsableItems.ToList();
-        }
         else
-        {
             UsableItems = new List<string>();
-        }
 
         Spells = new List<EnemySpellDetail>();
         if (prius.Spells != null && prius.Spells.Count > 0)
-        {
             foreach (var spell in prius.Spells)
-            {
                 Spells.Add(new EnemySpellDetail(spell));
-            }
-        }
 
         ActiveStati = new List<UB_SpellStatus>();
         if (prius.ActiveStati != null && prius.ActiveStati.Count > 0)
-        {
             foreach (var status in ActiveStati)
-            {
                 ActiveStati.Add(new UB_SpellStatus(status));
-            }
-        }
     }
 }
 
@@ -465,7 +451,7 @@ public class UB_Spell
 public class UB_SavedCharacter
 {
     public UB_ClassDetail baseClass;
-    public PlayFab.ClientModels.CharacterResult characterDetails;
+    public CharacterResult characterDetails;
     public UB_CharacterData characterData;
     public PlayerVitals PlayerVitals;
 
@@ -506,14 +492,9 @@ public class UB_SavedCharacter
     //ctor
     public UB_SavedCharacter()
     {
-        PlayerVitals = new PlayerVitals();
-        PlayerVitals.ActiveStati = new List<UB_SpellStatus>();
-        //TODO can initialize an ingame character tracker.
-        //^^^ this will be what will need to get leveled up to match the stats
-        //Debug.LogError("UB_SavedCharacter RAN!!!!");
+        PlayerVitals = new PlayerVitals { ActiveStati = new List<UB_SpellStatus>() };
     }
 }
-
 
 /// <summary>
 /// A class for tracking players through combat
@@ -575,6 +556,7 @@ public class QuestTracker
 /// </summary>
 public class ItemGrantResult
 {
+    // These are used in Cloud Script
     public string PlayFabId;
     public string ItemId;
     public string ItemInstanceId;
@@ -590,8 +572,6 @@ public class InventoryCategory
     public CatalogItem catalogRef;
     public List<ItemInstance> inventory;
     public Sprite icon;
-    public bool isConsumable = false;
-    public int totalUses = 0;
     public int count { get { return inventory.Count; } }
 
     //ctor
@@ -601,36 +581,5 @@ public class InventoryCategory
         catalogRef = cat;
         inventory = inv;
         icon = icn;
-    }
-
-    //ctor
-    public InventoryCategory(string id, CatalogItem cat, List<ItemInstance> inv, Sprite icn, bool consumable)
-    {
-        itemId = id;
-        catalogRef = cat;
-        inventory = inv;
-        icon = icn;
-        isConsumable = consumable;
-
-        CalcTotalUses();
-    }
-
-    public void CalcTotalUses()
-    {
-        if (isConsumable)
-        {
-            totalUses = 0;
-            foreach (var item in inventory)
-            {
-                if (item.RemainingUses != null)
-                {
-                    totalUses += (int)item.RemainingUses;
-                }
-            }
-        }
-        else
-        {
-            totalUses = 0;
-        }
     }
 }

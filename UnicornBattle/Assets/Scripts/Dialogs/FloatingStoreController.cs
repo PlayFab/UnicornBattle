@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 {
     public Text StoreName;
+    public Text StoreDescription;
     public Text pageDisplay;
     public Button nextPage;
     public Button prevPage;
@@ -44,6 +45,7 @@ public class FloatingStoreController : SoftSingleton<FloatingStoreController>
 
         itemsToDisplay = storeResult.Store;
         StoreName.text = storeResult.MarketingData != null && !string.IsNullOrEmpty(storeResult.MarketingData.DisplayName) ? storeResult.MarketingData.DisplayName : storeResult.StoreId + " (ID)";
+        StoreDescription.text = storeResult.MarketingData != null && !string.IsNullOrEmpty(storeResult.MarketingData.Description) ? storeResult.MarketingData.Description : "";
         nextPage.interactable = pageCount > 1;
         prevPage.interactable = false;
 

@@ -85,6 +85,11 @@ public class StoreDisplayItem : MonoBehaviour
             tempFinalPrice = basePrice = temp;
         if (storeItem.VirtualCurrencyPrices.TryGetValue(getCurrencyKey, out temp))
             tempFinalPrice = salePrice = temp;
+
+        // Fix for if we change currency type
+        if (basePrice == 0 && salePrice != 0)
+            tempFinalPrice = basePrice = salePrice;
+
         return tempFinalPrice;
     }
 
