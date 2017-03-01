@@ -102,6 +102,18 @@ function SubtractLife() {
     };
     return server.SubtractUserVirtualCurrency(subtractVcRequest);
 }
+function EnableValentinesEvent() {
+    SetEventActive("evalentine", true);
+}
+function DisableValentinesEvent() {
+    SetEventActive("evalentine", false);
+}
+function EnablePresEvent() {
+    SetEventActive("epresident", true);
+}
+function DisablePresEvent() {
+    SetEventActive("epresident", false);
+}
 ///////////////////////// HELPER FUNCTIONS (NOT DIRECTLY CALLABLE FROM THE CLIENT) /////////////////////////
 function InitializeNewCharacterData(characterId, catalogItemId) {
     var cDetails = GetBaseClassForType({ cCode: catalogItemId });
@@ -213,6 +225,26 @@ function EvaluateAchievements(characterId) {
         };
         server.UpdateCharacterReadOnlyData(updateCharDataRequest);
     }
+}
+var EVENT_TITLE_DATA_KEY = "ActiveEventKeys";
+function SetEventActive(eventKey, isActive) {
+    var getRequest = { Keys: [EVENT_TITLE_DATA_KEY] };
+    var serverData = server.GetTitleData(getRequest);
+    var eventKeys = JSON.parse(serverData.Data[EVENT_TITLE_DATA_KEY]);
+    if (isActive)
+        eventKeys.push(eventKey);
+    else {
+        var temp = [];
+        for (var idx in eventKeys)
+            if (eventKeys[idx] != eventKey)
+                temp.push(eventKeys[idx]);
+        eventKeys = temp;
+    }
+    var setRequest = {
+        Key: EVENT_TITLE_DATA_KEY,
+        Value: JSON.stringify(eventKeys)
+    };
+    server.SetTitleData(setRequest);
 }
 ///////////////////////// Define the handlers /////////////////////////
 handlers.GetBaseClassForType = GetBaseClassForType;
