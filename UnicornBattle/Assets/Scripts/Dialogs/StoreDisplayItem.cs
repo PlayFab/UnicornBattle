@@ -73,13 +73,14 @@ public class StoreDisplayItem : MonoBehaviour
     /// <returns>Final price that will be passed into the Purchase API</returns>
     private uint GetPrice(out uint salePrice, out uint basePrice, out string getCurrencyKey)
     {
+        uint temp;
         getCurrencyKey = GlobalStrings.REAL_MONEY_CURRENCY;
-        if (storeItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GEM_CURRENCY))
+        if (storeItem.VirtualCurrencyPrices.TryGetValue(GlobalStrings.GEM_CURRENCY, out temp) && temp != 0)
             getCurrencyKey = GlobalStrings.GEM_CURRENCY;
-        else if (storeItem.VirtualCurrencyPrices.ContainsKey(GlobalStrings.GOLD_CURRENCY))
+        else if (storeItem.VirtualCurrencyPrices.TryGetValue(GlobalStrings.GOLD_CURRENCY, out temp) && temp != 0)
             getCurrencyKey = GlobalStrings.GOLD_CURRENCY;
 
-        uint temp, tempFinalPrice = 0; salePrice = basePrice = 0;
+        uint tempFinalPrice = 0; salePrice = basePrice = 0;
         if (catalogItem != null && catalogItem.VirtualCurrencyPrices != null
           && catalogItem.VirtualCurrencyPrices.TryGetValue(getCurrencyKey, out temp))
             tempFinalPrice = basePrice = temp;
