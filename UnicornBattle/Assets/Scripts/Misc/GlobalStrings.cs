@@ -37,7 +37,7 @@ public static class GlobalStrings
     public const string PUSH_NOTIFY_MSG = "Please verify push notifications are disabled in your device's settings.";
     public const string TOGGLE_PROMPT = "Reminder";
     public const string TOGGLE_MSG = "You can access these options any time from the settings menu.";
-    public const string CONFIRM_UNLINK_PROMPT = "Confirm Action";
+    public const string CONFIRM_UNLINK_PROMPT = "Unlink Facebook";
     public const string CONFIRM_UNLINK_MSG = "Your account is not registered. Unlinking your account could make data retrieval for this character impossible.";
     public const string RECOVER_EMAIL_PROMPT = "Confirm Action";
     public const string RECOVER_EMAIL_MSG = "You should receive an email soon with instructions on how to reset your password.";

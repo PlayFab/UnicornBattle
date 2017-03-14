@@ -9,7 +9,6 @@ using Facebook.Unity;
 
 public static class PF_Authentication
 {
-
     // used for device ID
     public static string android_id = string.Empty; // device ID to use with PlayFab login
     public static string ios_id = string.Empty; // device ID to use with PlayFab login
@@ -31,6 +30,7 @@ public static class PF_Authentication
     // regex pattern for validating email syntax
     private const string emailPattern = @"^([0-9a-zA-Z]([\+\-_\.][0-9a-zA-Z]+)*)+@(([0-9a-zA-Z][-\w]*[0-9a-zA-Z]*\.)+[a-zA-Z0-9]{2,17})$";
     public static bool usedManualFacebook = false;
+    private static readonly List<string> FacebookPermissionKeys = new List<string> { "public_profile", "email", "user_friends" };
 
     /// <summary>
     /// Informs lisenters when a successful login occurs
@@ -54,27 +54,12 @@ public static class PF_Authentication
             OnLoginFail(details, style);
     }
 
-    #region Plugin Access & Helper Functions
-    // Kicks off the Facebook login process
-    public static void StartFacebookLogin(Action onInit = null)
-    {
-        if (FB.IsInitialized && onInit == null)
-            OnInitComplete();
-        else if (FB.IsInitialized)
-            onInit();
-        else if (onInit != null)
-            FB.Init(() => { onInit(); });
-        else
-            FB.Init(OnInitComplete, OnHideUnity);
-    }
-    #endregion
-
     #region PlayFab API calls
     /// <summary>
     /// Login with Facebook token.
     /// </summary>
     /// <param name="token">Token obtained through the FB plugin. (works on mobile and FB canvas only)</param>
-    public static void LoginWithFacebook(string token, bool createAccount = false, UnityAction errCallback = null)
+    public static void PlayFabLoginWithFacebook(string token, bool createAccount = false, UnityAction errCallback = null)
     {
         //LoginMethodUsed = LoginPathways.facebook;
         var request = new LoginWithFacebookRequest
@@ -332,8 +317,8 @@ public static class PF_Authentication
         ios_id = string.Empty;
         custom_id = string.Empty;
 
-        if (FB.IsInitialized && FB.IsLoggedIn)
-            CallFBLogout();
+        if (FB.IsInitialized || FB.IsLoggedIn)
+            FB.LogOut();
 
         //TODO maybe not OK to delete all, but if it works out this is easy
         // hack, manually deleteing keys to work across android devices.
@@ -398,8 +383,8 @@ public static class PF_Authentication
         //PlayFabLoginCalls.ios_id = string.Empty;
 
         //clear the token if we had a fb login fail
-        if (FB.IsLoggedIn)
-            CallFBLogout();
+        if (FB.IsInitialized || FB.IsLoggedIn)
+            FB.LogOut();
     }
 
     /// <summary>
@@ -554,51 +539,94 @@ public static class PF_Authentication
     #endregion
 
     #region fb_helperfunctions
-    // callback after FB.Init();
-    public static void OnInitComplete()
-    {
-        Debug.Log("FB.Init completed: Is user logged in? " + FB.IsLoggedIn);
-        if (FB.IsLoggedIn == false)
-            CallFBLogin();
-        else
-            LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString);
-    }
-
     // Handler for OnHideUnity Events
     public static void OnHideUnity(bool isGameShown)
     {
     }
 
-    /// <summary>
-    /// Calls FB login.
-    /// </summary>
-    public static void CallFBLogin()
+    // Kicks off the Facebook login process
+    public static void StartFacebookLogin()
     {
-        FB.LogInWithReadPermissions(new List<string>() { "public_profile", "email", "user_friends" }, LoginCallback);
+        if (FB.IsInitialized)
+            FacebookInitCallback();
+        else
+            FB.Init(FacebookInitCallback, OnHideUnity);
     }
 
-    // callback called after a successful FB login.
-    public static void LoginCallback(Facebook.Unity.ILoginResult result)
+    private static void FacebookInitCallback()
     {
+        Debug.Log("FB.Init completed: Is user logged in? " + FB.IsLoggedIn);
+        FB.ActivateApp();
+        FB.LogInWithReadPermissions(FacebookPermissionKeys, FacebookLoginCallback);
+    }
+
+    private static void FacebookLoginCallback(ILoginResult result)
+    {
+        var fbAction = PlayFabClientAPI.IsClientLoggedIn() ? PlayFabAPIMethods.LinkFacebookId : PlayFabAPIMethods.LoginWithFacebook;
+
         if (result.Error != null)
         {
-            if (OnLoginFail != null)
-                OnLoginFail("Facebook Error: " + result.Error, MessageDisplayStyle.none);
+            PF_Bridge.RaiseCallbackError("Facebook Error: " + result.Error, fbAction, MessageDisplayStyle.none);
+            return;
         }
         else if (!FB.IsLoggedIn)
         {
-            if (OnLoginFail != null)
-                OnLoginFail("Facebook Error: Login cancelled by Player", MessageDisplayStyle.none);
+            PF_Bridge.RaiseCallbackError("Facebook Error: Login cancelled by Player", fbAction, MessageDisplayStyle.none);
+            return;
         }
+
+        // PlayFab Facebook Login
+        if (fbAction == PlayFabAPIMethods.LinkFacebookId)
+            LinkFaceBookToPlayFab();
         else
-        {
-            LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString);
-        }
+            PlayFabLoginWithFacebook(AccessToken.CurrentAccessToken.TokenString, true);
     }
 
-    public static void CallFBLogout()
+    public static void LinkFaceBookToPlayFab()
     {
-        FB.LogOut();
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
+        var request = new LinkFacebookAccountRequest { AccessToken = AccessToken.CurrentAccessToken.TokenString };
+        PlayFabClientAPI.LinkFacebookAccount(request, OnLinkSuccess, error =>
+        {
+            if (!error.ErrorMessage.Contains("already linked")) // ew, gotta get better error codes
+            {
+                PF_Bridge.RaiseCallbackError(error.ErrorMessage, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.error);
+                return;
+            }
+
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
+            Action<bool> afterConfirm = (bool response) =>
+            {
+                if (!response)
+                    return;
+
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
+                request.ForceLink = true;
+                PlayFabClientAPI.LinkFacebookAccount(request, OnLinkSuccess, PF_Bridge.PlayFabErrorCallback);
+            };
+
+            DialogCanvasController.RequestConfirmationPrompt("Caution!", "Your current facebook account is already linked to another Unicorn Battle player. Do you want to force-bind your Facebook account to this player?", afterConfirm);
+        });
     }
+
+    private static void OnLinkSuccess(LinkFacebookAccountResult result)
+    {
+        Debug.Log("Facebook Linked Account!");
+        PlayerPrefs.SetInt("LinkedFacebook", 1);
+        PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
+    }
+
+    public static void UnlinkFbAccount()
+    {
+        var request = new UnlinkFacebookAccountRequest();
+        PlayFabClientAPI.UnlinkFacebookAccount(request, result =>
+        {
+            Debug.Log("Unlinked Account.");
+            PlayerPrefs.SetInt("LinkedFacebook", 0);
+            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.UnlinkFacebookId, MessageDisplayStyle.none);
+            FB.LogOut();
+        }, PF_Bridge.PlayFabErrorCallback);
+    }
+
     #endregion
 }

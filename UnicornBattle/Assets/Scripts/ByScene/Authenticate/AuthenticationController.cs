@@ -32,7 +32,7 @@ public class AuthenticationController : MonoBehaviour
 
     void Start()
     {
-        if (this.useDevLogin)
+        if (useDevLogin)
         {
             EnableDeveloperMode();
         }
@@ -59,7 +59,7 @@ public class AuthenticationController : MonoBehaviour
                 //1) check for login, attempt to login with device id (create account = false)
                 if (PF_Authentication.GetDeviceId())
                 {
-                    this.DeviceIdDisplay.text = PF_Authentication.android_id == null ? PF_Authentication.ios_id : PF_Authentication.android_id;
+                    DeviceIdDisplay.text = PF_Authentication.android_id ?? PF_Authentication.ios_id;
                 }
 
                 SigninWithDeviceID();
@@ -67,7 +67,7 @@ public class AuthenticationController : MonoBehaviour
             else
             {
                 // this is only used by the unity editor.
-                this.Status.text = GlobalStrings.TEST_LOGIN_MSG;
+                Status.text = GlobalStrings.TEST_LOGIN_MSG;
                 EnableUserSelectMode();
             }
         }
@@ -79,14 +79,14 @@ public class AuthenticationController : MonoBehaviour
     {
         DisableAutoMode();
         DisableUserSelectMode();
-        this.developerLogin.gameObject.SetActive(true);
-        this.Banner.text = GlobalStrings.TEST_LOGIN_PROMPT;
+        developerLogin.gameObject.SetActive(true);
+        Banner.text = GlobalStrings.TEST_LOGIN_PROMPT;
     }
 
     public void DisableDeveloperMode()
     {
-        this.developerLogin.gameObject.SetActive(false);
-        this.Banner.text = "";
+        developerLogin.gameObject.SetActive(false);
+        Banner.text = "";
     }
 
     public void EnableUserSelectMode()
@@ -96,20 +96,19 @@ public class AuthenticationController : MonoBehaviour
         signInWithDeviceID.gameObject.SetActive(true);
         signInWithFB.gameObject.SetActive(true);
 
-
         signInWithFB.onClick.RemoveAllListeners();
-        signInWithFB.onClick.AddListener(() => SigninWithFB());
+        signInWithFB.onClick.AddListener(PF_Authentication.StartFacebookLogin);
 
         signInWithDeviceID.onClick.RemoveAllListeners();
         signInWithDeviceID.onClick.AddListener(() => SigninWithDeviceID(true));
-        this.Banner.text = GlobalStrings.LOGOUT_BTN_MSG;
+        Banner.text = GlobalStrings.LOGOUT_BTN_MSG;
     }
 
     public void DisableUserSelectMode()
     {
         signInWithDeviceID.gameObject.SetActive(false);
         signInWithFB.gameObject.SetActive(false);
-        this.Banner.text = "";
+        Banner.text = "";
     }
 
     public void EnableAutoMode()
@@ -117,57 +116,23 @@ public class AuthenticationController : MonoBehaviour
         DisableDeveloperMode();
         DisableUserSelectMode();
 
-        this.Status.text = GlobalStrings.AUTO_STATUS_MSG;
-        this.Status.gameObject.SetActive(true);
+        Status.text = GlobalStrings.AUTO_STATUS_MSG;
+        Status.gameObject.SetActive(true);
 
-        this.Banner.text = GlobalStrings.STATUS_PROMPT;
-
+        Banner.text = GlobalStrings.STATUS_PROMPT;
     }
 
     public void DisableAutoMode()
     {
-        this.Status.gameObject.SetActive(false);
-        this.Banner.text = "";
+        Status.gameObject.SetActive(false);
+        Banner.text = "";
     }
     #endregion
 
     #region start login methods & callbacks
-    void SigninWithFB(bool testMode = false)
-    {
-        UnityAction afterFBInit = () =>
-        {
-            FB.ActivateApp();
-            FB.LogInWithReadPermissions(new List<string>() { "public_profile", "email", "user_friends" }, (ILoginResult response) =>
-               {
-                   if (response.Error != null)
-                   {
-                       PF_Bridge.RaiseCallbackError("Facebook Error: " + response.Error, PlayFabAPIMethods.LoginWithFacebook, MessageDisplayStyle.none);
-                   }
-                   else if (!FB.IsLoggedIn)
-                   {
-                       PF_Bridge.RaiseCallbackError("You canceled the Facebook session, without an active facebook session photos and other data will not be accessable.", PlayFabAPIMethods.LoginWithFacebook, MessageDisplayStyle.none);
-                   }
-                   else
-                   {
-                       PF_Authentication.usedManualFacebook = testMode ? false : true;
-                       PF_Authentication.LoginWithFacebook(AccessToken.CurrentAccessToken.TokenString, true);
-                   }
-               });
-        };
-
-        PF_Authentication.StartFacebookLogin(() =>
-        {
-            afterFBInit();
-        });
-
-    }
-
     void SigninWithDeviceID(bool createAccount = false)
     {
-        UnityAction accountNotFoundCallback = () =>
-        {
-            EnableUserSelectMode();
-        };
+        UnityAction accountNotFoundCallback = EnableUserSelectMode;
 
         PF_Authentication.LoginWithDeviceId(createAccount, accountNotFoundCallback);
     }

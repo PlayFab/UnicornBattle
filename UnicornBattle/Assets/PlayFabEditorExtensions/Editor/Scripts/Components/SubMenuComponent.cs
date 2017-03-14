@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace PlayFab.PfEditor
@@ -19,57 +18,45 @@ namespace PlayFab.PfEditor
             defaultStyle = defaultStyle ?? PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             bgStyle = bgStyle ?? PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1");
 
-            GUILayout.BeginHorizontal(bgStyle, GUILayout.ExpandWidth(true));
-
-            foreach (var item in items)
+            using (new UnityHorizontal(bgStyle, GUILayout.ExpandWidth(true)))
             {
-                var styleToUse = item.Value.isSelected ? selectedStyle : defaultStyle;
-                var content = new GUIContent(item.Value.displayName);
-                var size = styleToUse.CalcSize(content);
-
-                if (GUILayout.Button(item.Value.displayName, styleToUse, GUILayout.Width(size.x + 1)))
+                foreach (var item in items)
                 {
-                    OnMenuItemClicked(item.Key);
+                    var styleToUse = item.Value.isSelected ? selectedStyle : defaultStyle;
+                    var content = new GUIContent(item.Value.displayName);
+                    var size = styleToUse.CalcSize(content);
+
+                    if (GUILayout.Button(item.Value.displayName, styleToUse, GUILayout.Width(size.x + 1)))
+                    {
+                        OnMenuItemClicked(item.Key);
+                    }
                 }
             }
-            GUILayout.EndHorizontal();
         }
 
         public void RegisterMenuItem(string n, System.Action m)
         {
             if (!items.ContainsKey(n))
             {
-                bool selectState = false;
-                int activeSubmenu = PlayFabEditorDataService.editorSettings.currentSubMenu;
-                if (items.Count == 0 && activeSubmenu == 0)
-                {
+                var selectState = false;
+                var activeSubmenu = PlayFabEditorDataService.EditorView == null ? 0 : PlayFabEditorDataService.EditorView.currentSubMenu;
+                if (items.Count == 0 && activeSubmenu == 0 || activeSubmenu == items.Count)
                     selectState = true;
-                }
-                else if (activeSubmenu == items.Count)
-                {
-                    // this is the menu being redrawn while also not being on the first menu tab
-                    selectState = true;
-                }
 
                 items.Add(n, new MenuItemContainer() { displayName = n, method = m, isSelected = selectState });
-            }
-            else
-            {
-                // update the method ?
-                //items[n].method = m;
             }
         }
 
         private void OnMenuItemClicked(string key)
         {
-            if (items.ContainsKey(key))
+            if (!items.ContainsKey(key))
+                return;
+
+            DeselectAll();
+            items[key].isSelected = true;
+            if (items[key].method != null)
             {
-                DeselectAll();
-                items[key].isSelected = true;
-                if (items[key].method != null)
-                {
-                    items[key].method.Invoke();
-                }
+                items[key].method.Invoke();
             }
         }
 
@@ -98,7 +85,7 @@ namespace PlayFab.PfEditor
                     if (items != null)
                         foreach (var each in items)
                         {
-                            each.Value.isSelected = true;
+                            each.Value.isSelected = true; // Select the first
                             break;
                         }
                     break;
@@ -108,8 +95,8 @@ namespace PlayFab.PfEditor
 
     public class MenuItemContainer
     {
-        public string displayName { get; set; }
-        public System.Action method { get; set; }
-        public bool isSelected { get; set; }
+        public string displayName;
+        public System.Action method;
+        public bool isSelected;
     }
 }

@@ -13,32 +13,32 @@ namespace PlayFab.PfEditor
         void OnGUI()
         {
             // The actual window code goes here
-            EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-            GUILayout.Label(string.Format("Editing: {0}", key), PlayFabEditorHelper.uiStyle.GetStyle("orTitle"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
-            EditorGUILayout.EndHorizontal();
+            using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
+                GUILayout.Label(string.Format("Editing: {0}", key), PlayFabEditorHelper.uiStyle.GetStyle("orTitle"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
 
             scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
             Value = GUILayout.TextArea(Value, PlayFabEditorHelper.uiStyle.GetStyle("editTxt"));
             GUILayout.EndScrollView();
 
 
-            EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Save", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(200)))
+            using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
             {
-                for (int z = 0; z < PlayFabEditorDataMenu.tdInternalViewer.items.Count; z++)
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Save", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(200)))
                 {
-                    if (PlayFabEditorDataMenu.tdInternalViewer.items[z].Key == key)
+                    for (int z = 0; z < PlayFabEditorDataMenu.tdInternalViewer.items.Count; z++)
                     {
-                        PlayFabEditorDataMenu.tdInternalViewer.items[z].Value = Value;
-                        PlayFabEditorDataMenu.tdInternalViewer.items[z].isDirty = true;
+                        if (PlayFabEditorDataMenu.tdInternalViewer.items[z].Key == key)
+                        {
+                            PlayFabEditorDataMenu.tdInternalViewer.items[z].Value = Value;
+                            PlayFabEditorDataMenu.tdInternalViewer.items[z].isDirty = true;
+                        }
                     }
-                }
-                Close();
+                    Close();
 
+                }
+                GUILayout.FlexibleSpace();
             }
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
 
             Repaint();
         }
@@ -48,6 +48,5 @@ namespace PlayFab.PfEditor
             key = k;
             Value = v;
         }
-
     }
 }

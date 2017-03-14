@@ -142,13 +142,14 @@ namespace PlayFab.PfEditor
 
             }
 
-            GUILayout.BeginHorizontal(pbarBgStyle);
-            if (isReveresed)
+            using (new UnityHorizontal(pbarBgStyle))
             {
-                GUILayout.FlexibleSpace();
+                if (isReveresed)
+                {
+                    GUILayout.FlexibleSpace();
+                }
+                GUILayout.Label("", pbarStyle, GUILayout.Width(progressWidth));
             }
-            GUILayout.Label("", pbarStyle, GUILayout.Width(progressWidth));
-            GUILayout.EndHorizontal();
         }
     }
 }

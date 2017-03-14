@@ -17,6 +17,7 @@ public static class PF_PlayerData
     public static string PlayerId = string.Empty;
     public static bool showAccountOptionsOnLogin = true;
     public static bool isRegisteredForPush = false;
+    public static bool isPlayFabRegistered { get { return accountInfo != null && accountInfo.PrivateInfo != null && !string.IsNullOrEmpty(accountInfo.Username) && !string.IsNullOrEmpty(accountInfo.PrivateInfo.Email); } }
     public static UserAccountInfo accountInfo;
     public static readonly Dictionary<string, UserDataRecord> UserData = new Dictionary<string, UserDataRecord>();
 
@@ -230,29 +231,6 @@ public static class PF_PlayerData
             if (string.IsNullOrEmpty(PF_Authentication.custom_id))
                 PlayerPrefs.SetString("LastDeviceIdUsed", PF_Authentication.custom_id);
         }
-
-
-        //			if(result.AccountInfo.FacebookInfo != null)
-        //			{
-        //				if(FB.IsInitialized != false && FB.IsLoggedIn == false)
-        //				{
-        //					FB.Login("public_profile,email,user_friends", (FBResult response) => 
-        //					{
-        //						if (response.Error != null)
-        //							PF_Bridge.RaiseCallbackError("Facebook Error: " + response.Error, PlayFabAPIMethods.LoginWithFacebook, MessageDisplayStyle.none);
-        //						else if (!FB.IsLoggedIn)
-        //							PF_Bridge.RaiseCallbackError("You canceled the Facebook session, without an active facebook session photos and other data will not be accessable.", PlayFabAPIMethods.LoginWithFacebook, MessageDisplayStyle.none);
-        //					});
-        //				}
-        //
-        //				Debug.Log("Facebook Linked Account!");
-        //				PlayerPrefs.SetInt("LinkedFacebook", 1);
-        //			}
-        //			else
-        //			{
-        //				Debug.Log("Unlinked Account.");
-        //				PlayerPrefs.SetInt("LinkedFacebook", 0);
-        //			}
 
         virtualCurrency.Clear();
         foreach (var eachPair in result.InfoResultPayload.UserVirtualCurrency)
@@ -632,100 +610,6 @@ public static class PF_PlayerData
         activeCharacter = null;
         if (characterAchievements != null) characterAchievements.Clear();
         if (characterStatistics != null) characterStatistics.Clear();
-    }
-
-    public static void LinkFBAccount(UnityAction callback = null)
-    {
-        Action<string> linkAction = token =>
-        {
-            Action<LinkFacebookAccountResult> afterLink = result =>
-            {
-                Debug.Log("Facebook Linked Account!");
-                PlayerPrefs.SetInt("LinkedFacebook", 1);
-
-                if (callback != null)
-                    callback();
-                PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-            };
-
-            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
-
-            var request = new LinkFacebookAccountRequest();
-            request.AccessToken = token;
-            PlayFabClientAPI.LinkFacebookAccount(request, result =>
-            {
-                afterLink(result);
-            }, error =>
-            {
-                if (error.ErrorMessage.Contains("already linked"))  // ew, gotta get better error codes
-                {
-                    PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-                    Action<bool> afterConfirm = (bool response) =>
-                    {
-                        if (!response)
-                            return;
-
-                        request.ForceLink = true;
-
-                        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
-                        PlayFabClientAPI.LinkFacebookAccount(request, result =>
-                        {
-                            afterLink(result);
-                        }, PF_Bridge.PlayFabErrorCallback);
-                    };
-
-                    DialogCanvasController.RequestConfirmationPrompt("Caution!", "Your current facebook account is already linked to another Unicorn Battle player. Do you want to force-bind your Facebook account to this player?", afterConfirm);
-                }
-                else
-                {
-                    PF_Bridge.RaiseCallbackError(error.ErrorMessage, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.error);
-                }
-            });
-        };
-
-        if (FB.IsInitialized && FB.IsLoggedIn)
-        {
-            linkAction(AccessToken.CurrentAccessToken.TokenString);
-        }
-        else
-        {
-            Action<ILoginResult> afterFBLogin = result =>
-           {
-               if (result.Error != null)
-                   PF_Bridge.RaiseCallbackError("Facebook Error: " + result.Error, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-               else if (!FB.IsLoggedIn)
-                   PF_Bridge.RaiseCallbackError("Facebook Error: Login cancelled by Player", PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
-               else
-                   linkAction(AccessToken.CurrentAccessToken.TokenString);
-           };
-
-            Action afterFBInit = () =>
-            {
-                //Debug.Log("FB.Init completed: Is user logged in? " + FB.IsLoggedIn);
-                if (FB.IsLoggedIn == false)
-                    FB.LogInWithReadPermissions(new List<string> { "public_profile", "email", "user_friends" }, result => { afterFBLogin(result); });
-                else
-                    linkAction(AccessToken.CurrentAccessToken.UserId);
-            };
-
-            PF_Authentication.StartFacebookLogin(afterFBInit);
-        }
-    }
-
-    public static void UnlinkFBAccount(UnityAction calback = null)
-    {
-        var request = new UnlinkFacebookAccountRequest();
-        PlayFabClientAPI.UnlinkFacebookAccount(request, result =>
-        {
-            accountInfo.FacebookInfo = null;
-            if (calback != null)
-            {
-                Debug.Log("Unlinked Account.");
-                PlayerPrefs.SetInt("LinkedFacebook", 0);
-
-                calback();
-            }
-        }, PF_Bridge.PlayFabErrorCallback);
     }
 
     public static void RegisterForPushNotification(string pushToken = null, UnityAction callback = null)

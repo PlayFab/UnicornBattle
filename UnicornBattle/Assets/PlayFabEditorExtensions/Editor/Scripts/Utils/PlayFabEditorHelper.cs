@@ -17,7 +17,7 @@ namespace PlayFab.PfEditor
         public static string DEV_API_ENDPOINT = "https://editor.playfabapi.com";
         public static string TITLE_ENDPOINT = ".playfabapi.com";
         public static string GAMEMANAGER_URL = "https://developer.playfab.com";
-        public static string PLAYFAB_ASSEMBLY = "PlayFabSettings";
+        public static string PLAYFAB_SETTINGS_TYPENAME = "PlayFabSettings";
         public static string PLAYFAB_EDEX_MAINFILE = "PlayFabEditor.cs";
         public static string SDK_DOWNLOAD_PATH = "/Resources/PlayFabUnitySdk.unitypackage";
         public static string EDEX_UPGRADE_PATH = "/Resources/PlayFabUnityEditorExtensions.unitypackage";
@@ -25,7 +25,6 @@ namespace PlayFab.PfEditor
 
         public static string CLOUDSCRIPT_FILENAME = ".CloudScript.js";  //prefixed with a '.' to exclude this code from Unity's compiler
         public static string CLOUDSCRIPT_PATH = EDEX_ROOT + "/Resources/" + CLOUDSCRIPT_FILENAME;
-        public static string VAR_REQUEST_TIMING = "PLAYFAB_REQUEST_TIMING";
 
         public static string ADMIN_API = "ENABLE_PLAYFABADMIN_API";
         public static string SERVER_API = "ENABLE_PLAYFABSERVER_API";
@@ -36,9 +35,6 @@ namespace PlayFab.PfEditor
         public static string STUDIO_OVERRIDE = "_OVERRIDE_";
 
         public static string MSG_SPIN_BLOCK = "{\"useSpinner\":true, \"blockUi\":true }";
-
-        public static string EDPREF_INSTALLED = "NewlyInstalled";
-
         #endregion
 
         public static GUISkin uiStyle = GetUiStyle();
@@ -53,7 +49,7 @@ namespace PlayFab.PfEditor
 
                 try
                 {
-                    EDEX_ROOT = PlayFabEditorDataService.envDetails.edexPath ?? EDEX_ROOT;
+                    EDEX_ROOT = PlayFabEditorDataService.EnvDetails.edexPath ?? EDEX_ROOT;
                     rootFiles = Directory.GetDirectories(EDEX_ROOT);
 
                     uiStyle = GetUiStyle();
@@ -64,15 +60,14 @@ namespace PlayFab.PfEditor
                     if (rootFiles.Length == 0)
                     {
                         // this probably means the editor folder was moved.
-                        //see if we can locate the moved root
-                        // and reload the assets
+                        // see if we can locate the moved root and reload the assets
 
                         var movedRootFiles = Directory.GetFiles(Application.dataPath, PLAYFAB_EDEX_MAINFILE, SearchOption.AllDirectories);
                         if (movedRootFiles.Length > 0)
                         {
                             relocatedEdEx = true;
                             EDEX_ROOT = movedRootFiles[0].Substring(0, movedRootFiles[0].IndexOf(PLAYFAB_EDEX_MAINFILE) - 1);
-                            PlayFabEditorDataService.envDetails.edexPath = EDEX_ROOT;
+                            PlayFabEditorDataService.EnvDetails.edexPath = EDEX_ROOT;
                             PlayFabEditorDataService.SaveEnvDetails();
 
                             uiStyle = GetUiStyle();
@@ -83,7 +78,7 @@ namespace PlayFab.PfEditor
                 {
                     if (relocatedEdEx && rootFiles.Length == 0)
                     {
-                        Debug.Log(string.Format("Found new EdEx root: {0}", EDEX_ROOT));
+                        Debug.Log("Found new EdEx root: " + EDEX_ROOT);
                     }
                     else if (rootFiles.Length == 0)
                     {
@@ -94,17 +89,18 @@ namespace PlayFab.PfEditor
             }
         }
 
-        public static GUISkin GetUiStyle()
+        private static GUISkin GetUiStyle()
         {
-            if (uiStyle == null)
-            {
-                var relRoot = EDEX_ROOT.Substring(EDEX_ROOT.IndexOf("Assets/"));
-                return (GUISkin)AssetDatabase.LoadAssetAtPath(relRoot + "/UI/PlayFabStyles.guiskin", typeof(GUISkin));
-            }
-            else
-            {
+            if (uiStyle != null)
                 return uiStyle;
+
+            var pfGuiPaths = Directory.GetFiles(EDEX_ROOT, "PlayFabStyles.guiskin", SearchOption.AllDirectories);
+            foreach (var eachPath in pfGuiPaths)
+            {
+                var loadPath = eachPath.Substring(eachPath.IndexOf("Assets/"));
+                return (GUISkin)AssetDatabase.LoadAssetAtPath(loadPath, typeof(GUISkin));
             }
+            return null;
         }
 
         public static void SharedErrorCallback(EditorModels.PlayFabError error)
@@ -170,12 +166,12 @@ namespace PlayFab.PfEditor
         /// <returns>Texture2D</returns>
         public static Texture2D MakeTex(int width, int height, Color col)
         {
-            Color[] pix = new Color[width * height];
+            var pix = new Color[width * height];
 
-            for (int i = 0; i < pix.Length; i++)
+            for (var i = 0; i < pix.Length; i++)
                 pix[i] = col;
 
-            Texture2D result = new Texture2D(width, height);
+            var result = new Texture2D(width, height);
             result.SetPixels(pix);
             result.Apply();
 

@@ -2,6 +2,7 @@ using PlayFab.ClientModels;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Facebook.Unity;
 using PlayFab;
 using UnityEngine;
 using UnityEngine.Events;
@@ -25,6 +26,7 @@ public class AccountStatusController : MonoBehaviour
 
     private string pushToken = "";
     private bool changedLoginState = false;
+    private bool isFbSet = false;
 
     void Start()
     {
@@ -33,7 +35,7 @@ public class AccountStatusController : MonoBehaviour
 		PlayFabGoogleCloudMessaging._RegistrationReadyCallback += OnGCMReady;
 		PlayFabGoogleCloudMessaging._RegistrationCallback += OnGCMRegistration;
 #endif
-        PF_Bridge.OnPlayfabCallbackSuccess += OnTitleDataSet;
+        PF_Bridge.OnPlayfabCallbackSuccess += HandleCallbackSuccess;
         CheckPushStatus();
     }
 
@@ -43,13 +45,22 @@ public class AccountStatusController : MonoBehaviour
 		PlayFabGoogleCloudMessaging._RegistrationReadyCallback -= OnGCMReady;
 		PlayFabGoogleCloudMessaging._RegistrationCallback -= OnGCMRegistration;
 #endif
-        PF_Bridge.OnPlayfabCallbackSuccess -= OnTitleDataSet;
+        PF_Bridge.OnPlayfabCallbackSuccess -= HandleCallbackSuccess;
     }
 
-    private void OnTitleDataSet(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
+    private void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
     {
-        if (method == PlayFabAPIMethods.GetTitleData_General)
-            CheckPushStatus();
+        switch (method)
+        {
+            case PlayFabAPIMethods.GetTitleData_General: CheckPushStatus(); break;
+        }
+    }
+
+    void Update()
+    {
+        if (isFbSet != FB.IsLoggedIn) // FB.IsLoggedIn doesn't update immediately, so you can't check it immediately after logout
+            UpdateFacebookStatusButton();
+        isFbSet = FB.IsLoggedIn;
     }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -90,41 +101,14 @@ public class AccountStatusController : MonoBehaviour
 
         changedLoginState = false;
         displayName.text = PF_PlayerData.accountInfo.TitleInfo.DisplayName;
-        if (string.IsNullOrEmpty(PF_PlayerData.accountInfo.Username) || string.IsNullOrEmpty(PF_PlayerData.accountInfo.PrivateInfo.Email))
-        {
-            accountStatus.color = Color.red;
-            accountStatus.text = GlobalStrings.ACT_STATUS_UNREG_MSG;
-            registerAccount.gameObject.SetActive(true);
-            resetPassword.gameObject.SetActive(false);
-        }
-        else
-        {
-            accountStatus.color = Color.green;
-            accountStatus.text = GlobalStrings.ACT_STATUS_REG_MSG;
-            registerAccount.gameObject.SetActive(false);
-            resetPassword.gameObject.SetActive(true);
-        }
+        var isRegistered = PF_PlayerData.isPlayFabRegistered;
+        accountStatus.color = isRegistered ? Color.green : Color.red;
+        accountStatus.text = isRegistered ? GlobalStrings.ACT_STATUS_REG_MSG : GlobalStrings.ACT_STATUS_UNREG_MSG;
+        registerAccount.gameObject.SetActive(!isRegistered);
+        resetPassword.gameObject.SetActive(isRegistered);
 
         SetCheckBox(showOnLogin.GetComponent<Image>(), PF_PlayerData.showAccountOptionsOnLogin);
-
-        if (PF_PlayerData.accountInfo.FacebookInfo != null)
-        {
-            var btnText = linkToFaceBook.GetComponentInChildren<Text>();
-            btnText.text = GlobalStrings.UNLINK_FB_BTN_MSG;
-
-            UnityAction<Texture2D> afterGetPhoto = tx =>
-            {
-                facebookPicture.overrideSprite = Sprite.Create(tx, new Rect(0, 0, 128, 128), new Vector2());
-            };
-
-            StartCoroutine(FacebookHelperClass.GetPlayerProfilePhoto(FetchWebAsset, afterGetPhoto));
-        }
-        else
-        {
-            var btnText = linkToFaceBook.GetComponentInChildren<Text>();
-            btnText.text = GlobalStrings.LINK_FB_BTN_MSG;
-            facebookPicture.overrideSprite = null;
-        }
+        UpdateFacebookStatusButton();
 
 #if UNITY_IPHONE
 		UnityEngine.iOS.NotificationServices.RegisterForNotifications(UnityEngine.iOS.NotificationType.Alert | UnityEngine.iOS.NotificationType.Badge | UnityEngine.iOS.NotificationType.Sound, true);
@@ -162,7 +146,7 @@ public class AccountStatusController : MonoBehaviour
             });
         };
 
-        if (PF_PlayerData.accountInfo.FacebookInfo != null)
+        if (FB.IsLoggedIn)
         {
             UnityAction<string> afterGetFbName = fbName =>
             {
@@ -232,55 +216,45 @@ public class AccountStatusController : MonoBehaviour
 
     public void ToggleFacebookLink()
     {
-        if (PF_PlayerData.accountInfo.FacebookInfo != null)
+        if (FB.IsLoggedIn)
         {
             Action<bool> afterCheck = response =>
             {
-                if (!response)
-                    return;
-
-                UnityAction afterUnlink = () =>
-                {
-                    var txt = linkToFaceBook.GetComponentInChildren<Text>();
-                    txt.color = Color.red;
-                    txt.text = GlobalStrings.LINK_FB_BTN_MSG;
-                    facebookPicture.overrideSprite = null;
-                    PF_PlayerData.accountInfo.FacebookInfo = null;
-                    changedLoginState = true;
-                };
-
-                PF_PlayerData.UnlinkFBAccount(afterUnlink);
+                if (response)
+                    PF_Authentication.UnlinkFbAccount();
             };
 
-            DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, GlobalStrings.CONFIRM_UNLINK_MSG, afterCheck);
+            if (!PF_PlayerData.isPlayFabRegistered)
+                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, GlobalStrings.CONFIRM_UNLINK_MSG, afterCheck);
+            else
+                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, "Are you sure?", afterCheck);
         }
         else
         {
-            // link
-            UnityAction afterLink = () =>
+            PF_Authentication.StartFacebookLogin(); // This will do the linking automatically based on being logged in
+        }
+    }
+
+    private void UpdateFacebookStatusButton()
+    {
+        Debug.Log("UpdateFacebookStatusButton: " + FB.IsLoggedIn);
+        var txt = linkToFaceBook.GetComponentInChildren<Text>();
+        txt.text = FB.IsLoggedIn ? GlobalStrings.UNLINK_FB_BTN_MSG : GlobalStrings.LINK_FB_BTN_MSG;
+
+        facebookPicture.overrideSprite = null;
+        if (FB.IsLoggedIn)
+        {
+            UnityAction<Texture2D> afterGetPhoto = tx =>
             {
-                var btnText = linkToFaceBook.GetComponentInChildren<Text>();
-                btnText.text = GlobalStrings.UNLINK_FB_BTN_MSG;
-                btnText.color = Color.green;
-
-                changedLoginState = true;
-                PF_PlayerData.accountInfo.FacebookInfo = new UserFacebookInfo();
-
-                UnityAction<Texture2D> afterGetPhoto = tx =>
-                {
-                    facebookPicture.overrideSprite = Sprite.Create(tx, new Rect(0, 0, 128, 128), new Vector2());
-                };
-
-                StartCoroutine(FacebookHelperClass.GetPlayerProfilePhoto(FetchWebAsset, afterGetPhoto));
+                facebookPicture.overrideSprite = Sprite.Create(tx, new Rect(0, 0, 128, 128), Vector2.zero);
             };
-
-            PF_PlayerData.LinkFBAccount(afterLink);
+            StartCoroutine(FacebookHelperClass.GetPlayerProfilePhoto(FetchWebAsset, afterGetPhoto));
         }
     }
 
     public void ShowRegistration()
     {
-        UnityAction<AddUsernamePasswordResult> afterRegistration = result =>
+        Action<AddUsernamePasswordResult> afterRegistration = result =>
         {
             PF_PlayerData.accountInfo.Username = result.Username;
             PF_PlayerData.accountInfo.PrivateInfo.Email = "Pending Refresh";
@@ -302,7 +276,6 @@ public class AccountStatusController : MonoBehaviour
         rc.gameObject.SetActive(true);
         rc.Init(afterRegistration);
     }
-
 
     public void SendRecoveryEmail()
     {

@@ -23,77 +23,47 @@ namespace PlayFab.PfEditor
         #region draw calls
         public static void DrawDataPanel()
         {
-            if (PlayFabEditorDataService.isDataLoaded)
+            if (!PlayFabEditorDataService.IsDataLoaded)
+                return;
+
+            if (menu == null)
             {
-                if (menu != null)
-                {
-                    menu.DrawMenu();
-
-                    switch ((DataMenuStates)PlayFabEditorDataService.editorSettings.currentSubMenu)
-                    {
-                        case DataMenuStates.TitleData:
-                            if (tdViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
-                            {
-                                tdViewer = ScriptableObject.CreateInstance<TitleDataViewer>();
-                                foreach (var item in PlayFabEditorDataService.envDetails.titleData)
-                                {
-                                    tdViewer.items.Add(new KvpItem(item.Key, item.Value));
-                                }
-                            }
-                            else if (!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
-                            {
-                                if (tdViewer.items.Count == 0)
-                                {
-                                    foreach (var item in PlayFabEditorDataService.envDetails.titleData)
-                                    {
-                                        tdViewer.items.Add(new KvpItem(item.Key, item.Value));
-                                    }
-                                }
-                                scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                                tdViewer.Draw();
-                                GUILayout.EndScrollView();
-                            }
-
-                            break;
-
-                        case DataMenuStates.TitleDataInternal:
-                            if (tdInternalViewer == null && !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey)
-                            {
-                                tdInternalViewer = ScriptableObject.CreateInstance<TitleInternalDataViewer>();
-                                foreach (var item in PlayFabEditorDataService.envDetails.titleInternalData)
-                                {
-                                    tdInternalViewer.items.Add(new KvpItem(item.Key, item.Value));
-                                }
-                            }
-                            else if (!string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.selectedTitleId)) //&& !string.IsNullOrEmpty(PlayFabEditorDataService.envDetails.developerSecretKey))
-                            {
-                                if (tdInternalViewer.items.Count == 0)
-                                {
-                                    foreach (var item in PlayFabEditorDataService.envDetails.titleInternalData)
-                                    {
-                                        tdInternalViewer.items.Add(new KvpItem(item.Key, item.Value));
-                                    }
-                                }
-                                scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                                tdInternalViewer.Draw();
-                                GUILayout.EndScrollView();
-                            }
-                            break;
-
-                        default:
-                            EditorGUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                            GUILayout.Label("Coming Soon!", PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
-                            GUILayout.EndHorizontal();
-                            break;
-
-                    }
-                }
-                else
-                {
-                    RegisterMenu();
-                }
+                RegisterMenu();
+                return;
             }
 
+            menu.DrawMenu();
+            switch ((DataMenuStates)PlayFabEditorDataService.EditorView.currentSubMenu)
+            {
+                case DataMenuStates.TitleData:
+                    if (tdViewer == null)
+                    {
+                        tdViewer = CreateInstance<TitleDataViewer>();
+                        tdViewer.RefreshTitleData();
+                    }
+                    scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
+                    tdViewer.Draw();
+                    GUILayout.EndScrollView();
+                    break;
+
+                case DataMenuStates.TitleDataInternal:
+                    if (tdInternalViewer == null)
+                    {
+                        tdInternalViewer = CreateInstance<TitleInternalDataViewer>();
+                        tdInternalViewer.RefreshInternalTitleData();
+                    }
+                    scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
+                    tdInternalViewer.Draw();
+                    GUILayout.EndScrollView();
+                    break;
+
+                default:
+                    using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
+                    {
+                        GUILayout.Label("Coming Soon!", PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+                    }
+                    break;
+            }
         }
         #endregion
 
@@ -120,12 +90,12 @@ namespace PlayFab.PfEditor
         #region menu and helper methods
         public static void RegisterMenu()
         {
-            if (menu == null)
-            {
-                menu = ScriptableObject.CreateInstance<SubMenuComponent>();
-                menu.RegisterMenuItem("TITLE", OnTitleDataClicked);
-                menu.RegisterMenuItem("INTERNAL", OnInternalTitleDataClicked);
-            }
+            if (menu != null)
+                return;
+
+            menu = CreateInstance<SubMenuComponent>();
+            menu.RegisterMenuItem("TITLE", OnTitleDataClicked);
+            menu.RegisterMenuItem("INTERNAL", OnInternalTitleDataClicked);
         }
 
         public static void StateUpdateHandler(PlayFabEditor.EdExStates state, string status, string json)
@@ -133,7 +103,6 @@ namespace PlayFab.PfEditor
             switch (state)
             {
                 case PlayFabEditor.EdExStates.OnMenuItemClicked:
-                    // do things here
                     break;
                 case PlayFabEditor.EdExStates.OnLogout:
                     if (tdViewer != null)
@@ -146,14 +115,11 @@ namespace PlayFab.PfEditor
 
         public static void OnTitleDataClicked()
         {
-
-            //currentState = DataMenuStates.TitleData;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleData.ToString(), "" + (int)DataMenuStates.TitleData);
         }
 
         public static void OnInternalTitleDataClicked()
         {
-            //currentState = DataMenuStates.TitleDataInternal;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, DataMenuStates.TitleDataInternal.ToString(), "" + (int)DataMenuStates.TitleDataInternal);
         }
     }

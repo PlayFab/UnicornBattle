@@ -13,98 +13,88 @@ namespace PlayFab.PfEditor
             scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
             buttonWidth = EditorGUIUtility.currentViewWidth > 400 ? EditorGUIUtility.currentViewWidth / 2 : 200;
 
-            GUILayout.BeginVertical();
-
-            GUILayout.Label("LEARN PLAYFAB:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("BEGINNERS GUIDE", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+            using (new UnityVertical())
             {
-                Application.OpenURL("https://api.playfab.com/docs/beginners-guide");
+                GUILayout.Label("LEARN PLAYFAB:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
+
+                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("BEGINNERS GUIDE", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+                    {
+                        Application.OpenURL("https://api.playfab.com/docs/beginners-guide");
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+
+                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("RECIPES", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+                    {
+                        Application.OpenURL("https://api.playfab.com/docs/recipe-index");
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+
+                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("TUTORIALS", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+                    {
+                        Application.OpenURL("https://api.playfab.com/docs/tutorials");
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+
+                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("API REFERENCE", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+                    {
+                        Application.OpenURL("https://api.playfab.com/documentation");
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
             }
 
-            GUILayout.FlexibleSpace();
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("RECIPES", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+            using (new UnityVertical())
             {
-                Application.OpenURL("https://api.playfab.com/docs/recipe-index");
+                GUILayout.Label("TROUBLESHOOTING:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
+
+                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("ASK QUESTIONS", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+                    {
+                        Application.OpenURL("https://community.playfab.com/index.html");
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+
+                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("VIEW SERVICE AVAILABILITY", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
+                    {
+                        Application.OpenURL("http://status.playfab.com/");
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
             }
-
-            GUILayout.FlexibleSpace();
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("TUTORIALS", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
-            {
-                Application.OpenURL("https://api.playfab.com/docs/tutorials");
-            }
-
-            GUILayout.FlexibleSpace();
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("API REFERENCE", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
-            {
-                Application.OpenURL("https://api.playfab.com/documentation");
-            }
-
-            GUILayout.FlexibleSpace();
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical();
-
-            GUILayout.Label("TROUBLESHOOTING:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("ASK QUESTIONS", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
-            {
-                Application.OpenURL("https://community.playfab.com/index.html");
-            }
-
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
-
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("VIEW SERVICE AVAILABILITY", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MinHeight(32), GUILayout.Width(buttonWidth)))
-            {
-                Application.OpenURL("http://status.playfab.com/");
-            }
-
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-
-            GUILayout.EndVertical();
             GUILayout.EndScrollView();
-
         }
-
     }
-
 }
