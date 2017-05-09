@@ -24,9 +24,7 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController>
     public List<SettingsButtonDetails> settingsButtons = new List<SettingsButtonDetails>();
     public List<SceneToSettingsMapping> settingsByScene = new List<SceneToSettingsMapping>();
 
-    //private bool isSetTitleIdOpen = false;
-
-    void OnLevelWasLoaded(int index)
+    void OnLevelLoad(Scene scene, LoadSceneMode mode)
     {
         UpdateSettingsMenuButtons();
     }
@@ -43,6 +41,16 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController>
         //CloseSettingsMenu();
         this.displayVersion.text = this.UBVersion;
         SettingsButtonDisplay(showOpenCloseButton);
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnLevelLoad;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnLevelLoad;
     }
 
     public void OpenCommunityPortal()

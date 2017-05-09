@@ -30,7 +30,7 @@ public static class CreateAssetBundles
     public static void BuildForAndroid()
     {
         PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.Mono2x);
-        PlayerSettings.bundleIdentifier = UbBundleIdentifier;
+        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, UbBundleIdentifier);
         var androidPackage = Path.Combine(GetBuildPath(), "UnicornBattle.apk");
         MkDir(GetBuildPath());
         BuildPipeline.BuildPlayer(TestScenes, androidPackage, BuildTarget.Android, BuildOptions.None);

@@ -7,10 +7,10 @@ using UnityEditor;
 using PlayFab.PfEditor.Json;
 using PlayFab.PfEditor.EditorModels;
 
-#if UNITY_5_4 || UNITY_5_5
+#if UNITY_5_4_OR_NEWER
 using UnityEngine.Networking;
 #else
-    using UnityEngine.Experimental.Networking;
+using UnityEngine.Experimental.Networking;
 #endif
 
 namespace PlayFab.PfEditor
@@ -45,7 +45,7 @@ namespace PlayFab.PfEditor
             resultCallback(fileSaveLocation);
         }
 
-        internal static void MakeApiCall<TRequestType, TResultType>(string api, string apiEndpoint, TRequestType request, Action<TResultType> resultCallback, Action<EditorModels.PlayFabError> errorCallback) where TResultType: class
+        internal static void MakeApiCall<TRequestType, TResultType>(string api, string apiEndpoint, TRequestType request, Action<TResultType> resultCallback, Action<EditorModels.PlayFabError> errorCallback) where TResultType : class
         {
             var url = apiEndpoint + api;
             var req = JsonWrapper.SerializeObject(request, PlayFabEditorUtil.ApiSerializerStrategy);

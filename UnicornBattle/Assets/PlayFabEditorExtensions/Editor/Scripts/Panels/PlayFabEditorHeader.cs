@@ -7,6 +7,9 @@ namespace PlayFab.PfEditor
     {
         public static void DrawHeader(float progress = 0f)
         {
+            if (PlayFabEditorHelper.uiStyle == null)
+                return;
+
             //using Begin Vertical as our container.
             using (new UnityHorizontal(GUILayout.Height(52)))
             {

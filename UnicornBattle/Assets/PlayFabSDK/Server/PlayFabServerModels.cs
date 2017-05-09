@@ -76,6 +76,23 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class AdCampaignAttributionModel
+    {
+        /// <summary>
+        /// Attribution network name
+        /// </summary>
+        public string Platform;
+        /// <summary>
+        /// Attribution campaign identifier
+        /// </summary>
+        public string CampaignId;
+        /// <summary>
+        /// UTC time stamp of attribution
+        /// </summary>
+        public DateTime AttributedAt;
+    }
+
+    [Serializable]
     public class AddCharacterVirtualCurrencyRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -1109,9 +1126,17 @@ namespace PlayFab.ServerModels
         /// </summary>
         public object FunctionResult;
         /// <summary>
+        /// Flag indicating if the FunctionResult was too large and was subsequently dropped from this event
+        /// </summary>
+        public bool? FunctionResultTooLarge;
+        /// <summary>
         /// Entries logged during the function execution. These include both entries logged in the function code using log.info() and log.error() and error entries for API and HTTP request failures.
         /// </summary>
         public List<LogStatement> Logs;
+        /// <summary>
+        /// Flag indicating if the logs were too large and were subsequently dropped from this event
+        /// </summary>
+        public bool? LogsTooLarge;
         public double ExecutionTimeSeconds;
         /// <summary>
         /// Processor time consumed while executing the function. This does not include time spent waiting on API calls or HTTP requests.
@@ -1127,7 +1152,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public int HttpRequestsIssued;
         /// <summary>
-        /// Information about the error, if any, that occured during execution
+        /// Information about the error, if any, that occurred during execution
         /// </summary>
         public ScriptExecutionError Error;
     }
@@ -1480,13 +1505,13 @@ namespace PlayFab.ServerModels
         /// <summary>
         /// The version of the leaderboard to get, when UseSpecificVersion is true.
         /// </summary>
-        public int Version;
+        public int? Version;
         /// <summary>
         /// If true, uses the specified version. If false, gets the most recent version.
         /// </summary>
-        public bool UseSpecificVersion;
+        public bool? UseSpecificVersion;
         /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names.
+        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. On client, only ShowDisplayName, ShowStatistics, ShowAvatarUrl are allowed.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
     }
@@ -1567,17 +1592,17 @@ namespace PlayFab.ServerModels
         /// </summary>
         public int MaxResultsCount;
         /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names.
+        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. On client, only ShowDisplayName, ShowStatistics, ShowAvatarUrl are allowed.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
         /// <summary>
         /// The version of the leaderboard to get, when UseSpecificVersion is true.
         /// </summary>
-        public int Version;
+        public int? Version;
         /// <summary>
         /// If true, uses the specified version. If false, gets the most recent version.
         /// </summary>
-        public bool UseSpecificVersion;
+        public bool? UseSpecificVersion;
     }
 
     [Serializable]
@@ -1639,17 +1664,17 @@ namespace PlayFab.ServerModels
         /// </summary>
         public int MaxResultsCount;
         /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names.
+        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. On client, only ShowDisplayName, ShowStatistics, ShowAvatarUrl are allowed.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
         /// <summary>
         /// The version of the leaderboard to get, when UseSpecificVersion is true.
         /// </summary>
-        public int Version;
+        public int? Version;
         /// <summary>
         /// If true, uses the specified version. If false, gets the most recent version.
         /// </summary>
-        public bool UseSpecificVersion;
+        public bool? UseSpecificVersion;
     }
 
     [Serializable]
@@ -2420,7 +2445,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string CharacterId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -2498,6 +2523,27 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class LinkedPlatformAccountModel
+    {
+        /// <summary>
+        /// Authentication platform
+        /// </summary>
+        public LoginIdentityProvider? Platform;
+        /// <summary>
+        /// Unique account identifier of the user on the platform
+        /// </summary>
+        public string PlatformUserId;
+        /// <summary>
+        /// Linked account username of the user on the platform, if available
+        /// </summary>
+        public string Username;
+        /// <summary>
+        /// Linked account email of the user on the platform, if available
+        /// </summary>
+        public string Email;
+    }
+
+    [Serializable]
     public class ListUsersCharactersRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -2513,6 +2559,31 @@ namespace PlayFab.ServerModels
         /// The requested list of characters.
         /// </summary>
         public List<CharacterResult> Characters;
+    }
+
+    [Serializable]
+    public class LocationModel
+    {
+        /// <summary>
+        /// The two-character continent code for this location
+        /// </summary>
+        public ContinentCode? ContinentCode;
+        /// <summary>
+        /// The two-character ISO 3166-1 country code for the country associated with the location
+        /// </summary>
+        public CountryCode? CountryCode;
+        /// <summary>
+        /// City name.
+        /// </summary>
+        public string City;
+        /// <summary>
+        /// Latitude coordinate of the geographic location.
+        /// </summary>
+        public double? Latitude;
+        /// <summary>
+        /// Longitude coordinate of the geographic location.
+        /// </summary>
+        public double? Longitude;
     }
 
     public enum LoginIdentityProvider
@@ -2741,9 +2812,9 @@ namespace PlayFab.ServerModels
         /// </summary>
         public int Position;
         /// <summary>
-        /// The profile of the user, if requested. Note that this profile may have sensitive fields scrubbed.
+        /// The profile of the user, if requested.
         /// </summary>
-        public PlayerProfile Profile;
+        public PlayerProfileModel Profile;
     }
 
     [Serializable]
@@ -2874,6 +2945,83 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class PlayerProfileModel
+    {
+        /// <summary>
+        /// Publisher this player belongs to
+        /// </summary>
+        public string PublisherId;
+        /// <summary>
+        /// Title ID this profile applies to
+        /// </summary>
+        public string TitleId;
+        /// <summary>
+        /// PlayFab Player ID
+        /// </summary>
+        public string PlayerId;
+        /// <summary>
+        /// Player record created
+        /// </summary>
+        public DateTime? Created;
+        /// <summary>
+        /// Player account origination
+        /// </summary>
+        public LoginIdentityProvider? Origination;
+        /// <summary>
+        /// Last login
+        /// </summary>
+        public DateTime? LastLogin;
+        /// <summary>
+        /// If the player is currently banned, the UTC Date when the ban expires
+        /// </summary>
+        public DateTime? BannedUntil;
+        /// <summary>
+        /// List of geographic locations where the player has logged-in
+        /// </summary>
+        public List<LocationModel> Locations;
+        /// <summary>
+        /// Player Display Name
+        /// </summary>
+        public string DisplayName;
+        /// <summary>
+        /// Image URL of the player's avatar
+        /// </summary>
+        public string AvatarUrl;
+        /// <summary>
+        /// List of player's tags for segmentation
+        /// </summary>
+        public List<TagModel> Tags;
+        /// <summary>
+        /// List of configured end points registered for sending the player push notifications
+        /// </summary>
+        public List<PushNotificationRegistrationModel> PushNotificationRegistrations;
+        /// <summary>
+        /// List of third party accounts linked to this player
+        /// </summary>
+        public List<LinkedPlatformAccountModel> LinkedAccounts;
+        /// <summary>
+        /// List of advertising campaigns the player has been attributed to
+        /// </summary>
+        public List<AdCampaignAttributionModel> AdCampaignAttributions;
+        /// <summary>
+        /// A sum of player's total purchases across all real-money currencies, converted to US Dollars equivalent
+        /// </summary>
+        public uint? TotalValueToDateInUSD;
+        /// <summary>
+        /// List of player's total lifetime real-money purchases by currency
+        /// </summary>
+        public List<ValueToDateModel> ValuesToDate;
+        /// <summary>
+        /// List of player's virtual currency balances
+        /// </summary>
+        public List<VirtualCurrencyBalanceModel> VirtualCurrencyBalances;
+        /// <summary>
+        /// List of leaderboard statistic values for the player
+        /// </summary>
+        public List<StatisticModel> Statistics;
+    }
+
+    [Serializable]
     public class PlayerProfileViewConstraints
     {
         /// <summary>
@@ -2897,13 +3045,13 @@ namespace PlayFab.ServerModels
         /// </summary>
         public bool ShowBannedUntil;
         /// <summary>
-        /// Whether to show statistics, the most recent version of each stat. Defaults to false
+        /// Reserved for future development
         /// </summary>
         public bool ShowStatistics;
         /// <summary>
         /// Whether to show campaign attributions. Defaults to false
         /// </summary>
-        public bool ShowCampaignAtributions;
+        public bool ShowCampaignAttributions;
         /// <summary>
         /// Whether to show push notification registrations. Defaults to false
         /// </summary>
@@ -2924,10 +3072,6 @@ namespace PlayFab.ServerModels
         /// Whether to show tags. Defaults to false
         /// </summary>
         public bool ShowTags;
-        /// <summary>
-        /// Whether to show the virtual currency balances. Defaults to false
-        /// </summary>
-        public bool ShowVirtualCurrencyBalances;
         /// <summary>
         /// Whether to show player's locations. Defaults to false
         /// </summary>
@@ -2996,6 +3140,19 @@ namespace PlayFab.ServerModels
 
     [Serializable]
     public class PushNotificationRegistration
+    {
+        /// <summary>
+        /// Push notification platform
+        /// </summary>
+        public PushNotificationPlatform? Platform;
+        /// <summary>
+        /// Notification configured endpoint
+        /// </summary>
+        public string NotificationEndpointARN;
+    }
+
+    [Serializable]
+    public class PushNotificationRegistrationModel
     {
         /// <summary>
         /// Push notification platform
@@ -3479,6 +3636,23 @@ namespace PlayFab.ServerModels
     }
 
     [Serializable]
+    public class StatisticModel
+    {
+        /// <summary>
+        /// Statistic name
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// Statistic version (0 if not a versioned statistic)
+        /// </summary>
+        public int Version;
+        /// <summary>
+        /// Statistic value
+        /// </summary>
+        public int Value;
+    }
+
+    [Serializable]
     public class StatisticNameVersion
     {
         /// <summary>
@@ -3574,6 +3748,15 @@ namespace PlayFab.ServerModels
         /// Amount to be subtracted from the user balance of the specified virtual currency.
         /// </summary>
         public int Amount;
+    }
+
+    [Serializable]
+    public class TagModel
+    {
+        /// <summary>
+        /// Full value of the tag, including namespace
+        /// </summary>
+        public string TagValue;
     }
 
     public enum TaskInstanceStatus
@@ -3762,7 +3945,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string CharacterId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -3836,7 +4019,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string SharedGroupId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -3862,7 +4045,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string PlayFabId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -3892,7 +4075,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string PlayFabId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -3917,7 +4100,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string ItemInstanceId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -4222,6 +4405,36 @@ namespace PlayFab.ServerModels
         /// XBox user ID
         /// </summary>
         public string XboxUserId;
+    }
+
+    [Serializable]
+    public class ValueToDateModel
+    {
+        /// <summary>
+        /// ISO 4217 code of the currency used in the purchases
+        /// </summary>
+        public string Currency;
+        /// <summary>
+        /// Total value of the purchases in a whole number of 1/100 monetary units. For example 999 indicates nine dollars and ninety-nine cents when Currency is 'USD')
+        /// </summary>
+        public uint TotalValue;
+        /// <summary>
+        /// Total value of the purchases in a string representation of decimal monetary units (e.g. '9.99' indicates nine dollars and ninety-nine cents when Currency is 'USD'))
+        /// </summary>
+        public string TotalValueAsDecimal;
+    }
+
+    [Serializable]
+    public class VirtualCurrencyBalanceModel
+    {
+        /// <summary>
+        /// Name of the virtual currency
+        /// </summary>
+        public string Currency;
+        /// <summary>
+        /// Balance of the virtual currency
+        /// </summary>
+        public int TotalValue;
     }
 
     [Serializable]

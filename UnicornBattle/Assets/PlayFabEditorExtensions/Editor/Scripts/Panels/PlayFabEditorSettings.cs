@@ -1,5 +1,6 @@
 using PlayFab.PfEditor.EditorModels;
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,7 +24,9 @@ namespace PlayFab.PfEditor
             HttpWebRequest // High performance multi-threaded api calls
         }
 
-        private static readonly List<string> BuildTargets = new List<string>();
+        private static float LABEL_WIDTH = 160;
+
+        private static readonly StringBuilder Sb = new StringBuilder();
 
         private static SubMenuComponent _menu = null;
 
@@ -33,66 +36,85 @@ namespace PlayFab.PfEditor
         #endregion
 
         #region draw calls
-
         private static void DrawApiSubPanel()
         {
-            float labelWidth = 160;
-
             using (new UnityVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
             {
-                using (var fwl = new FixedWidthLabel("ENABLE CLIENT API: "))
+                var curDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+                var changedFlags = false;
+                DisplayDefineToggle("ENABLE CLIENT API: ", true, PlayFabEditorHelper.CLIENT_API, ref curDefines, ref changedFlags);
+                DisplayDefineToggle("ENABLE ADMIN API: ", false, PlayFabEditorHelper.ADMIN_API, ref curDefines, ref changedFlags);
+                DisplayDefineToggle("ENABLE SERVER API: ", false, PlayFabEditorHelper.SERVER_API, ref curDefines, ref changedFlags);
+                DisplayDefineToggle("ENABLE REQUEST TIMES: ", false, PlayFabEditorHelper.DEBUG_REQUEST_TIMING, ref curDefines, ref changedFlags);
+                if (changedFlags)
                 {
-                    GUILayout.Space(labelWidth - fwl.fieldWidth);
-                    PlayFabEditorDataService.EnvDetails.isClientApiEnabled = EditorGUILayout.Toggle(PlayFabEditorDataService.EnvDetails.isClientApiEnabled, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"), GUILayout.MinHeight(25));
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, curDefines);
+                    Debug.Log("Updating Defines: " + curDefines);
+                    AssetDatabase.Refresh();
                 }
+            }
+        }
 
-                using (var fwl = new FixedWidthLabel("ENABLE ADMIN API:  "))
-                {
-                    GUILayout.Space(labelWidth - fwl.fieldWidth);
-                    PlayFabEditorDataService.EnvDetails.isAdminApiEnabled = EditorGUILayout.Toggle(PlayFabEditorDataService.EnvDetails.isAdminApiEnabled, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"), GUILayout.MinHeight(25));
-                }
+        private static void DisplayDefineToggle(string label, bool invertDisplay, string displayedDefine, ref string curDefines, ref bool changedFlag)
+        {
+            bool flagSet, flagGet = curDefines.Contains(displayedDefine);
+            using (var fwl = new FixedWidthLabel(label))
+            {
+                GUILayout.Space(LABEL_WIDTH - fwl.fieldWidth);
+                flagSet = EditorGUILayout.Toggle(invertDisplay ? !flagGet : flagGet, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"), GUILayout.MinHeight(25));
+                if (invertDisplay)
+                    flagSet = !flagSet;
+            }
+            changedFlag |= flagSet != flagGet;
 
-                using (var fwl = new FixedWidthLabel("ENABLE SERVER API: "))
-                {
-                    GUILayout.Space(labelWidth - fwl.fieldWidth);
-                    PlayFabEditorDataService.EnvDetails.isServerApiEnabled = EditorGUILayout.Toggle(PlayFabEditorDataService.EnvDetails.isServerApiEnabled, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"), GUILayout.MinHeight(25));
-                }
-
-                using (var fwl = new FixedWidthLabel("ENABLE REQUEST TIMES: "))
-                {
-                    GUILayout.Space(labelWidth - fwl.fieldWidth);
-                    PlayFabEditorDataService.EnvDetails.isDebugRequestTimesEnabled = EditorGUILayout.Toggle(PlayFabEditorDataService.EnvDetails.isDebugRequestTimesEnabled, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"), GUILayout.MinHeight(25));
-                }
+            Sb.Length = 0;
+            if (flagSet && !flagGet)
+            {
+                Sb.Append(curDefines);
+                if (Sb.Length > 0)
+                    Sb.Append(";");
+                Sb.Append(displayedDefine);
+                curDefines = Sb.ToString();
+            }
+            else if (!flagSet && flagGet)
+            {
+                Sb.Append(curDefines);
+                Sb.Replace(displayedDefine, "").Replace(";;", ";");
+                if (Sb.Length > 0 && Sb[0] == ';')
+                    Sb.Remove(0, 1);
+                if (Sb.Length > 0 && Sb[Sb.Length - 1] == ';')
+                    Sb.Remove(Sb.Length - 1, 1);
+                curDefines = Sb.ToString();
             }
         }
 
         public static void DrawSettingsPanel()
         {
-            if (PlayFabEditorDataService.IsDataLoaded)
+            if (!PlayFabEditorDataService.IsDataLoaded)
+                return;
+
+            if (_menu != null)
             {
-                if (_menu != null)
+                _menu.DrawMenu();
+                switch ((SubMenuStates)PlayFabEditorDataService.EditorView.currentSubMenu)
                 {
-                    _menu.DrawMenu();
-                    switch ((SubMenuStates)PlayFabEditorDataService.EditorView.currentSubMenu)
-                    {
-                        case SubMenuStates.StandardSettings:
-                            DrawStandardSettingsSubPanel();
-                            break;
-                        case SubMenuStates.ApiSettings:
-                            DrawApiSubPanel();
-                            break;
-                        case SubMenuStates.TitleSettings:
-                            DrawTitleSettingsSubPanel();
-                            break;
-                        case SubMenuStates.Packages:
-                            DrawPackagesSubPanel();
-                            break;
-                    }
+                    case SubMenuStates.StandardSettings:
+                        DrawStandardSettingsSubPanel();
+                        break;
+                    case SubMenuStates.ApiSettings:
+                        DrawApiSubPanel();
+                        break;
+                    case SubMenuStates.TitleSettings:
+                        DrawTitleSettingsSubPanel();
+                        break;
+                    case SubMenuStates.Packages:
+                        DrawPackagesSubPanel();
+                        break;
                 }
-                else
-                {
-                    RegisterMenu();
-                }
+            }
+            else
+            {
+                RegisterMenu();
             }
         }
 
@@ -299,76 +321,6 @@ namespace PlayFab.PfEditor
         }
         #endregion
 
-        #region unity-like loops
-
-        public static void Update()
-        {
-            BuildTargets.Clear();
-            var symbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup).Split(';');
-            foreach (var each in symbols)
-                BuildTargets.Add(each);
-        }
-
-        public static void After()
-        {
-            if (PlayFabEditorDataService.EnvDetails.isAdminApiEnabled && !BuildTargets.Contains(PlayFabEditorHelper.ADMIN_API))
-            {
-                var str = AddToBuildTarget(BuildTargets, PlayFabEditorHelper.ADMIN_API);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-            else if (!PlayFabEditorDataService.EnvDetails.isAdminApiEnabled && BuildTargets.Contains(PlayFabEditorHelper.ADMIN_API))
-            {
-                var str = RemoveToBuildTarget(BuildTargets, PlayFabEditorHelper.ADMIN_API);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-
-            if (PlayFabEditorDataService.EnvDetails.isServerApiEnabled && !BuildTargets.Contains(PlayFabEditorHelper.SERVER_API))
-            {
-                var str = AddToBuildTarget(BuildTargets, PlayFabEditorHelper.SERVER_API);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-            else if (!PlayFabEditorDataService.EnvDetails.isServerApiEnabled && BuildTargets.Contains(PlayFabEditorHelper.SERVER_API))
-            {
-                var str = RemoveToBuildTarget(BuildTargets, PlayFabEditorHelper.SERVER_API);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-
-            if (PlayFabEditorDataService.EnvDetails.isDebugRequestTimesEnabled && !BuildTargets.Contains(PlayFabEditorHelper.DEBUG_REQUEST_TIMING))
-            {
-                var str = AddToBuildTarget(BuildTargets, PlayFabEditorHelper.DEBUG_REQUEST_TIMING);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-            else if (!PlayFabEditorDataService.EnvDetails.isDebugRequestTimesEnabled && BuildTargets.Contains(PlayFabEditorHelper.DEBUG_REQUEST_TIMING))
-            {
-                var str = RemoveToBuildTarget(BuildTargets, PlayFabEditorHelper.DEBUG_REQUEST_TIMING);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-
-            if (!PlayFabEditorDataService.EnvDetails.isClientApiEnabled && !BuildTargets.Contains(PlayFabEditorHelper.CLIENT_API))
-            {
-                Debug.Log(PlayFabEditorHelper.CLIENT_API + ":" + BuildTargets.Contains(PlayFabEditorHelper.CLIENT_API));
-                var str = AddToBuildTarget(BuildTargets, PlayFabEditorHelper.CLIENT_API);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-            else if (PlayFabEditorDataService.EnvDetails.isClientApiEnabled && BuildTargets.Contains(PlayFabEditorHelper.CLIENT_API))
-            {
-                Debug.Log(PlayFabEditorHelper.CLIENT_API + "- Removed");
-                var str = RemoveToBuildTarget(BuildTargets, PlayFabEditorHelper.CLIENT_API);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, str);
-                PlayFabEditorDataService.SaveEnvDetails();
-            }
-
-        }
-
-        #endregion
-
         #region menu and helper methods
         private static void RegisterMenu()
         {
@@ -426,23 +378,6 @@ namespace PlayFab.PfEditor
                 PlayFabEditorDataMenu.tdViewer.items.Clear();
             PlayFabEditorDataService.SaveEnvDetails();
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSuccess);
-        }
-
-        private static string AddToBuildTarget(List<string> targets, string define)
-        {
-            targets.Add(define);
-            return string.Join(";", targets.ToArray());
-        }
-
-        private static string RemoveToBuildTarget(List<string> targets, string define)
-        {
-            targets.Remove(define);
-            return string.Join(";", targets.ToArray());
-        }
-
-        private static string GetSelectedTitleIdFromOptions(string titleEntry)
-        {
-            return titleEntry.Substring(1, titleEntry.IndexOf(']') - 1);
         }
         #endregion
     }

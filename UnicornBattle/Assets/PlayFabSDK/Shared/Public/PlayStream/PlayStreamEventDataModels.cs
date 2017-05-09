@@ -125,6 +125,7 @@ namespace PlayFab.PlayStreamModels
         public string PurchaseId;
         public string ItemId;
         public string CatalogVersion;
+        public string StoreId;
         public string CurrencyCode;
         public int Quantity;
         public uint UnitPrice;
@@ -147,6 +148,11 @@ namespace PlayFab.PlayStreamModels
     {
         public string PlayerId;
         public string DisplayName;
+    }
+    public class PlayerDisplayNameFilteredEventData : PlayStreamEventBase
+    {
+        public string DisplayName;
+        public string TitleId;
     }
     public class PlayerPhotonSessionAuthenticatedEventData : PlayStreamEventBase
     {
@@ -350,6 +356,15 @@ namespace PlayFab.PlayStreamModels
         public DateTime LinkExpiration;
         public string TitleId;
     }
+    public class PlayerRankedOnLeaderboardVersionEventData : PlayStreamEventBase
+    {
+        public uint Rank;
+        public int Value;
+        public uint Version;
+        public LeaderboardVersionChangeBehavior? VersionChangeBehavior;
+        public LeaderboardSource LeaderboardSource;
+        public string TitleId;
+    }
     public class PlayerRealMoneyPurchaseEventData : PlayStreamEventBase
     {
         public string PaymentProvider;
@@ -359,6 +374,15 @@ namespace PlayFab.PlayStreamModels
         public Currency? TransactionCurrency;
         public string OrderId;
         public List<string> PurchasedProduct;
+        public string TitleId;
+    }
+    public class PlayerReceiptValidationEventData : PlayStreamEventBase
+    {
+        public string PaymentProvider;
+        public PaymentType? PaymentType;
+        public string ReceiptContent;
+        public bool Valid;
+        public string Error;
         public string TitleId;
     }
     public class PlayerRedeemedCouponEventData : PlayStreamEventBase
@@ -429,6 +453,7 @@ namespace PlayFab.PlayStreamModels
         public string PurchaseId;
         public string ItemId;
         public string CatalogVersion;
+        public string StoreId;
         public string CurrencyCode;
         public int Quantity;
         public uint UnitPrice;
@@ -616,6 +641,14 @@ namespace PlayFab.PlayStreamModels
         public string UserId;
         public string DeveloperId;
     }
+    public class TitleProfileViewConstraintsChangedEventData : PlayStreamEventBase
+    {
+        public string ProfileType;
+        public string PreviousProfileViewConstraints;
+        public string ProfileViewConstraints;
+        public string UserId;
+        public string DeveloperId;
+    }
     public class TitlePublishedCloudScriptEventData : PlayStreamEventBase
     {
         public int Revision;
@@ -687,287 +720,10 @@ namespace PlayFab.PlayStreamModels
     }
     #endregion title
 
-    public enum LoginIdentityProvider
+    public enum AuthenticationProvider
     {
-        Unknown,
         PlayFab,
-        Custom,
-        GameCenter,
-        GooglePlay,
-        Steam,
-        XBoxLive,
-        PSN,
-        Kongregate,
-        Facebook,
-        IOSDevice,
-        AndroidDevice,
-        Twitch,
-        WindowsHello
-    }
-
-    public enum PasswordResetInitiationSource
-    {
-        Self,
-        Admin
-    }
-
-    [Serializable]
-    public class CouponGrantedInventoryItem
-    {
-        /// <summary>
-        /// Unique instance ID of the inventory item.
-        /// </summary>
-        public string InstanceId;
-        /// <summary>
-        /// Catalog item ID of the inventory item.
-        /// </summary>
-        public string ItemId;
-        /// <summary>
-        /// Catalog version of the inventory item.
-        /// </summary>
-        public string CatalogVersion;
-    }
-
-    public enum PaymentType
-    {
-        Purchase,
-        ReceiptValidation
-    }
-
-    public enum Currency
-    {
-        AED,
-        AFN,
-        ALL,
-        AMD,
-        ANG,
-        AOA,
-        ARS,
-        AUD,
-        AWG,
-        AZN,
-        BAM,
-        BBD,
-        BDT,
-        BGN,
-        BHD,
-        BIF,
-        BMD,
-        BND,
-        BOB,
-        BRL,
-        BSD,
-        BTN,
-        BWP,
-        BYR,
-        BZD,
-        CAD,
-        CDF,
-        CHF,
-        CLP,
-        CNY,
-        COP,
-        CRC,
-        CUC,
-        CUP,
-        CVE,
-        CZK,
-        DJF,
-        DKK,
-        DOP,
-        DZD,
-        EGP,
-        ERN,
-        ETB,
-        EUR,
-        FJD,
-        FKP,
-        GBP,
-        GEL,
-        GGP,
-        GHS,
-        GIP,
-        GMD,
-        GNF,
-        GTQ,
-        GYD,
-        HKD,
-        HNL,
-        HRK,
-        HTG,
-        HUF,
-        IDR,
-        ILS,
-        IMP,
-        INR,
-        IQD,
-        IRR,
-        ISK,
-        JEP,
-        JMD,
-        JOD,
-        JPY,
-        KES,
-        KGS,
-        KHR,
-        KMF,
-        KPW,
-        KRW,
-        KWD,
-        KYD,
-        KZT,
-        LAK,
-        LBP,
-        LKR,
-        LRD,
-        LSL,
-        LYD,
-        MAD,
-        MDL,
-        MGA,
-        MKD,
-        MMK,
-        MNT,
-        MOP,
-        MRO,
-        MUR,
-        MVR,
-        MWK,
-        MXN,
-        MYR,
-        MZN,
-        NAD,
-        NGN,
-        NIO,
-        NOK,
-        NPR,
-        NZD,
-        OMR,
-        PAB,
-        PEN,
-        PGK,
-        PHP,
-        PKR,
-        PLN,
-        PYG,
-        QAR,
-        RON,
-        RSD,
-        RUB,
-        RWF,
-        SAR,
-        SBD,
-        SCR,
-        SDG,
-        SEK,
-        SGD,
-        SHP,
-        SLL,
-        SOS,
-        SPL,
-        SRD,
-        STD,
-        SVC,
-        SYP,
-        SZL,
-        THB,
-        TJS,
-        TMT,
-        TND,
-        TOP,
-        TRY,
-        TTD,
-        TVD,
-        TWD,
-        TZS,
-        UAH,
-        UGX,
-        USD,
-        UYU,
-        UZS,
-        VEF,
-        VND,
-        VUV,
-        WST,
-        XAF,
-        XCD,
-        XDR,
-        XOF,
-        XPF,
-        YER,
-        ZAR,
-        ZMW,
-        ZWD
-    }
-
-    [Serializable]
-    public class LogStatement
-    {
-        /// <summary>
-        /// 'Debug', 'Info', or 'Error'
-        /// </summary>
-        public string Level;
-        public string Message;
-        /// <summary>
-        /// Optional object accompanying the message as contextual information
-        /// </summary>
-        public object Data;
-    }
-
-    [Serializable]
-    public class ScriptExecutionError
-    {
-        /// <summary>
-        /// Error code, such as CloudScriptNotFound, JavascriptException, CloudScriptFunctionArgumentSizeExceeded, CloudScriptAPIRequestCountExceeded, CloudScriptAPIRequestError, or CloudScriptHTTPRequestError
-        /// </summary>
-        public string Error;
-        /// <summary>
-        /// Details about the error
-        /// </summary>
-        public string Message;
-        /// <summary>
-        /// Point during the execution of the script at which the error occurred, if any
-        /// </summary>
-        public string StackTrace;
-    }
-
-    [Serializable]
-    public class ExecuteCloudScriptResult
-    {
-        /// <summary>
-        /// The name of the function that executed
-        /// </summary>
-        public string FunctionName;
-        /// <summary>
-        /// The revision of the CloudScript that executed
-        /// </summary>
-        public int Revision;
-        /// <summary>
-        /// The object returned from the CloudScript function, if any
-        /// </summary>
-        public object FunctionResult;
-        /// <summary>
-        /// Entries logged during the function execution. These include both entries logged in the function code using log.info() and log.error() and error entries for API and HTTP request failures.
-        /// </summary>
-        public List<LogStatement> Logs;
-        public double ExecutionTimeSeconds;
-        /// <summary>
-        /// Processor time consumed while executing the function. This does not include time spent waiting on API calls or HTTP requests.
-        /// </summary>
-        public double ProcessorTimeSeconds;
-        public uint MemoryConsumedBytes;
-        /// <summary>
-        /// Number of PlayFab API requests issued by the CloudScript function
-        /// </summary>
-        public int APIRequestsIssued;
-        /// <summary>
-        /// Number of external HTTP requests issued by the CloudScript function
-        /// </summary>
-        public int HttpRequestsIssued;
-        /// <summary>
-        /// Information about the error, if any, that occured during execution
-        /// </summary>
-        public ScriptExecutionError Error;
+        SAML
     }
 
     public enum ContinentCode
@@ -1235,6 +991,355 @@ namespace PlayFab.PlayStreamModels
     }
 
     [Serializable]
+    public class EventLocation
+    {
+        /// <summary>
+        /// Two-character code representing the continent of geographic location.
+        /// </summary>
+        public ContinentCode? ContinentCode;
+        /// <summary>
+        /// Two-character ISO 3166-1 code representing the country of the geographic location.
+        /// </summary>
+        public CountryCode? CountryCode;
+        /// <summary>
+        /// City of the geographic location.
+        /// </summary>
+        public string City;
+        /// <summary>
+        /// Latitude coordinate of the geographic location.
+        /// </summary>
+        public double? Latitude;
+        /// <summary>
+        /// Longitude coordinate of the geographic location.
+        /// </summary>
+        public double? Longitude;
+    }
+
+    public enum PaymentType
+    {
+        Purchase,
+        ReceiptValidation
+    }
+
+    public enum LeaderboardVersionChangeBehavior
+    {
+        ResetValues
+    }
+
+    /// <summary>
+    /// Statistic used as the source of leaderboard values.
+    /// </summary>
+    [Serializable]
+    public class StatisticLeaderboardSource
+    {
+        /// <summary>
+        /// Name of the statistic.
+        /// </summary>
+        public string StatisticName;
+        /// <summary>
+        /// Unique ID of the statistic.
+        /// </summary>
+        public uint StatisticId;
+    }
+
+    /// <summary>
+    /// The source of values for the leaderboard. The properties are mutually exclusive - only one of them will be set and the rest will be null.
+    /// </summary>
+    [Serializable]
+    public class LeaderboardSource
+    {
+        /// <summary>
+        /// Statistic associated with the leaderboard.
+        /// </summary>
+        public StatisticLeaderboardSource Statistic;
+    }
+
+    public enum LoginIdentityProvider
+    {
+        Unknown,
+        PlayFab,
+        Custom,
+        GameCenter,
+        GooglePlay,
+        Steam,
+        XBoxLive,
+        PSN,
+        Kongregate,
+        Facebook,
+        IOSDevice,
+        AndroidDevice,
+        Twitch,
+        WindowsHello
+    }
+
+    public enum PasswordResetInitiationSource
+    {
+        Self,
+        Admin
+    }
+
+    [Serializable]
+    public class CouponGrantedInventoryItem
+    {
+        /// <summary>
+        /// Unique instance ID of the inventory item.
+        /// </summary>
+        public string InstanceId;
+        /// <summary>
+        /// Catalog item ID of the inventory item.
+        /// </summary>
+        public string ItemId;
+        /// <summary>
+        /// Catalog version of the inventory item.
+        /// </summary>
+        public string CatalogVersion;
+    }
+
+    public enum Currency
+    {
+        AED,
+        AFN,
+        ALL,
+        AMD,
+        ANG,
+        AOA,
+        ARS,
+        AUD,
+        AWG,
+        AZN,
+        BAM,
+        BBD,
+        BDT,
+        BGN,
+        BHD,
+        BIF,
+        BMD,
+        BND,
+        BOB,
+        BRL,
+        BSD,
+        BTN,
+        BWP,
+        BYR,
+        BZD,
+        CAD,
+        CDF,
+        CHF,
+        CLP,
+        CNY,
+        COP,
+        CRC,
+        CUC,
+        CUP,
+        CVE,
+        CZK,
+        DJF,
+        DKK,
+        DOP,
+        DZD,
+        EGP,
+        ERN,
+        ETB,
+        EUR,
+        FJD,
+        FKP,
+        GBP,
+        GEL,
+        GGP,
+        GHS,
+        GIP,
+        GMD,
+        GNF,
+        GTQ,
+        GYD,
+        HKD,
+        HNL,
+        HRK,
+        HTG,
+        HUF,
+        IDR,
+        ILS,
+        IMP,
+        INR,
+        IQD,
+        IRR,
+        ISK,
+        JEP,
+        JMD,
+        JOD,
+        JPY,
+        KES,
+        KGS,
+        KHR,
+        KMF,
+        KPW,
+        KRW,
+        KWD,
+        KYD,
+        KZT,
+        LAK,
+        LBP,
+        LKR,
+        LRD,
+        LSL,
+        LYD,
+        MAD,
+        MDL,
+        MGA,
+        MKD,
+        MMK,
+        MNT,
+        MOP,
+        MRO,
+        MUR,
+        MVR,
+        MWK,
+        MXN,
+        MYR,
+        MZN,
+        NAD,
+        NGN,
+        NIO,
+        NOK,
+        NPR,
+        NZD,
+        OMR,
+        PAB,
+        PEN,
+        PGK,
+        PHP,
+        PKR,
+        PLN,
+        PYG,
+        QAR,
+        RON,
+        RSD,
+        RUB,
+        RWF,
+        SAR,
+        SBD,
+        SCR,
+        SDG,
+        SEK,
+        SGD,
+        SHP,
+        SLL,
+        SOS,
+        SPL,
+        SRD,
+        STD,
+        SVC,
+        SYP,
+        SZL,
+        THB,
+        TJS,
+        TMT,
+        TND,
+        TOP,
+        TRY,
+        TTD,
+        TVD,
+        TWD,
+        TZS,
+        UAH,
+        UGX,
+        USD,
+        UYU,
+        UZS,
+        VEF,
+        VND,
+        VUV,
+        WST,
+        XAF,
+        XCD,
+        XDR,
+        XOF,
+        XPF,
+        YER,
+        ZAR,
+        ZMW,
+        ZWD
+    }
+
+    [Serializable]
+    public class LogStatement
+    {
+        /// <summary>
+        /// 'Debug', 'Info', or 'Error'
+        /// </summary>
+        public string Level;
+        public string Message;
+        /// <summary>
+        /// Optional object accompanying the message as contextual information
+        /// </summary>
+        public object Data;
+    }
+
+    [Serializable]
+    public class ScriptExecutionError
+    {
+        /// <summary>
+        /// Error code, such as CloudScriptNotFound, JavascriptException, CloudScriptFunctionArgumentSizeExceeded, CloudScriptAPIRequestCountExceeded, CloudScriptAPIRequestError, or CloudScriptHTTPRequestError
+        /// </summary>
+        public string Error;
+        /// <summary>
+        /// Details about the error
+        /// </summary>
+        public string Message;
+        /// <summary>
+        /// Point during the execution of the script at which the error occurred, if any
+        /// </summary>
+        public string StackTrace;
+    }
+
+    [Serializable]
+    public class ExecuteCloudScriptResult
+    {
+        /// <summary>
+        /// The name of the function that executed
+        /// </summary>
+        public string FunctionName;
+        /// <summary>
+        /// The revision of the CloudScript that executed
+        /// </summary>
+        public int Revision;
+        /// <summary>
+        /// The object returned from the CloudScript function, if any
+        /// </summary>
+        public object FunctionResult;
+        /// <summary>
+        /// Flag indicating if the FunctionResult was too large and was subsequently dropped from this event
+        /// </summary>
+        public bool? FunctionResultTooLarge;
+        /// <summary>
+        /// Entries logged during the function execution. These include both entries logged in the function code using log.info() and log.error() and error entries for API and HTTP request failures.
+        /// </summary>
+        public List<LogStatement> Logs;
+        /// <summary>
+        /// Flag indicating if the logs were too large and were subsequently dropped from this event
+        /// </summary>
+        public bool? LogsTooLarge;
+        public double ExecutionTimeSeconds;
+        /// <summary>
+        /// Processor time consumed while executing the function. This does not include time spent waiting on API calls or HTTP requests.
+        /// </summary>
+        public double ProcessorTimeSeconds;
+        public uint MemoryConsumedBytes;
+        /// <summary>
+        /// Number of PlayFab API requests issued by the CloudScript function
+        /// </summary>
+        public int APIRequestsIssued;
+        /// <summary>
+        /// Number of external HTTP requests issued by the CloudScript function
+        /// </summary>
+        public int HttpRequestsIssued;
+        /// <summary>
+        /// Information about the error, if any, that occurred during execution
+        /// </summary>
+        public ScriptExecutionError Error;
+    }
+
+    [Serializable]
     public class PlayerLocation
     {
         /// <summary>
@@ -1463,6 +1568,18 @@ namespace PlayFab.PlayStreamModels
         /// Allow players to choose display names that may be in use by other players, i.e. do not enforce uniqueness of display names. Note: if this option is enabled, it cannot be disabled later.
         /// </summary>
         public bool AllowNonUniquePlayerDisplayNames;
+        /// <summary>
+        /// Reduce the precision of IP addresses collected from players' devices before they are stored or used to estimate geographic locations.
+        /// </summary>
+        public bool EnableClientIPAddressObfuscation;
+        /// <summary>
+        /// Require JSON format for data values associated with players, characters, inventories, and shared groups.
+        /// </summary>
+        public bool RequireCustomDataJSONFormat;
+        /// <summary>
+        /// Disable API access by returning errors to all API requests.
+        /// </summary>
+        public bool DisableAPIAccess;
     }
 
     public enum TaskInstanceStatus
@@ -1481,31 +1598,6 @@ namespace PlayFab.PlayStreamModels
         Min,
         Max,
         Sum
-    }
-
-    [Serializable]
-    public class EventLocation
-    {
-        /// <summary>
-        /// Two-character code representing the continent of geographic location.
-        /// </summary>
-        public ContinentCode? ContinentCode;
-        /// <summary>
-        /// Two-character ISO 3166-1 code representing the country of the geographic location.
-        /// </summary>
-        public CountryCode? CountryCode;
-        /// <summary>
-        /// City of the geographic location.
-        /// </summary>
-        public string City;
-        /// <summary>
-        /// Latitude coordinate of the geographic location.
-        /// </summary>
-        public double? Latitude;
-        /// <summary>
-        /// Longitude coordinate of the geographic location.
-        /// </summary>
-        public double? Longitude;
     }
 
     public enum Region
@@ -1582,12 +1674,6 @@ namespace PlayFab.PlayStreamModels
         Realtime,
         Turnbased,
         Chat
-    }
-
-    public enum AuthenticationProvider
-    {
-        PlayFab,
-        SAML
     }
 
     public enum SourceType

@@ -22,6 +22,9 @@ namespace PlayFab.PfEditor
         #region draw calls
         public static void DrawAuthPanels()
         {
+            if (PlayFabEditorHelper.uiStyle == null)
+                return;
+
             if (activeState == PanelDisplayStates.TwoFactorPrompt)
             {
                 using (new UnityVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))

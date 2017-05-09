@@ -30,10 +30,6 @@ namespace PlayFab.PfEditor
         {
             public static string Name = "PlayFab_DeveloperEnvironmentDetails";
 
-            public bool isAdminApiEnabled;
-            public bool isClientApiEnabled;
-            public bool isServerApiEnabled;
-            public bool isDebugRequestTimesEnabled;
             public string selectedStudio;
             public Dictionary<string, string> titleData;
             public Dictionary<string, string> titleInternalData;

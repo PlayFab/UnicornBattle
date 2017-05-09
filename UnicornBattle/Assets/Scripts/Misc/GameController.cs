@@ -21,31 +21,38 @@ public class GameController : Singleton<GameController>
     private string _pausedOnScene = string.Empty;
     private string _lostFocusedOnScene = string.Empty;
 
-    void OnLevelWasLoaded(int index)
+    void OnLevelLoad(Scene scene, LoadSceneMode mode)
     {
         if (sceneController == null)
             return; // This seems like a critical error ...???
 
-        string levelName = SceneManager.GetActiveScene().name;
-        //Debug.Log ("GAME CONTROLLER ON LEVEL LOADED: " +  Application.loadedLevelName);
-
-        if (levelName.Contains("Authenticate") && (sceneController.previousScene != SceneController.GameScenes.Null || sceneController.previousScene != SceneController.GameScenes.Splash))
+        if (scene.name.Contains("Authenticate") && (sceneController.previousScene != SceneController.GameScenes.Null || sceneController.previousScene != SceneController.GameScenes.Splash))
         {
             DialogCanvasController.RequestInterstitial();
         }
-        else if (levelName.Contains("CharacterSelect"))
+        else if (scene.name.Contains("CharacterSelect"))
         {
             DialogCanvasController.RequestInterstitial();
             CharacterSelectDataRefresh();
         }
-        else if (levelName.Contains("Profile"))
+        else if (scene.name.Contains("Profile"))
         {
             CharacterProfileDataRefresh();
         }
-        else if (levelName.Contains("Gameplay"))
+        else if (scene.name.Contains("Gameplay"))
         {
             DialogCanvasController.RequestInterstitial();
         }
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnLevelLoad;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnLevelLoad;
     }
 
     public void OnOnApplicationPause(bool status)
@@ -128,8 +135,5 @@ public class GameController : Singleton<GameController>
             sceneCont.SetParent(transform, false);
             sceneController = sceneCont.GetComponent<SceneController>();
         }
-
-        //TODO -- add in code to listen for and process scene change events.
-        //SceneManager.sceneLoaded += OnLevelWasLoaded;
     }
 }

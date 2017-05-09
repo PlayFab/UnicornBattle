@@ -37,7 +37,17 @@ namespace PlayFab.PfEditor
         public static string MSG_SPIN_BLOCK = "{\"useSpinner\":true, \"blockUi\":true }";
         #endregion
 
-        public static GUISkin uiStyle = GetUiStyle();
+        private static GUISkin _uiStyle;
+        public static GUISkin uiStyle
+        {
+            get
+            {
+                if (_uiStyle != null)
+                    return _uiStyle;
+                _uiStyle = GetUiStyle();
+                return _uiStyle;
+            }
+        }
 
         static PlayFabEditorHelper()
         {
@@ -46,13 +56,13 @@ namespace PlayFab.PfEditor
             {
                 string[] rootFiles = new string[0];
                 bool relocatedEdEx = false;
+                _uiStyle = null;
 
                 try
                 {
-                    EDEX_ROOT = PlayFabEditorDataService.EnvDetails.edexPath ?? EDEX_ROOT;
+                    if (PlayFabEditorDataService.EnvDetails != null && !string.IsNullOrEmpty(PlayFabEditorDataService.EnvDetails.edexPath))
+                        EDEX_ROOT = PlayFabEditorDataService.EnvDetails.edexPath;
                     rootFiles = Directory.GetDirectories(EDEX_ROOT);
-
-                    uiStyle = GetUiStyle();
                 }
                 catch
                 {
@@ -69,8 +79,6 @@ namespace PlayFab.PfEditor
                             EDEX_ROOT = movedRootFiles[0].Substring(0, movedRootFiles[0].IndexOf(PLAYFAB_EDEX_MAINFILE) - 1);
                             PlayFabEditorDataService.EnvDetails.edexPath = EDEX_ROOT;
                             PlayFabEditorDataService.SaveEnvDetails();
-
-                            uiStyle = GetUiStyle();
                         }
                     }
                 }
@@ -91,10 +99,8 @@ namespace PlayFab.PfEditor
 
         private static GUISkin GetUiStyle()
         {
-            if (uiStyle != null)
-                return uiStyle;
-
-            var pfGuiPaths = Directory.GetFiles(EDEX_ROOT, "PlayFabStyles.guiskin", SearchOption.AllDirectories);
+            var searchRoot = string.IsNullOrEmpty(EDEX_ROOT) ? Application.dataPath : EDEX_ROOT;
+            var pfGuiPaths = Directory.GetFiles(searchRoot, "PlayFabStyles.guiskin", SearchOption.AllDirectories);
             foreach (var eachPath in pfGuiPaths)
             {
                 var loadPath = eachPath.Substring(eachPath.IndexOf("Assets/"));

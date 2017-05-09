@@ -109,7 +109,6 @@ namespace PlayFab.PfEditor
             using (new UnityVertical())
             {
                 //Run all updaters prior to drawing;  
-                PlayFabEditorSettings.Update();
                 PlayFabEditorPackageManager.Update();
                 PlayFabEditorHeader.DrawHeader();
 
@@ -129,7 +128,6 @@ namespace PlayFab.PfEditor
                             break;
                         case PlayFabEditorMenu.MenuStates.Settings:
                             PlayFabEditorSettings.DrawSettingsPanel();
-                            PlayFabEditorSettings.After();
                             break;
                         case PlayFabEditorMenu.MenuStates.Help:
                             PlayFabEditorHelpMenu.DrawHelpPanel();

@@ -245,6 +245,15 @@ namespace PlayFab.AdminModels
         public List<VirtualCurrencyData> VirtualCurrencies;
     }
 
+    [Serializable]
+    public class ApiCondition
+    {
+        /// <summary>
+        /// Require that API calls contain an RSA encrypted payload or signed headers.
+        /// </summary>
+        public Conditionals? HasSignatureOrEncryption;
+    }
+
     /// <summary>
     /// Contains information for a ban.
     /// </summary>
@@ -556,6 +565,13 @@ namespace PlayFab.AdminModels
         /// Most recent revision for this Cloud Script version
         /// </summary>
         public int LatestRevision;
+    }
+
+    public enum Conditionals
+    {
+        Any,
+        True,
+        False
     }
 
     [Serializable]
@@ -1146,7 +1162,8 @@ namespace PlayFab.AdminModels
 
     public enum EffectType
     {
-        Allow
+        Allow,
+        Deny
     }
 
     [Serializable]
@@ -1170,9 +1187,17 @@ namespace PlayFab.AdminModels
         /// </summary>
         public object FunctionResult;
         /// <summary>
+        /// Flag indicating if the FunctionResult was too large and was subsequently dropped from this event
+        /// </summary>
+        public bool? FunctionResultTooLarge;
+        /// <summary>
         /// Entries logged during the function execution. These include both entries logged in the function code using log.info() and log.error() and error entries for API and HTTP request failures.
         /// </summary>
         public List<LogStatement> Logs;
+        /// <summary>
+        /// Flag indicating if the logs were too large and were subsequently dropped from this event
+        /// </summary>
+        public bool? LogsTooLarge;
         public double ExecutionTimeSeconds;
         /// <summary>
         /// Processor time consumed while executing the function. This does not include time spent waiting on API calls or HTTP requests.
@@ -1188,7 +1213,7 @@ namespace PlayFab.AdminModels
         /// </summary>
         public int HttpRequestsIssued;
         /// <summary>
-        /// Information about the error, if any, that occured during execution
+        /// Information about the error, if any, that occurred during execution
         /// </summary>
         public ScriptExecutionError Error;
     }
@@ -2105,7 +2130,7 @@ namespace PlayFab.AdminModels
         /// </summary>
         public string CharacterId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -2415,7 +2440,7 @@ namespace PlayFab.AdminModels
         /// </summary>
         public string Action;
         /// <summary>
-        /// The effect this statement will have. The only supported effect is 'Allow'.
+        /// The effect this statement will have. It could be either Allow or Deny
         /// </summary>
         public EffectType Effect;
         /// <summary>
@@ -2426,6 +2451,10 @@ namespace PlayFab.AdminModels
         /// A comment about the statement. Intended solely for bookeeping and debugging.
         /// </summary>
         public string Comment;
+        /// <summary>
+        /// Additional conditions to be applied for API Resources.
+        /// </summary>
+        public ApiCondition ApiConditions;
     }
 
     [Serializable]
@@ -2625,9 +2654,9 @@ namespace PlayFab.AdminModels
         /// </summary>
         public DateTime? DeactivationTime;
         /// <summary>
-        /// status of the process of saving player statistic values of the previous version to a downloadable archive
+        /// status of the statistic version
         /// </summary>
-        public StatisticVersionArchivalStatus? ArchivalStatus;
+        public StatisticVersionStatus? Status;
         /// <summary>
         /// URL for the downloadable archive of player statistic values, if available
         /// </summary>
@@ -3139,6 +3168,15 @@ namespace PlayFab.AdminModels
         Complete
     }
 
+    public enum StatisticVersionStatus
+    {
+        Active,
+        SnapshotPending,
+        Snapshot,
+        ArchivalPending,
+        Archived
+    }
+
     /// <summary>
     /// A store entry that list a catalog item at a particular price
     /// </summary>
@@ -3511,7 +3549,7 @@ namespace PlayFab.AdminModels
         /// </summary>
         public string PlayFabId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
@@ -3541,7 +3579,7 @@ namespace PlayFab.AdminModels
         /// </summary>
         public string PlayFabId;
         /// <summary>
-        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character.
+        /// Key-value pairs to be written to the custom data. Note that keys are trimmed of whitespace, are limited in size, and may not begin with a '!' character or be null.
         /// </summary>
         public Dictionary<string,string> Data;
         /// <summary>
