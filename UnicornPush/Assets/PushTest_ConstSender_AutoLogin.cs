@@ -6,12 +6,12 @@ using PlayFab.ClientModels;
 using PlayFab.Internal;
 using UnityEngine;
 
-public class UniPushMain : MonoBehaviour
+public class PushTest_ConstSender_AutoLogin : MonoBehaviour
 {
     const string TITLE_ID = "A5F3";
+    const string androidPushSenderId = "494923569376";
 
     string playFabId = "";
-    string androidPushSenderId = "";
     [Multiline(50)]
     string pushStatus = "";
 
@@ -19,13 +19,9 @@ public class UniPushMain : MonoBehaviour
     {
         PlayFabSettings.TitleId = TITLE_ID;
         PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
-        PlayFabPluginEventHandler.Init();
+        PlayFabPluginEventHandler.OnGcmLog += OnGcmLog;
+        PlayFabPluginEventHandler.Setup(androidPushSenderId);
         DoLogin();
-    }
-
-    private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
-    {
-        pushStatus += status.ToString() + "\n";
     }
 
     #region GUI
@@ -41,6 +37,16 @@ public class UniPushMain : MonoBehaviour
         GUI.Label(GridRect(0, 0, 1, 1), "playFabId:"); GUI.TextField(GridRect(1, 0, 1, 1), playFabId);
         GUI.Label(GridRect(0, 1, 1, 1), "androidPushSenderId:"); GUI.TextField(GridRect(1, 1, 1, 1), androidPushSenderId);
         GUI.Label(GridRect(0, 2, 1, 1), "pushStatus:"); GUI.TextArea(GridRect(1, 2, 3, 20), pushStatus);
+    }
+
+    private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
+    {
+        pushStatus += "STATUS:" + status.ToString() + "\n";
+    }
+
+    private void OnGcmLog(string msg)
+    {
+        pushStatus += "MSG:" + msg + "\n";
     }
     #endregion GUI
 
@@ -62,22 +68,6 @@ public class UniPushMain : MonoBehaviour
     void OnLoginSuccess(LoginResult result)
     {
         playFabId = result.PlayFabId;
-
-        GetTitleData();
-    }
-
-    void GetTitleData()
-    {
-        var getRequest = new GetTitleDataRequest
-        {
-            Keys = new List<string> { "AndroidPushSenderId" }
-        };
-        PlayFabClientAPI.GetTitleData(getRequest, OnGetTitleData, OnSharedFailure);
-    }
-    void OnGetTitleData(GetTitleDataResult result)
-    {
-        androidPushSenderId = result.Data["AndroidPushSenderId"];
-        PlayFabPluginEventHandler.Setup(androidPushSenderId);
     }
     #endregion PlayFab API Calls
 }

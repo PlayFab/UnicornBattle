@@ -1,5 +1,8 @@
+#define TESTING
+
 #if !DISABLE_PLAYFABCLIENT_API
 using System;
+using System.Collections.Generic;
 using PlayFab.ClientModels;
 using UnityEngine;
 
@@ -7,6 +10,8 @@ namespace PlayFab.Internal
 {
     public static class PlayFabDeviceUtil
     {
+        private const string GAME_OBJECT_NAME = "_PlayFabGO";
+
         private static GameObject _playFabAndroidPushGo;
 
         #region Make Attribution API call
@@ -28,27 +33,52 @@ namespace PlayFab.Internal
         #endregion Make Attribution API call
 
         #region Make Push Registration API call
-        private static void RegisterForPush_Android(string token)
+        private static void RegisterForPush_Android(string token, bool sendConfirmation, string confirmationMessage)
         {
             var request = new AndroidDevicePushNotificationRegistrationRequest
             {
-                SendPushNotificationConfirmation = true,
-                ConfirmationMessage = "Push Registered",
+                SendPushNotificationConfirmation = sendConfirmation,
+                ConfirmationMessage = confirmationMessage,
                 DeviceToken = token
             };
-            PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, OnAndroidPushRegister, UniPushMain.OnSharedFailure);
+            PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, OnAndroidPushRegister, OnApiFail, token);
         }
         private static void OnAndroidPushRegister(AndroidDevicePushNotificationRegistrationResult result)
         {
-            Debug.Log("Android Push Registered");
+            _playFabAndroidPushGo = GameObject.Find(GAME_OBJECT_NAME);
+            if (_playFabAndroidPushGo != null)
+                _playFabAndroidPushGo.BroadcastMessage("OnRegisterApiSuccess", result.CustomData);
+        }
+        private static void OnApiFail(PlayFabError error)
+        {
+            Debug.Log("Android Push Register failed: " + error.GenerateErrorReport());
         }
         #endregion Make Push Registration API call
 
-        public static void OnPlayFabLogin(bool needsAttribution)
+        public static void OnPlayFabLogin(LoginResult loginResult, RegisterPlayFabUserResult registerResult)
         {
+            var needsAttribution = false;
+            if (loginResult != null)
+                needsAttribution = loginResult.SettingsForUser.NeedsAttribution;
+            else if (registerResult != null)
+                needsAttribution = registerResult.SettingsForUser.NeedsAttribution;
+
+            List<PushNotificationRegistrationModel> pushNotificationRegistrations = null;
+            if (loginResult != null && loginResult.InfoResultPayload != null) // && res.InfoResultPayload.Profile != null) // TODO: FINISH THIS WHEN PROFILE IS READY
+            {
+                //pushNotificationRegistrations = res.InfoResultPayload.Profile.PushNotificationRegistrations;
+                pushNotificationRegistrations = new List<PushNotificationRegistrationModel>(); // TODO: This definitely isn't right
+            }
+
             if (needsAttribution)
                 SetDeviceAttribution();
-            ActivatePush();
+
+            var androidPushTokens = new HashSet<string>();
+            if (pushNotificationRegistrations != null)
+                foreach (var each in pushNotificationRegistrations)
+                    if (each.Platform != null && each.Platform.Value == PushNotificationPlatform.GoogleCloudMessaging)
+                        androidPushTokens.Add(each.NotificationEndpointARN);
+            RegisterForAndroidPush(androidPushTokens);
         }
 
         private static void SetDeviceAttribution()
@@ -61,13 +91,15 @@ namespace PlayFab.Internal
                 GetAdvertIdFromUnity();
         }
 
-        private static void ActivatePush()
+        private static void RegisterForAndroidPush(HashSet<string> androidPushTokens)
         {
 #if UNITY_ANDROID && (!UNITY_EDITOR || TESTING)
-            Debug.Log("Triggering AP OnPlayFabLogin");
-            _playFabAndroidPushGo = GameObject.Find("_PlayFabGO");
+            _playFabAndroidPushGo = GameObject.Find(GAME_OBJECT_NAME);
             if (_playFabAndroidPushGo != null)
-                _playFabAndroidPushGo.BroadcastMessage("OnPlayFabLogin", (Action<string>)RegisterForPush_Android);
+            {
+                _playFabAndroidPushGo.BroadcastMessage("OnPlayFabLogin", (Action<string, bool, string>)RegisterForPush_Android);
+                _playFabAndroidPushGo.BroadcastMessage("SetPushRegistrations", androidPushTokens);
+            }
 #endif // TODO: iOS
         }
 

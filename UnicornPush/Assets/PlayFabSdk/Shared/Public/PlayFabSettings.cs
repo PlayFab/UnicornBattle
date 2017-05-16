@@ -30,7 +30,7 @@ namespace PlayFab
         [Obsolete("This field will become private after Mar 1, 2017", false)]
         public static PlayFabSharedSettings PlayFabShared { get { if (_playFabShared == null) _playFabShared = GetSharedSettingsObjectPrivate(); return _playFabShared; } }
         public const string SdkVersion = "2.21.170508";
-        public const string BuildIdentifier = "jbuild_unitysdk_0";
+        public const string BuildIdentifier = "unitysdk_manual";
         public const string VersionString = "UnitySDK-2.21.170508";
         private const string DefaultPlayFabApiUrlPrivate = ".playfabapi.com";
         [Obsolete("This field will become private after Mar 1, 2017", false)]
@@ -40,7 +40,9 @@ namespace PlayFab
         {
             var settingsList = Resources.LoadAll<PlayFabSharedSettings>("PlayFabSharedSettings");
             if (settingsList.Length != 1)
-                throw new Exception("Either Missing PlayFabSharedSettings data file or multiple data files exist: " + settingsList.Length);
+            {
+                throw new Exception("Either Missing PlayFabSharedSettings data file or multiple data files exist.");
+            }
             return settingsList[0];
         }
         [Obsolete("This field will become private after Mar 1, 2017", false)]

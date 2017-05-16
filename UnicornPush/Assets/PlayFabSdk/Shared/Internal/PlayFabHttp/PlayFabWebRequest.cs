@@ -299,23 +299,16 @@ namespace PlayFab.Internal
                 reqContainer.ApiResult.CustomData = reqContainer.CustomData;
 
 #if !DISABLE_PLAYFABCLIENT_API
-                var needsAttribution = false;
                 var res = reqContainer.ApiResult as ClientModels.LoginResult;
                 var regRes = reqContainer.ApiResult as ClientModels.RegisterPlayFabUserResult;
                 if (res != null)
-                {
-                    needsAttribution = res.SettingsForUser.NeedsAttribution;
                     _authKey = res.SessionTicket;
-                }
                 else if (regRes != null)
-                {
-                    needsAttribution = regRes.SettingsForUser.NeedsAttribution;
                     _authKey = regRes.SessionTicket;
-                }
-
+ 
                 lock (ResultQueue)
                 {
-                    ResultQueue.Enqueue(() => { PlayFabDeviceUtil.OnPlayFabLogin(needsAttribution); });
+                    ResultQueue.Enqueue(() => { PlayFabDeviceUtil.OnPlayFabLogin(res, regRes); });
                 }
 #endif
                 lock (ResultQueue)

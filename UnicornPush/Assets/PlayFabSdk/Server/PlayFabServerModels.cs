@@ -3365,10 +3365,6 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string ReporteeId;
         /// <summary>
-        /// Title player was reported in, optional if report not for specific title.
-        /// </summary>
-        public string TitleId;
-        /// <summary>
         /// Optional additional comment by reporting player.
         /// </summary>
         public string Comment;

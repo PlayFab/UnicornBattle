@@ -69,21 +69,14 @@ namespace PlayFab.Internal
                         reqContainer.ApiResult.CustomData = reqContainer.CustomData;
 
 #if !DISABLE_PLAYFABCLIENT_API
-                        var needsAttribution = false;
                         var res = reqContainer.ApiResult as ClientModels.LoginResult;
                         var regRes = reqContainer.ApiResult as ClientModels.RegisterPlayFabUserResult;
                         if (res != null)
-                        {
-                            needsAttribution = res.SettingsForUser.NeedsAttribution;
                             AuthKey = res.SessionTicket;
-                        }
                         else if (regRes != null)
-                        {
-                            needsAttribution = regRes.SettingsForUser.NeedsAttribution;
                             AuthKey = regRes.SessionTicket;
-                        }
 
-                        PlayFabDeviceUtil.OnPlayFabLogin(needsAttribution);
+                        PlayFabDeviceUtil.OnPlayFabLogin(res, regRes);
 #endif
                         try
                         {

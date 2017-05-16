@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace PlayFab.Internal
 {
@@ -18,17 +20,42 @@ namespace PlayFab.Internal
             AndroidPluginInitialized,
             RegistrationReady,
             TokenReceived,
+            WaitingForManualTrigger,
+            PlayFabRegisterApiSuccess,
             RegisteredWithPlayFab,
             ReceivedMessage
         }
 
+        /// <summary>
+        /// Change this to true if you want debug level logging into Unity for PlayFab Android Push Notifications
+        /// </summary>
+        public static bool LogMessagesToUnity = true;
+        /// <summary>
+        /// Change this to true if you want to get a confirmation message after registering for push notifications
+        /// </summary>
+        public static bool SendConfirmationMessage = false;
+        /// <summary>
+        /// Change this to true if you want to get a confirmation message after registering for push notifications
+        /// </summary>
+        public static string ConfirmationMessage = "Push Notifications Registered!";
+        /// <summary>
+        /// Add a callback here to receive every push notification text when it arrives
+        /// </summary>
+        public static event Action<string> OnGcmMessage;
+        /// <summary>
+        /// Add a callback here to receive a status update about every state-change in the push notification registration setup
+        /// </summary>
+        public static event Action<PushSetupStatus> OnGcmSetupStep;
+        /// <summary>
+        /// Add a callback here to receive every debug level log message
+        /// </summary>
+        public static event Action<string> OnGcmLog;
+
         private const string GAME_OBJECT_NAME = "_PlayFabGO"; // This name is defined in the Android Java Plugin, and shouldn't be changed
 
-        public static bool LogMessagesToUnity = true;
-        public static event Action<string> OnGcmMessage;
-        public static event Action<PushSetupStatus> OnGcmSetupStep;
-
-        private static string _androidPushSenderId;
+        private static string _androidPushSenderId = null;
+        private static string _myPushToken = null;
+        private static HashSet<string> _androidPushTokens = null;
         private static PlayFabPluginEventHandler _singletonInstance;
         private static AndroidJavaClass _playFabGcmClass;
         private static AndroidJavaClass _playFabPushCacheClass;
@@ -37,7 +64,7 @@ namespace PlayFab.Internal
         private static AndroidJavaClass _notificationSender;
         private static AndroidJavaClass _clsUnity;
         private static AndroidJavaObject _objActivity;
-        private static Action<string> _registerForAndroidPushApi;
+        private static Action<string, bool, string> _registerForAndroidPushApi;
 
         /// <summary>
         /// Init should be called before PlayFab Login, if you do not yet have the androidPushSenderId
@@ -70,6 +97,31 @@ namespace PlayFab.Internal
                 LoadPlugin();
             else
                 _singletonInstance.GCMLog("PlayFab: Android Push Ready, Log into PlayFab to activate Push Notifications");
+        }
+
+        public static void TriggerManualRegistration()
+        {
+            var msgSb = new StringBuilder();
+            var notLoggedIn = _registerForAndroidPushApi == null || _androidPushTokens == null;
+            var noSender = string.IsNullOrEmpty(_androidPushSenderId);
+            var alreadyRegistered = _androidPushTokens != null && _androidPushTokens.Contains(_myPushToken);
+            if (notLoggedIn)
+                msgSb.Append("You must log in before calling TriggerManualRegistration()\n");
+            if (noSender)
+                msgSb.Append("You must call Setup(androidPushSenderId) before calling TriggerManualRegistration()\n");
+            if (alreadyRegistered)
+                msgSb.Append("Already registered, no need to call TriggerManualRegistration\n");
+
+            while (msgSb.Length > 0 && msgSb[msgSb.Length - 1] == '\n')
+                msgSb.Length -= 1;
+            if (notLoggedIn || noSender || alreadyRegistered)
+            {
+                _singletonInstance.GCMLog(msgSb.ToString());
+                return;
+            }
+
+            // Trigger manual registration
+            _registerForAndroidPushApi(_myPushToken, SendConfirmationMessage, ConfirmationMessage);
         }
 
         private static void LoadPlugin()
@@ -161,13 +213,27 @@ namespace PlayFab.Internal
         #endregion Direct Calls to Push Objects
 
         #region Internal Unity Monobehavior-Messaging Hooks
-        private void OnPlayFabLogin(Action<string> registerForAndroidPushApi)
+        private void OnPlayFabLogin(Action<string, bool, string> registerForAndroidPushApi)
         {
             _registerForAndroidPushApi = registerForAndroidPushApi; // Once the java push plugin has done its work, this is the API call which registers for push
             if (!string.IsNullOrEmpty(_androidPushSenderId))
                 LoadPlugin();
             else
                 GCMLog("PlayFab: Android Push Ready, call PlayFabPluginEventHandler.Setup() to activate Push Notifications");
+        }
+
+        private void SetPushRegistrations(HashSet<string> androidPushTokens) // androidPushTokens should not be null
+        {
+            _androidPushTokens = androidPushTokens;
+        }
+
+        private void OnRegisterApiSuccess(string token)
+        {
+            _myPushToken = token;
+            if (_androidPushTokens == null)
+                _androidPushTokens = new HashSet<string>();
+            _androidPushTokens.Add(_myPushToken);
+            PostStatusMessage(PushSetupStatus.PlayFabRegisterApiSuccess);
         }
 
         private void OnPushRegistrationApiSuccess()
@@ -187,11 +253,29 @@ namespace PlayFab.Internal
 
         private void GCMRegistered(string token)
         {
-            if (!string.IsNullOrEmpty(token))
-                _registerForAndroidPushApi(token);
-            else
-                GCMLog("PlayFab: Android Push setup failed, with token: " + token);
+            _myPushToken = token;
             PostStatusMessage(PushSetupStatus.TokenReceived);
+
+            // Determine setup failure
+            if (string.IsNullOrEmpty(_myPushToken))
+            {
+                GCMLog("PlayFab: Android Push setup failed, with empty token");
+                return;
+            }
+
+            // Determine if Login did not provide existing tokens
+            if (_androidPushTokens == null)
+            {
+                GCMLog("PlayFab: Push Registration couldn't be determined, If unregistered, manually trigger ASDF()");
+                PostStatusMessage(PushSetupStatus.WaitingForManualTrigger);
+                return;
+            }
+
+            // Search the tokens to determine if we're already registered
+            if (!_androidPushTokens.Contains(_myPushToken))
+                _registerForAndroidPushApi(_myPushToken, SendConfirmationMessage, ConfirmationMessage);
+            else
+                GCMLog("PlayFab: Android Push setup success, already registered");
         }
 
         private void GCMRegisterError(string message)
@@ -206,6 +290,8 @@ namespace PlayFab.Internal
         {
             if (LogMessagesToUnity)
                 Debug.Log("PlayFab GCM MESSAGE: " + message);
+            if (OnGcmLog != null)
+                OnGcmLog(message);
         }
 
         private void GCMMessageReceived(string message)
