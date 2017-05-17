@@ -6,12 +6,12 @@ using PlayFab.ClientModels;
 using PlayFab.Internal;
 using UnityEngine;
 
-public class PushTest_ConstSender_AutoLogin : MonoBehaviour
+public class PushTest_TitleDataSender_AutoLogin : MonoBehaviour
 {
     const string TITLE_ID = "A5F3";
-    const string androidPushSenderId = "494923569376";
 
     string playFabId = "";
+    string androidPushSenderId = "";
     [Multiline(50)]
     string pushStatus = "";
 
@@ -20,7 +20,7 @@ public class PushTest_ConstSender_AutoLogin : MonoBehaviour
         PlayFabSettings.TitleId = TITLE_ID;
         PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
         PlayFabPluginEventHandler.OnGcmLog += OnGcmLog;
-        PlayFabPluginEventHandler.Setup(androidPushSenderId);
+        PlayFabPluginEventHandler.Init();
         DoLogin();
     }
 
@@ -51,7 +51,7 @@ public class PushTest_ConstSender_AutoLogin : MonoBehaviour
     #endregion GUI
 
     #region PlayFab API Calls
-    public static void OnSharedFailure(PlayFabError error)
+    private static void OnSharedFailure(PlayFabError error)
     {
         Debug.LogError(error.GenerateErrorReport());
     }
@@ -68,6 +68,22 @@ public class PushTest_ConstSender_AutoLogin : MonoBehaviour
     void OnLoginSuccess(LoginResult result)
     {
         playFabId = result.PlayFabId;
+
+        GetTitleData();
+    }
+
+    void GetTitleData()
+    {
+        var getRequest = new GetTitleDataRequest
+        {
+            Keys = new List<string> { "AndroidPushSenderId" }
+        };
+        PlayFabClientAPI.GetTitleData(getRequest, OnGetTitleData, OnSharedFailure);
+    }
+    void OnGetTitleData(GetTitleDataResult result)
+    {
+        androidPushSenderId = result.Data["AndroidPushSenderId"];
+        PlayFabPluginEventHandler.Setup(androidPushSenderId);
     }
     #endregion PlayFab API Calls
 }

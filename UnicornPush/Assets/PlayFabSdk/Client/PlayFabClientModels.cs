@@ -2164,11 +2164,6 @@ namespace PlayFab.ClientModels
         /// Date and time of the purchase.
         /// </summary>
         public DateTime PurchaseDate;
-        /// <summary>
-        /// Array of items purchased.
-        /// </summary>
-        [Obsolete("Use '' instead", true)]
-        public List<ItemInstance> Items;
     }
 
     [Serializable]

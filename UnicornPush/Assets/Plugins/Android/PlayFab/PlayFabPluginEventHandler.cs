@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace PlayFab.Internal
 {
@@ -23,7 +22,8 @@ namespace PlayFab.Internal
             WaitingForManualTrigger,
             PlayFabRegisterApiSuccess,
             RegisteredWithPlayFab,
-            ReceivedMessage
+            ReceivedMessage,
+            Unloading
         }
 
         /// <summary>
@@ -53,9 +53,10 @@ namespace PlayFab.Internal
 
         private const string GAME_OBJECT_NAME = "_PlayFabGO"; // This name is defined in the Android Java Plugin, and shouldn't be changed
 
-        private static string _androidPushSenderId = null;
-        private static string _myPushToken = null;
-        private static HashSet<string> _androidPushTokens = null;
+        private static string _androidPushSenderId = null; // Set when a developer calls Setup()
+        private static HashSet<string> _androidPushTokens = null; // Existing push registrations - Retrieved at login if Profile information is requested properly
+        private static string _myPushToken = null; // Set internally once java plugin is activated and working
+        private static Action<string, bool, string> _registerForAndroidPushApi; // Set internally after any login
         private static PlayFabPluginEventHandler _singletonInstance;
         private static AndroidJavaClass _playFabGcmClass;
         private static AndroidJavaClass _playFabPushCacheClass;
@@ -64,7 +65,6 @@ namespace PlayFab.Internal
         private static AndroidJavaClass _notificationSender;
         private static AndroidJavaClass _clsUnity;
         private static AndroidJavaObject _objActivity;
-        private static Action<string, bool, string> _registerForAndroidPushApi;
 
         /// <summary>
         /// Init should be called before PlayFab Login, if you do not yet have the androidPushSenderId
@@ -91,7 +91,10 @@ namespace PlayFab.Internal
         {
             Init();
 
-            _androidPushSenderId = androidPushSenderId; // Save the sender id for after login
+            if (string.IsNullOrEmpty(_androidPushSenderId) || _androidPushSenderId == androidPushSenderId)
+                _androidPushSenderId = androidPushSenderId; // Save the sender id for after login
+            else
+                throw new Exception("PlayFab Push Plugin Error: Cannot change the senderId once set");
 
             if (_registerForAndroidPushApi != null && !string.IsNullOrEmpty(_androidPushSenderId))
                 LoadPlugin();
@@ -99,7 +102,7 @@ namespace PlayFab.Internal
                 _singletonInstance.GCMLog("PlayFab: Android Push Ready, Log into PlayFab to activate Push Notifications");
         }
 
-        public static void TriggerManualRegistration()
+        public static void TriggerManualRegistration(bool? sendMessageNow = null, string message = null)
         {
             var msgSb = new StringBuilder();
             var notLoggedIn = _registerForAndroidPushApi == null || _androidPushTokens == null;
@@ -121,20 +124,50 @@ namespace PlayFab.Internal
             }
 
             // Trigger manual registration
-            _registerForAndroidPushApi(_myPushToken, SendConfirmationMessage, ConfirmationMessage);
+            if (sendMessageNow == null)
+                sendMessageNow = SendConfirmationMessage;
+            if (message == null)
+                message = ConfirmationMessage;
+
+            _registerForAndroidPushApi(_myPushToken, sendMessageNow.Value, message);
+        }
+
+        public static void Unload()
+        {
+            // We can only accomplish a partial Unload right now.  The Java Plugin can't fully unload itself for now
+
+            _singletonInstance.PostStatusMessage(PushSetupStatus.Unloading);
+            // _androidPushSenderId = null; // Forget the senderId so we can set a new one // TODO: CANT RESET THE JAVA PLUGIN
+            _myPushToken = null; // Forget my token for this particular sender
+            _androidPushTokens = null; // Forget my other registered tokens
+            _registerForAndroidPushApi = null; // Lose my reference to the SDK callback
+
+            // Clear any client callbacks
+            OnGcmMessage = null;
+            OnGcmSetupStep = null;
+            OnGcmLog = null;
+
+            // StopPlugin(); // Shut down the Java Plugin
         }
 
         private static void LoadPlugin()
         {
             _playFabGcmClass = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabGoogleCloudMessaging");
             _playFabPushCacheClass = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabPushCache");
-            _androidPlugin = new AndroidJavaClass("com.playfab.unityplugin.PlayFabUnityAndroidPlugin");
             _playServicesUtils = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayServicesUtils");
             _notificationSender = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabNotificationSender");
             _clsUnity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             _objActivity = _clsUnity.GetStatic<AndroidJavaObject>("currentActivity");
+            if (_androidPlugin == null) // TODO: CANT RESET THE JAVA PLUGIN
+            {
+                _androidPlugin = new AndroidJavaClass("com.playfab.unityplugin.PlayFabUnityAndroidPlugin");
+                _androidPlugin.CallStatic("initGCM", _androidPushSenderId, Application.productName); // Start the PlayFab push plugin service
+            }
+            else
+            {
+                _singletonInstance.GCMRegistrationReady("true");
+            }
 
-            _androidPlugin.CallStatic("initGCM", _androidPushSenderId, Application.productName); // Start the PlayFab push plugin service
             _singletonInstance.PostStatusMessage(PushSetupStatus.AndroidPluginInitialized);
         }
 
@@ -173,7 +206,8 @@ namespace PlayFab.Internal
 
         public static void StopPlugin()
         {
-            _androidPlugin.CallStatic("stopPluginService");
+            if (_androidPlugin != null)
+                _androidPlugin.CallStatic("stopPluginService");
         }
 
         public static void UpdateRouting(bool routeToNotificationArea)

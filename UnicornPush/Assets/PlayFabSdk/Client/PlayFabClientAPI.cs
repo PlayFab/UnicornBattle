@@ -17,10 +17,18 @@ namespace PlayFab
         /// <summary>
         /// Check to See if the client is logged in.
         /// </summary>
-        /// <returns>boolean</returns>
         public static bool IsClientLoggedIn()
         {
             return PlayFabHttp.IsClientLoggedIn();
+        }
+
+        /// <summary>
+        /// Clear the Client SessionToken which allows this Client to call API calls requiring login.
+        /// A new/fresh login will be required after calling this.
+        /// </summary>
+        public static void ForgetClientCredentials()
+        {
+            PlayFabHttp.ForgetClientCredentials();
         }
 
         /// <summary>

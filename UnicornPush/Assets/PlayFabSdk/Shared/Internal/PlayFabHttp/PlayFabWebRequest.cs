@@ -305,7 +305,7 @@ namespace PlayFab.Internal
                     _authKey = res.SessionTicket;
                 else if (regRes != null)
                     _authKey = regRes.SessionTicket;
- 
+
                 lock (ResultQueue)
                 {
                     ResultQueue.Enqueue(() => { PlayFabDeviceUtil.OnPlayFabLogin(res, regRes); });
