@@ -2,48 +2,42 @@
 
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
-using System;
 using PlayFab.ClientModels;
 using PlayFab.Internal;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace PlayFab.UUnit
 {
-    /// <summary>
-    /// A real system would potentially run only the client or server API, and not both.
-    /// But, they still interact with eachother directly.
-    /// The tests can't be independent for Client/Server, as the sequence of calls isn't really independent for real-world scenarios.
-    /// The client logs in, which triggers a server, and then back and forth.
-    /// For the purpose of testing, they each have pieces of information they share with one another, and that sharing makes various calls possible.
-    /// </summary>
     public class AndroidPushTest_TitleDataSender_Manual : UUnitTestCase
     {
-        const string TITLE_ID = "A5F3";
-        string androidPushSenderId;
-
-        bool pushRegisterApiSuccessful;
+        const string TitleId = "A5F3";
+        string _androidPushSenderId = "";
+        bool _pushRegisterApiSuccessful;
 
         public override void ClassSetUp()
         {
-            PlayFabSettings.TitleId = TITLE_ID;
+            PlayFabSettings.TitleId = TitleId;
             PlayFabPluginEventHandler.Init();
             PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
-            pushRegisterApiSuccessful = false;
+            _pushRegisterApiSuccessful = false;
         }
 
         private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
         {
             if (status == PlayFabPluginEventHandler.PushSetupStatus.PlayFabRegisterApiSuccess)
             {
-                pushRegisterApiSuccessful = true;
-                PlayFabPluginEventHandler.ScheduleNotification("TitleData Sender Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+                _pushRegisterApiSuccessful = true;
+                PlayFabPluginEventHandler.ScheduleNotification("TS-M Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabPluginEventHandler.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabPluginEventHandler.CancelNotification("Canceled message - should not see");
             }
         }
 
         public override void Tick(UUnitTestContext testContext)
         {
-            if (pushRegisterApiSuccessful)
+            if (_pushRegisterApiSuccessful)
                 testContext.EndTest(UUnitFinishState.PASSED, null);
         }
 
@@ -76,7 +70,7 @@ namespace PlayFab.UUnit
             GetTitleData(result.CustomData as UUnitTestContext);
         }
 
-        void GetTitleData(UUnitTestContext testContext)
+        private void GetTitleData(UUnitTestContext testContext)
         {
             var getRequest = new GetTitleDataRequest
             {
@@ -84,11 +78,11 @@ namespace PlayFab.UUnit
             };
             PlayFabClientAPI.GetTitleData(getRequest, PlayFabUUnitUtils.ApiActionWrapper<GetTitleDataResult>(testContext, OnGetTitleData), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback), testContext);
         }
-        void OnGetTitleData(GetTitleDataResult result)
+        private void OnGetTitleData(GetTitleDataResult result)
         {
-            androidPushSenderId = result.Data["AndroidPushSenderId"];
-            Debug.Log("PlayFab: Sender id: " + androidPushSenderId);
-            PlayFabPluginEventHandler.Setup(androidPushSenderId);
+            _androidPushSenderId = result.Data["AndroidPushSenderId"];
+            Debug.Log("PlayFab: Sender id: " + _androidPushSenderId);
+            PlayFabPluginEventHandler.Setup(_androidPushSenderId);
             PlayFabPluginEventHandler.TriggerManualRegistration();
         }
     }

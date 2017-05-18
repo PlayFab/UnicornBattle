@@ -1,43 +1,42 @@
-#if !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
+#define TESTING
 
-using PlayFab;
+#if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
+
 using PlayFab.ClientModels;
 using PlayFab.Internal;
+using System;
 using UnityEngine;
 
 namespace PlayFab.UUnit
 {
-    /// <summary>
-    /// A real system would potentially run only the client or server API, and not both.
-    /// But, they still interact with eachother directly.
-    /// The tests can't be independent for Client/Server, as the sequence of calls isn't really independent for real-world scenarios.
-    /// The client logs in, which triggers a server, and then back and forth.
-    /// For the purpose of testing, they each have pieces of information they share with one another, and that sharing makes various calls possible.
-    /// </summary>
-    public class AndroidPushTests_ConstSender_AutoLogin : UUnitTestCase
+    public class PushTest_ConstSender_AutoLogin : UUnitTestCase
     {
-        const string TITLE_ID = "A5F3";
-        const string androidPushSenderId = "494923569376";
-
-        bool pushRegisterApiSuccessful;
+        const string TitleId = "A5F3";
+        const string AndroidPushSenderId = "494923569376";
+        bool _pushRegisterApiSuccessful;
 
         public override void ClassSetUp()
         {
-            PlayFabSettings.TitleId = TITLE_ID;
-            PlayFabPluginEventHandler.Setup(androidPushSenderId);
+            PlayFabSettings.TitleId = TitleId;
+            PlayFabPluginEventHandler.Setup(AndroidPushSenderId);
             PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
-            pushRegisterApiSuccessful = false;
+            _pushRegisterApiSuccessful = false;
         }
 
         private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
         {
             if (status == PlayFabPluginEventHandler.PushSetupStatus.PlayFabRegisterApiSuccess)
-                pushRegisterApiSuccessful = true;
+            {
+                _pushRegisterApiSuccessful = true;
+                PlayFabPluginEventHandler.ScheduleNotification("CS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabPluginEventHandler.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabPluginEventHandler.CancelNotification("Canceled message - should not see");
+            }
         }
 
         public override void Tick(UUnitTestContext testContext)
         {
-            if (pushRegisterApiSuccessful)
+            if (_pushRegisterApiSuccessful)
                 testContext.EndTest(UUnitFinishState.PASSED, null);
         }
 
@@ -54,7 +53,7 @@ namespace PlayFab.UUnit
         }
 
         // [UUnitTest] // This test won't pass until the profile can be returned at login
-        public void RunTest(UUnitTestContext testContext)
+        void Push_ConstSender_AutoLogin(UUnitTestContext testContext)
         {
             var loginRequest = new LoginWithCustomIDRequest
             {
@@ -69,5 +68,4 @@ namespace PlayFab.UUnit
         }
     }
 }
-
 #endif

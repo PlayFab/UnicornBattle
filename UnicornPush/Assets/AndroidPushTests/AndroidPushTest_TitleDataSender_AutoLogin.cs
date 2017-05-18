@@ -1,90 +1,89 @@
-#if !DISABLE_PLAYFABCLIENT_API
+#define TESTING
 
-using System.Collections.Generic;
-using PlayFab;
+#if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
+
 using PlayFab.ClientModels;
 using PlayFab.Internal;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class PushTest_TitleDataSender_AutoLogin : MonoBehaviour
+namespace PlayFab.UUnit
 {
-    const string TITLE_ID = "A5F3";
-
-    string playFabId = "";
-    string androidPushSenderId = "";
-    [Multiline(50)]
-    string pushStatus = "";
-
-    private void Start()
+    public class PushTest_TitleDataSender_AutoLogin : UUnitTestCase
     {
-        PlayFabSettings.TitleId = TITLE_ID;
-        PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
-        PlayFabPluginEventHandler.OnGcmLog += OnGcmLog;
-        PlayFabPluginEventHandler.Init();
-        DoLogin();
-    }
+        const string TitleId = "A5F3";
+        string _androidPushSenderId = "";
+        bool _pushRegisterApiSuccessful;
 
-    #region GUI
-    const int SIZE_X = 150;
-    const int SIZE_Y = 25;
-    Rect GridRect(int x, int y, int sizeX, int sizeY)
-    {
-        return new Rect(x * SIZE_X, y * SIZE_Y, SIZE_X * sizeX, SIZE_Y * sizeY);
-    }
-
-    void OnGUI()
-    {
-        GUI.Label(GridRect(0, 0, 1, 1), "playFabId:"); GUI.TextField(GridRect(1, 0, 1, 1), playFabId);
-        GUI.Label(GridRect(0, 1, 1, 1), "androidPushSenderId:"); GUI.TextField(GridRect(1, 1, 1, 1), androidPushSenderId);
-        GUI.Label(GridRect(0, 2, 1, 1), "pushStatus:"); GUI.TextArea(GridRect(1, 2, 3, 20), pushStatus);
-    }
-
-    private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
-    {
-        pushStatus += "STATUS:" + status.ToString() + "\n";
-    }
-
-    private void OnGcmLog(string msg)
-    {
-        pushStatus += "MSG:" + msg + "\n";
-    }
-    #endregion GUI
-
-    #region PlayFab API Calls
-    private static void OnSharedFailure(PlayFabError error)
-    {
-        Debug.LogError(error.GenerateErrorReport());
-    }
-
-    void DoLogin()
-    {
-        var loginRequest = new LoginWithCustomIDRequest
+        public override void ClassSetUp()
         {
-            CustomId = SystemInfo.deviceUniqueIdentifier,
-            CreateAccount = true,
-        };
-        PlayFabClientAPI.LoginWithCustomID(loginRequest, OnLoginSuccess, OnSharedFailure);
-    }
-    void OnLoginSuccess(LoginResult result)
-    {
-        playFabId = result.PlayFabId;
+            PlayFabSettings.TitleId = TitleId;
+            PlayFabPluginEventHandler.Init();
+            PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
+            _pushRegisterApiSuccessful = false;
+        }
 
-        GetTitleData();
-    }
-
-    void GetTitleData()
-    {
-        var getRequest = new GetTitleDataRequest
+        private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
         {
-            Keys = new List<string> { "AndroidPushSenderId" }
-        };
-        PlayFabClientAPI.GetTitleData(getRequest, OnGetTitleData, OnSharedFailure);
+            if (status == PlayFabPluginEventHandler.PushSetupStatus.PlayFabRegisterApiSuccess)
+            {
+                _pushRegisterApiSuccessful = true;
+                PlayFabPluginEventHandler.ScheduleNotification("TS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabPluginEventHandler.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabPluginEventHandler.CancelNotification("Canceled message - should not see");
+            }
+        }
+
+        public override void Tick(UUnitTestContext testContext)
+        {
+            if (_pushRegisterApiSuccessful)
+                testContext.EndTest(UUnitFinishState.PASSED, null);
+        }
+
+        public override void ClassTearDown()
+        {
+            PlayFabPluginEventHandler.Unload();
+            PlayFabClientAPI.ForgetClientCredentials();
+        }
+
+        private void SharedErrorCallback(PlayFabError error)
+        {
+            // This error was not expected.  Report it and fail.
+            ((UUnitTestContext)error.CustomData).Fail(error.GenerateErrorReport());
+        }
+
+        // [UUnitTest] // This test won't pass until the profile can be returned at login
+        public void Push_TitleDataSender_AutoLogin(UUnitTestContext testContext)
+        {
+            var loginRequest = new LoginWithCustomIDRequest
+            {
+                CustomId = SystemInfo.deviceUniqueIdentifier,
+                CreateAccount = true,
+                // TODO: REQUIRED - ASK FOR PLAYER PROFILE
+            };
+            PlayFabClientAPI.LoginWithCustomID(loginRequest, PlayFabUUnitUtils.ApiActionWrapper<LoginResult>(testContext, OnLoginSuccess), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback), testContext);
+        }
+        private void OnLoginSuccess(LoginResult result)
+        {
+            Debug.Log("PlayFab: AndroidTest Logged in, getting Title data: " + PlayFabSettings.TitleId + " " + result.SessionTicket);
+            GetTitleData(result.CustomData as UUnitTestContext);
+        }
+
+        private void GetTitleData(UUnitTestContext testContext)
+        {
+            var getRequest = new GetTitleDataRequest
+            {
+                Keys = new List<string> { "AndroidPushSenderId" }
+            };
+            PlayFabClientAPI.GetTitleData(getRequest, PlayFabUUnitUtils.ApiActionWrapper<GetTitleDataResult>(testContext, OnGetTitleData), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback), testContext);
+        }
+        private void OnGetTitleData(GetTitleDataResult result)
+        {
+            _androidPushSenderId = result.Data["AndroidPushSenderId"];
+            Debug.Log("PlayFab: Sender id: " + _androidPushSenderId);
+            PlayFabPluginEventHandler.Setup(_androidPushSenderId);
+        }
     }
-    void OnGetTitleData(GetTitleDataResult result)
-    {
-        androidPushSenderId = result.Data["AndroidPushSenderId"];
-        PlayFabPluginEventHandler.Setup(androidPushSenderId);
-    }
-    #endregion PlayFab API Calls
 }
 #endif
