@@ -1,3 +1,7 @@
+#define TESTING
+
+#if UNITY_ANDROID || TESTING
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +17,7 @@ namespace PlayFab.Internal
     /// </summary>
     public class PlayFabPluginEventHandler : MonoBehaviour
     {
+        #region Subtypes
         public enum PushSetupStatus
         {
             GameObjectInitialized,
@@ -25,6 +30,27 @@ namespace PlayFab.Internal
             ReceivedMessage,
             Unloading
         }
+
+        [Serializable]
+        public class PlayFabNotificationPackage
+        { // c# wrapper that matches our native com.playfab.unityplugin.GCM.PlayFabNotificationPackage
+            public DateTime ScheduleDate;
+            public ScheduleTypes ScheduleType;
+            public string Sound;                // do not set this to use the default device sound; otherwise the sound you provide needs to exist in Android/res/raw/_____.mp3, .wav, .ogg
+            public string Title;                // title of this message
+            public string Icon;                 // to use the default app icon use app_icon, otherwise send the name of the custom image. Image must be in Android/res/drawable/_____.png, .jpg
+            public string Message;              // the actual message to transmit (this is what will be displayed in the notification area)
+            public string CustomData;           // arbitrary key value pairs for game specific usage
+            public int Id;
+            public bool Delivered;
+        }
+
+        public enum ScheduleTypes
+        {
+            None,
+            ScheduledDate
+        }
+        #endregion Subtypes
 
         /// <summary>
         /// Change this to true if you want debug level logging into Unity for PlayFab Android Push Notifications
@@ -137,7 +163,7 @@ namespace PlayFab.Internal
             // We can only accomplish a partial Unload right now.  The Java Plugin can't fully unload itself for now
 
             _singletonInstance.PostStatusMessage(PushSetupStatus.Unloading);
-            // _androidPushSenderId = null; // Forget the senderId so we can set a new one // TODO: CANT RESET THE JAVA PLUGIN
+            _androidPushSenderId = null; // Forget the senderId so we can set a new one
             _myPushToken = null; // Forget my token for this particular sender
             _androidPushTokens = null; // Forget my other registered tokens
             _registerForAndroidPushApi = null; // Lose my reference to the SDK callback
@@ -147,7 +173,7 @@ namespace PlayFab.Internal
             OnGcmSetupStep = null;
             OnGcmLog = null;
 
-            // StopPlugin(); // Shut down the Java Plugin
+            StopPlugin(); // Shut down the Java Plugin
         }
 
         private static void LoadPlugin()
@@ -158,20 +184,16 @@ namespace PlayFab.Internal
             _notificationSender = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabNotificationSender");
             _clsUnity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             _objActivity = _clsUnity.GetStatic<AndroidJavaObject>("currentActivity");
-            if (_androidPlugin == null) // TODO: CANT RESET THE JAVA PLUGIN
-            {
-                _androidPlugin = new AndroidJavaClass("com.playfab.unityplugin.PlayFabUnityAndroidPlugin");
-                _androidPlugin.CallStatic("initGCM", _androidPushSenderId, Application.productName); // Start the PlayFab push plugin service
-            }
-            else
-            {
-                _singletonInstance.GCMRegistrationReady("true");
-            }
+            _androidPlugin = new AndroidJavaClass("com.playfab.unityplugin.PlayFabUnityAndroidPlugin");
+            _androidPlugin.CallStatic("initGCM", _androidPushSenderId, Application.productName); // Start the PlayFab push plugin service
 
             _singletonInstance.PostStatusMessage(PushSetupStatus.AndroidPluginInitialized);
         }
 
         #region Push Scheduling Functions
+        /// <summary>
+        /// Set up a push notification to display on this device at the given LOCAL time
+        /// </summary>
         public static void ScheduleNotification(string notification, DateTime date)
         {
             var dateString = date.ToString("MM-dd-yyyy HH:mm:ss");
@@ -343,23 +365,4 @@ namespace PlayFab.Internal
         #endregion Internal Unity Monobehavior-Event Hooks
     }
 }
-
-[Serializable]
-public class PlayFabNotificationPackage
-{ // c# wrapper that matches our native com.playfab.unityplugin.GCM.PlayFabNotificationPackage
-    public DateTime ScheduleDate;
-    public ScheduleTypes ScheduleType;
-    public string Sound;                // do not set this to use the default device sound; otherwise the sound you provide needs to exist in Android/res/raw/_____.mp3, .wav, .ogg
-    public string Title;                // title of this message
-    public string Icon;                 // to use the default app icon use app_icon, otherwise send the name of the custom image. Image must be in Android/res/drawable/_____.png, .jpg
-    public string Message;              // the actual message to transmit (this is what will be displayed in the notification area)
-    public string CustomData;           // arbitrary key value pairs for game specific usage
-    public int Id;
-    public bool Delivered;
-}
-
-public enum ScheduleTypes
-{
-    None,
-    ScheduledDate
-}
+#endif

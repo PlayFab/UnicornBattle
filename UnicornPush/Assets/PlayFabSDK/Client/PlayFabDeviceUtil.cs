@@ -91,14 +91,12 @@ namespace PlayFab.Internal
 
         private static void RegisterForAndroidPush(HashSet<string> androidPushTokens)
         {
-#if UNITY_ANDROID && (!UNITY_EDITOR || TESTING)
             _playFabAndroidPushGo = GameObject.Find(GAME_OBJECT_NAME);
             if (_playFabAndroidPushGo != null)
             {
                 _playFabAndroidPushGo.BroadcastMessage("OnPlayFabLogin", (Action<string, bool, string>)RegisterForPush_Android);
                 _playFabAndroidPushGo.BroadcastMessage("SetPushRegistrations", androidPushTokens);
             }
-#endif // TODO: iOS
         }
 
         private static void GetAdvertIdFromUnity()

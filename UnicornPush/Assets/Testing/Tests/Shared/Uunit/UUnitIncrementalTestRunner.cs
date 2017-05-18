@@ -22,7 +22,7 @@ namespace PlayFab.UUnit
 
         public void Start()
         {
-            testTitleData = TestTitleDataLoader.LoadTestTitleData(testTitleDataAsset.text);
+            testTitleData = TestTitleDataLoader.LoadTestTitleData(testTitleDataAsset == null ? null : testTitleDataAsset.text);
             suite = new UUnitTestSuite();
             suite.FindAndAddAllTestCases(typeof(UUnitTestCase), filter);
 

@@ -1,5 +1,8 @@
+#define TESTING
+
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
+using System;
 using PlayFab.ClientModels;
 using PlayFab.Internal;
 using UnityEngine;
@@ -31,7 +34,10 @@ namespace PlayFab.UUnit
         private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
         {
             if (status == PlayFabPluginEventHandler.PushSetupStatus.PlayFabRegisterApiSuccess)
+            {
                 pushRegisterApiSuccessful = true;
+                PlayFabPluginEventHandler.ScheduleNotification("Const Sender Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+            }
         }
 
         public override void Tick(UUnitTestContext testContext)
