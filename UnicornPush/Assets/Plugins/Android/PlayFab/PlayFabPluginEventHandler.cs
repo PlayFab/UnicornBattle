@@ -15,7 +15,7 @@ namespace PlayFab.Internal
     /// Use Init before login, if you store androidPushSenderId in title data, and you need to log in before you can provide androidPushSenderId
     /// Call Setup after login with androidPushSenderId
     /// </summary>
-    public class PlayFabPluginEventHandler : MonoBehaviour
+    public class PlayFabAndroidPushPlugin : MonoBehaviour
     {
         #region Subtypes
         public enum PushSetupStatus
@@ -83,7 +83,7 @@ namespace PlayFab.Internal
         private static HashSet<string> _androidPushTokens = null; // Existing push registrations - Retrieved at login if Profile information is requested properly
         private static string _myPushToken = null; // Set internally once java plugin is activated and working
         private static Action<string, bool, string> _registerForAndroidPushApi; // Set internally after any login
-        private static PlayFabPluginEventHandler _singletonInstance;
+        private static PlayFabAndroidPushPlugin _singletonInstance;
         private static AndroidJavaClass _playFabGcmClass;
         private static AndroidJavaClass _playFabPushCacheClass;
         private static AndroidJavaClass _androidPlugin;
@@ -106,7 +106,7 @@ namespace PlayFab.Internal
                 playfabGo = new GameObject(GAME_OBJECT_NAME);
                 DontDestroyOnLoad(playfabGo);
             }
-            _singletonInstance = playfabGo.GetComponent<PlayFabPluginEventHandler>() ?? playfabGo.AddComponent<PlayFabPluginEventHandler>();
+            _singletonInstance = playfabGo.GetComponent<PlayFabAndroidPushPlugin>() ?? playfabGo.AddComponent<PlayFabAndroidPushPlugin>();
             _singletonInstance.PostStatusMessage(PushSetupStatus.GameObjectInitialized);
         }
 
@@ -232,9 +232,16 @@ namespace PlayFab.Internal
                 _androidPlugin.CallStatic("stopPluginService");
         }
 
-        public static void UpdateRouting(bool routeToNotificationArea)
+        /// <summary>
+        /// By default: 
+        ///   Every message be delivered to the OnGcmMessage callback if the app is running and in focus
+        ///   Every message will also display in the device notification bar
+        /// It is possible to hide the notification from the device, if it is properly delivered to OnGcmMessage, by calling
+        ///   AlwaysShowOnNotificationBar(false)
+        /// </summary>
+        public static void AlwaysShowOnNotificationBar(bool alwaysShow = false)
         {
-            _androidPlugin.CallStatic("updateRouting", routeToNotificationArea);
+            _androidPlugin.CallStatic("alwaysShowOnNotificationBar", alwaysShow);
         }
 
         public static bool IsPlayServicesAvailable()

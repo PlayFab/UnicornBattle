@@ -18,19 +18,19 @@ namespace PlayFab.UUnit
         public override void ClassSetUp()
         {
             PlayFabSettings.TitleId = TitleId;
-            PlayFabPluginEventHandler.Setup(AndroidPushSenderId);
-            PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
+            PlayFabAndroidPushPlugin.Setup(AndroidPushSenderId);
+            PlayFabAndroidPushPlugin.OnGcmSetupStep += OnGcmSetupStep;
             _pushRegisterApiSuccessful = false;
         }
 
-        private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
+        private void OnGcmSetupStep(PlayFabAndroidPushPlugin.PushSetupStatus status)
         {
-            if (status == PlayFabPluginEventHandler.PushSetupStatus.PlayFabRegisterApiSuccess)
+            if (status == PlayFabAndroidPushPlugin.PushSetupStatus.PlayFabRegisterApiSuccess)
             {
                 _pushRegisterApiSuccessful = true;
-                PlayFabPluginEventHandler.ScheduleNotification("CS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabPluginEventHandler.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabPluginEventHandler.CancelNotification("Canceled message - should not see");
+                PlayFabAndroidPushPlugin.ScheduleNotification("CS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabAndroidPushPlugin.CancelNotification("Canceled message - should not see");
             }
         }
 
@@ -42,7 +42,7 @@ namespace PlayFab.UUnit
 
         public override void ClassTearDown()
         {
-            PlayFabPluginEventHandler.Unload();
+            PlayFabAndroidPushPlugin.Unload();
             PlayFabClientAPI.ForgetClientCredentials();
         }
 

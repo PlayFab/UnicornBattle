@@ -19,19 +19,19 @@ namespace PlayFab.UUnit
         public override void ClassSetUp()
         {
             PlayFabSettings.TitleId = TitleId;
-            PlayFabPluginEventHandler.Init();
-            PlayFabPluginEventHandler.OnGcmSetupStep += OnGcmSetupStep;
+            PlayFabAndroidPushPlugin.Init();
+            PlayFabAndroidPushPlugin.OnGcmSetupStep += OnGcmSetupStep;
             _pushRegisterApiSuccessful = false;
         }
 
-        private void OnGcmSetupStep(PlayFabPluginEventHandler.PushSetupStatus status)
+        private void OnGcmSetupStep(PlayFabAndroidPushPlugin.PushSetupStatus status)
         {
-            if (status == PlayFabPluginEventHandler.PushSetupStatus.PlayFabRegisterApiSuccess)
+            if (status == PlayFabAndroidPushPlugin.PushSetupStatus.PlayFabRegisterApiSuccess)
             {
                 _pushRegisterApiSuccessful = true;
-                PlayFabPluginEventHandler.ScheduleNotification("TS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabPluginEventHandler.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabPluginEventHandler.CancelNotification("Canceled message - should not see");
+                PlayFabAndroidPushPlugin.ScheduleNotification("TS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
+                PlayFabAndroidPushPlugin.CancelNotification("Canceled message - should not see");
             }
         }
 
@@ -43,7 +43,7 @@ namespace PlayFab.UUnit
 
         public override void ClassTearDown()
         {
-            PlayFabPluginEventHandler.Unload();
+            PlayFabAndroidPushPlugin.Unload();
             PlayFabClientAPI.ForgetClientCredentials();
         }
 
@@ -82,7 +82,7 @@ namespace PlayFab.UUnit
         {
             _androidPushSenderId = result.Data["AndroidPushSenderId"];
             Debug.Log("PlayFab: Sender id: " + _androidPushSenderId);
-            PlayFabPluginEventHandler.Setup(_androidPushSenderId);
+            PlayFabAndroidPushPlugin.Setup(_androidPushSenderId);
         }
     }
 }
