@@ -4,10 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using UnityEngine;
 
-namespace PlayFab.Internal
+namespace PlayFab
 {
     /// <summary>
     /// Call Setup before login, if androidPushSenderId is available before login
@@ -34,21 +35,87 @@ namespace PlayFab.Internal
         [Serializable]
         public class PlayFabNotificationPackage
         { // c# wrapper that matches our native com.playfab.unityplugin.GCM.PlayFabNotificationPackage
-            public DateTime ScheduleDate;
+            public const string DATE_LOCAL_FORMAT = "yyyy-MM-dd HH:mm:ss";
+            public const string DATE_UTC_FORMAT = "yyyy-MM-ddTHH:mm:ssZ";
+
+            public DateTime? ScheduleDate;
             public ScheduleTypes ScheduleType;
             public string Sound;                // do not set this to use the default device sound; otherwise the sound you provide needs to exist in Android/res/raw/_____.mp3, .wav, .ogg
             public string Title;                // title of this message
             public string Icon;                 // to use the default app icon use app_icon, otherwise send the name of the custom image. Image must be in Android/res/drawable/_____.png, .jpg
             public string Message;              // the actual message to transmit (this is what will be displayed in the notification area)
             public string CustomData;           // arbitrary key value pairs for game specific usage
-            public int Id;
+            public int Id = 0;
             public bool Delivered;
+
+            public PlayFabNotificationPackage() { }
+
+            public PlayFabNotificationPackage(string message, string title = null, int id = 0)
+            {
+                Message = message;
+                Title = title;
+                Id = id;
+            }
+
+            public void SetScheduleTime(DateTime? scheduleDate, ScheduleTypes scheduleType)
+            {
+                ScheduleDate = scheduleDate;
+                ScheduleType = scheduleType;
+            }
+
+            public static PlayFabNotificationPackage FromJava(AndroidJavaObject package)
+            {
+                var output = new PlayFabNotificationPackage
+                {
+                    Id = package.Get<int>("Id"),
+                    ScheduleType = (ScheduleTypes)Enum.Parse(typeof(ScheduleTypes), package.Get<string>("ScheduleType")),
+                    Title = package.Get<string>("Title"),
+                    Message = package.Get<string>("Message"),
+                    Icon = package.Get<string>("Icon"),
+                    Sound = package.Get<string>("Sound"),
+                    CustomData = package.Get<string>("CustomData"),
+                    Delivered = package.Get<bool>("Delivered"),
+                    ScheduleDate = null // Assigned below
+                };
+
+                if (output.ScheduleType != ScheduleTypes.None)
+                {
+                    DateTime temp;
+                    if (DateTime.TryParseExact(package.Call<string>("GetScheduleDate"), new [] { DATE_LOCAL_FORMAT, DATE_UTC_FORMAT }, CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind, out temp))
+                        output.ScheduleDate = temp;
+                }
+
+                return output;
+            }
+
+            public void ToJava(ref AndroidJavaObject package)
+            {
+                package.Set("Id", Id);
+                package.Set("ScheduleType", ScheduleType.ToString());
+                package.Set("Title", Title);
+                package.Set("Message", Message);
+                package.Set("Icon", Icon);
+                package.Set("Sound", Sound);
+                package.Set("CustomData", CustomData);
+                package.Set("Delivered", Delivered);
+
+                if (ScheduleDate == null)
+                    package.Call("SetScheduleDate", null);
+                else
+                {
+                    var dateString = ScheduleDate.Value.ToString(DATE_LOCAL_FORMAT);
+                    if (ScheduleType == ScheduleTypes.ScheduledUtc)
+                        dateString = dateString + "Z";
+                    package.Call("SetScheduleDate", dateString);
+                }
+            }
         }
 
         public enum ScheduleTypes
         {
             None,
-            ScheduledDate
+            ScheduledUtc, // Corresponds to DATE_UTC_FORMAT above
+            ScheduledLocal // Corresponds to DATE_LOCAL_FORMAT above
         }
         #endregion Subtypes
 
@@ -77,6 +144,7 @@ namespace PlayFab.Internal
         /// </summary>
         public static event Action<string> OnGcmLog;
 
+        #region Private Stuff
         private const string GAME_OBJECT_NAME = "_PlayFabGO"; // This name is defined in the Android Java Plugin, and shouldn't be changed
 
         private static string _androidPushSenderId = null; // Set when a developer calls Setup()
@@ -85,13 +153,28 @@ namespace PlayFab.Internal
         private static Action<string, bool, string> _registerForAndroidPushApi; // Set internally after any login
         private static PlayFabAndroidPushPlugin _singletonInstance;
         private static AndroidJavaClass _playFabGcmClass;
-        private static AndroidJavaClass _playFabPushCacheClass;
         private static AndroidJavaClass _androidPlugin;
         private static AndroidJavaClass _playServicesUtils;
         private static AndroidJavaClass _notificationSender;
         private static AndroidJavaClass _clsUnity;
         private static AndroidJavaObject _objActivity;
 
+
+        private static void LoadPlugin()
+        {
+            _playFabGcmClass = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabGoogleCloudMessaging");
+            _playServicesUtils = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayServicesUtils");
+            _notificationSender = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabNotificationSender");
+            _clsUnity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            _objActivity = _clsUnity.GetStatic<AndroidJavaObject>("currentActivity");
+            _androidPlugin = new AndroidJavaClass("com.playfab.unityplugin.PlayFabUnityAndroidPlugin");
+            _androidPlugin.CallStatic("initGCM", _androidPushSenderId, Application.productName); // Start the PlayFab push plugin service
+
+            _singletonInstance.PostStatusMessage(PushSetupStatus.AndroidPluginInitialized);
+        }
+        #endregion Private Stuff
+
+        #region PlayFabAndroidPushPlugin Setup Functions
         /// <summary>
         /// Init should be called before PlayFab Login, if you do not yet have the androidPushSenderId
         /// </summary>
@@ -157,79 +240,82 @@ namespace PlayFab.Internal
 
             _registerForAndroidPushApi(_myPushToken, sendMessageNow.Value, message);
         }
-
-        public static void Unload()
-        {
-            // We can only accomplish a partial Unload right now.  The Java Plugin can't fully unload itself for now
-
-            _singletonInstance.PostStatusMessage(PushSetupStatus.Unloading);
-            _androidPushSenderId = null; // Forget the senderId so we can set a new one
-            _myPushToken = null; // Forget my token for this particular sender
-            _androidPushTokens = null; // Forget my other registered tokens
-            _registerForAndroidPushApi = null; // Lose my reference to the SDK callback
-
-            // Clear any client callbacks
-            OnGcmMessage = null;
-            OnGcmSetupStep = null;
-            OnGcmLog = null;
-
-            StopPlugin(); // Shut down the Java Plugin
-        }
-
-        private static void LoadPlugin()
-        {
-            _playFabGcmClass = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabGoogleCloudMessaging");
-            _playFabPushCacheClass = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabPushCache");
-            _playServicesUtils = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayServicesUtils");
-            _notificationSender = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabNotificationSender");
-            _clsUnity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            _objActivity = _clsUnity.GetStatic<AndroidJavaObject>("currentActivity");
-            _androidPlugin = new AndroidJavaClass("com.playfab.unityplugin.PlayFabUnityAndroidPlugin");
-            _androidPlugin.CallStatic("initGCM", _androidPushSenderId, Application.productName); // Start the PlayFab push plugin service
-
-            _singletonInstance.PostStatusMessage(PushSetupStatus.AndroidPluginInitialized);
-        }
+        #endregion PlayFabAndroidPushPlugin Setup Functions
 
         #region Push Scheduling Functions
         /// <summary>
-        /// Set up a push notification to display on this device at the given LOCAL time
+        /// Set up a push notification to display on this device
         /// </summary>
-        public static void ScheduleNotification(string notification, DateTime date)
+        public static void ScheduleNotification(string message, DateTime date, ScheduleTypes scheduleType = ScheduleTypes.ScheduledLocal, int id = 0)
         {
-            var dateString = date.ToString("MM-dd-yyyy HH:mm:ss");
-            var package = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, notification);
+            var dateString = date.ToString(PlayFabNotificationPackage.DATE_LOCAL_FORMAT);
+            if (scheduleType == ScheduleTypes.ScheduledUtc)
+                dateString = dateString + "Z";
+            var package = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, message, id);
             package.Call("SetScheduleDate", dateString);
             _notificationSender.CallStatic("Send", _objActivity, package);
         }
 
-        public static void SendNotificationNow(string notification)
+        /// <summary>
+        /// Set up a push notification to display on this device
+        /// </summary>
+        public static void ScheduleNotification(PlayFabNotificationPackage package)
         {
-            var package = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, notification);
-            _notificationSender.CallStatic("Send", _objActivity, package);
+            var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, "", 0);
+            package.ToJava(ref javaPackage);
+            _notificationSender.CallStatic("Send", _objActivity, javaPackage);
         }
 
-        public static void CancelNotification(string notification)
+        public static void SendNotificationNow(string message)
         {
-            var package = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, notification);
-            _notificationSender.CallStatic("CancelScheduledNotification", _objActivity, package);
+            var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, message, 0);
+            _notificationSender.CallStatic("Send", _objActivity, javaPackage);
+        }
+
+        public static void SendNotificationNow(PlayFabNotificationPackage package)
+        {
+            var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, package.Message, package.Id);
+            package.ToJava(ref javaPackage);
+            _notificationSender.CallStatic("Send", _objActivity, javaPackage);
+        }
+
+        public static void CancelNotification(string message)
+        {
+            var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, message, 0);
+            _notificationSender.CallStatic("CancelScheduledNotification", _objActivity, javaPackage);
+        }
+
+        public static void CancelNotification(int id)
+        {
+            var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, "", id);
+            _notificationSender.CallStatic("CancelScheduledNotification", _objActivity, javaPackage);
         }
         #endregion Push Scheduling Functions
 
         #region Direct Calls to Push Objects
-        public static void ClearPushCache()
-        {
-            _playFabPushCacheClass.CallStatic("clearPushCache");
-        }
-
-        public static string GetPushCacheData()
-        {
-            return _playFabPushCacheClass.CallStatic<string>("getPushCacheData");
-        }
-
         public static void StopPlugin()
         {
+            // Shut down the Java Plugin
             if (_androidPlugin != null)
                 _androidPlugin.CallStatic("stopPluginService");
+
+            _singletonInstance.PostStatusMessage(PushSetupStatus.Unloading);
+            // Clear my cached variables
+            _androidPushSenderId = null; // Forget the senderId so we can set a new one
+            _myPushToken = null; // Forget my token for this particular sender
+            _androidPushTokens = null; // Forget my other registered tokens
+            _registerForAndroidPushApi = null; // Lose my reference to the SDK callback
+            // Clear any client callbacks
+            OnGcmMessage = null;
+            OnGcmSetupStep = null;
+            OnGcmLog = null;
+            // Clear the Java objects
+            _playFabGcmClass = null;
+            _androidPlugin = null;
+            _playServicesUtils = null;
+            _notificationSender = null;
+            _clsUnity = null;
+            _objActivity = null;
         }
 
         /// <summary>
@@ -247,31 +333,6 @@ namespace PlayFab.Internal
         public static bool IsPlayServicesAvailable()
         {
             return _playServicesUtils != null && _playServicesUtils.CallStatic<bool>("isPlayServicesAvailable");
-        }
-
-        public static List<PlayFabNotificationPackage> GetPushCache()
-        {
-            var pushCache = new List<PlayFabNotificationPackage>();
-            var packages = _playFabPushCacheClass.CallStatic<List<AndroidJavaObject>>("getPushCache");
-            if (packages == null)
-                return pushCache;
-
-            foreach (var package in packages)
-            {
-                pushCache.Add(new PlayFabNotificationPackage
-                {
-                    Id = package.Get<int>("Id"),
-                    ScheduleType = package.Get<ScheduleTypes>("ScheduleType"),
-                    ScheduleDate = package.Get<DateTime>("ScheduleDate"),
-                    Title = package.Get<string>("Title"),
-                    Message = package.Get<string>("Message"),
-                    Icon = package.Get<string>("Icon"),
-                    Sound = package.Get<string>("Sound"),
-                    CustomData = package.Get<string>("CustomData"),
-                    Delivered = package.Get<bool>("Delivered")
-                });
-            }
-            return pushCache;
         }
         #endregion Direct Calls to Push Objects
 

@@ -3,7 +3,6 @@
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
 using PlayFab.ClientModels;
-using PlayFab.Internal;
 using System;
 using UnityEngine;
 
@@ -14,13 +13,19 @@ namespace PlayFab.UUnit
         const string TitleId = "A5F3";
         const string AndroidPushSenderId = "494923569376";
         bool _pushRegisterApiSuccessful;
+        const int msgDelay = 5; // Can't test anything if this is above 15, but it should be enough to measure
 
         public override void ClassSetUp()
         {
             PlayFabSettings.TitleId = TitleId;
+            _pushRegisterApiSuccessful = false;
+        }
+
+        public override void SetUp(UUnitTestContext testContext)
+        {
+            testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available before setup");
             PlayFabAndroidPushPlugin.Setup(AndroidPushSenderId);
             PlayFabAndroidPushPlugin.OnGcmSetupStep += OnGcmSetupStep;
-            _pushRegisterApiSuccessful = false;
         }
 
         private void OnGcmSetupStep(PlayFabAndroidPushPlugin.PushSetupStatus status)
@@ -28,9 +33,14 @@ namespace PlayFab.UUnit
             if (status == PlayFabAndroidPushPlugin.PushSetupStatus.PlayFabRegisterApiSuccess)
             {
                 _pushRegisterApiSuccessful = true;
-                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabAndroidPushPlugin.CancelNotification("Canceled message - should not see");
+                // Test normal message behavior
+                PlayFabAndroidPushPlugin.SendNotificationNow("CS-M Test Message");
+                PlayFabAndroidPushPlugin.SendNotificationNow(new PlayFabAndroidPushPlugin.PlayFabNotificationPackage("Obj Message", "Obj Title"));
+                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(msgDelay), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M Local Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(msgDelay), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledLocal);
+                var scheduledMessage = new PlayFabAndroidPushPlugin.PlayFabNotificationPackage("Scheduled Message", "Scheduled Title");
+                scheduledMessage.SetScheduleTime(DateTime.UtcNow + TimeSpan.FromSeconds(msgDelay), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.ScheduleNotification(scheduledMessage);
             }
         }
 
@@ -40,9 +50,15 @@ namespace PlayFab.UUnit
                 testContext.EndTest(UUnitFinishState.PASSED, null);
         }
 
+        public override void TearDown(UUnitTestContext testContext)
+        {
+            testContext.True(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "This test should have made Play Services available");
+            PlayFabAndroidPushPlugin.StopPlugin();
+            testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available after shutdown");
+        }
+
         public override void ClassTearDown()
         {
-            PlayFabAndroidPushPlugin.Unload();
             PlayFabClientAPI.ForgetClientCredentials();
         }
 

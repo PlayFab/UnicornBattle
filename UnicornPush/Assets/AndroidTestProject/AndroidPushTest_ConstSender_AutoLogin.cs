@@ -3,7 +3,6 @@
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
 using PlayFab.ClientModels;
-using PlayFab.Internal;
 using System;
 using UnityEngine;
 
@@ -18,9 +17,14 @@ namespace PlayFab.UUnit
         public override void ClassSetUp()
         {
             PlayFabSettings.TitleId = TitleId;
+            _pushRegisterApiSuccessful = false;
+        }
+
+        public override void SetUp(UUnitTestContext testContext)
+        {
+            testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available before setup");
             PlayFabAndroidPushPlugin.Setup(AndroidPushSenderId);
             PlayFabAndroidPushPlugin.OnGcmSetupStep += OnGcmSetupStep;
-            _pushRegisterApiSuccessful = false;
         }
 
         private void OnGcmSetupStep(PlayFabAndroidPushPlugin.PushSetupStatus status)
@@ -28,9 +32,10 @@ namespace PlayFab.UUnit
             if (status == PlayFabAndroidPushPlugin.PushSetupStatus.PlayFabRegisterApiSuccess)
             {
                 _pushRegisterApiSuccessful = true;
-                PlayFabAndroidPushPlugin.ScheduleNotification("CS-AL Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled message - should not see", DateTime.Now + TimeSpan.FromSeconds(30));
-                PlayFabAndroidPushPlugin.CancelNotification("Canceled message - should not see");
+                PlayFabAndroidPushPlugin.SendNotificationNow("CS-AL Test Message");
+                PlayFabAndroidPushPlugin.ScheduleNotification("CS-AL UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(30), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled UTC message - should not see", DateTime.UtcNow + TimeSpan.FromSeconds(30), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.CancelNotification("Canceled UTC message - should not see");
             }
         }
 
@@ -40,9 +45,15 @@ namespace PlayFab.UUnit
                 testContext.EndTest(UUnitFinishState.PASSED, null);
         }
 
+        public override void TearDown(UUnitTestContext testContext)
+        {
+            testContext.True(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "This test should have made Play Services available");
+            PlayFabAndroidPushPlugin.StopPlugin();
+            testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available after shutdown");
+        }
+
         public override void ClassTearDown()
         {
-            PlayFabAndroidPushPlugin.Unload();
             PlayFabClientAPI.ForgetClientCredentials();
         }
 

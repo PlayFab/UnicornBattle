@@ -306,8 +306,8 @@ namespace PlayFab.UUnit
             }
 
             testContext.EndTime = now;
-            testContext.ActiveState = UUnitActiveState.COMPLETE;
             Wrap(testContext, testContext.TestInstance.TearDown);
+            testContext.ActiveState = UUnitActiveState.COMPLETE;
             _testReport.TestComplete(testContext.TestDelegate.Target.GetType().Name + "." + testContext.Name, testContext.FinishState, (int)(testContext.EndTime - testContext.StartTime).TotalMilliseconds, testContext.TestResultMsg, null);
         }
     }

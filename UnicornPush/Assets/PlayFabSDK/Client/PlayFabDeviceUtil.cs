@@ -31,7 +31,7 @@ namespace PlayFab.Internal
         #endregion Make Attribution API call
 
         #region Make Push Registration API call
-        private static void RegisterForPush_Android(string token, bool sendConfirmation, string confirmationMessage)
+        private static void RegisterForAndroidPush(string token, bool sendConfirmation, string confirmationMessage)
         {
             var request = new AndroidDevicePushNotificationRegistrationRequest
             {
@@ -94,7 +94,7 @@ namespace PlayFab.Internal
             _playFabAndroidPushGo = GameObject.Find(GAME_OBJECT_NAME);
             if (_playFabAndroidPushGo != null)
             {
-                _playFabAndroidPushGo.BroadcastMessage("OnPlayFabLogin", (Action<string, bool, string>)RegisterForPush_Android);
+                _playFabAndroidPushGo.BroadcastMessage("OnPlayFabLogin", (Action<string, bool, string>)RegisterForAndroidPush);
                 _playFabAndroidPushGo.BroadcastMessage("SetPushRegistrations", androidPushTokens);
             }
         }
