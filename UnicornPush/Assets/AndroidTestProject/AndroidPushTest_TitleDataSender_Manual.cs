@@ -1,7 +1,8 @@
-#define TESTING
+// #define TESTING
 
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
+using PlayFab.Android;
 using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
@@ -34,8 +35,8 @@ namespace PlayFab.UUnit
             {
                 _pushRegisterApiSuccessful = true;
                 PlayFabAndroidPushPlugin.SendNotificationNow("TS-M Test Message");
-                PlayFabAndroidPushPlugin.ScheduleNotification("TS-M UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(30), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
-                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled UTC message - should not see", DateTime.UtcNow + TimeSpan.FromSeconds(30), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.ScheduleNotification("TS-M UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(30), ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled UTC message - should not see", DateTime.UtcNow + TimeSpan.FromSeconds(30), ScheduleTypes.ScheduledUtc);
                 PlayFabAndroidPushPlugin.CancelNotification("Canceled UTC message - should not see");
             }
         }

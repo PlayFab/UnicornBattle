@@ -2,6 +2,7 @@
 
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
+using PlayFab.Android;
 using PlayFab.ClientModels;
 using System;
 using UnityEngine;
@@ -35,11 +36,13 @@ namespace PlayFab.UUnit
                 _pushRegisterApiSuccessful = true;
                 // Test normal message behavior
                 PlayFabAndroidPushPlugin.SendNotificationNow("CS-M Test Message");
-                PlayFabAndroidPushPlugin.SendNotificationNow(new PlayFabAndroidPushPlugin.PlayFabNotificationPackage("Obj Message", "Obj Title"));
-                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(msgDelay), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
-                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M Local Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(msgDelay), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledLocal);
-                var scheduledMessage = new PlayFabAndroidPushPlugin.PlayFabNotificationPackage("Scheduled Message", "Scheduled Title");
-                scheduledMessage.SetScheduleTime(DateTime.UtcNow + TimeSpan.FromSeconds(msgDelay), PlayFabAndroidPushPlugin.ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.SendNotification(new PlayFabNotificationPackage("Obj Message", "Obj Title"));
+                // TODO: Nulls cause something to break...
+                // PlayFabAndroidPushPlugin.SendNotification(new PlayFabNotificationPackage { Id = 0, Message = null, ScheduleDate = null, Title = null, ScheduleType = ScheduleTypes.None, CustomData = null, Icon = null, Sound = null});
+                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(msgDelay), ScheduleTypes.ScheduledUtc);
+                PlayFabAndroidPushPlugin.ScheduleNotification("CS-M Local Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(msgDelay), ScheduleTypes.ScheduledLocal);
+                var scheduledMessage = new PlayFabNotificationPackage("Scheduled Message", "Scheduled Title");
+                scheduledMessage.SetScheduleTime(DateTime.UtcNow + TimeSpan.FromSeconds(msgDelay), ScheduleTypes.ScheduledUtc);
                 PlayFabAndroidPushPlugin.ScheduleNotification(scheduledMessage);
             }
         }
