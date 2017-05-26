@@ -1,68 +1,36 @@
-// #define TESTING
+#define TESTING
 
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
-using PlayFab.Android;
 using PlayFab.ClientModels;
+using PlayFab.UUnit;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PlayFab.UUnit
+namespace PlayFab.Android
 {
-    public class PushTest_TitleDataSender_AutoLogin : UUnitTestCase
+    public class PushTest_TitleDataSender_AutoLogin : AndroidPushTest_Base
     {
         const string TitleId = "A5F3";
         string _androidPushSenderId = "";
-        bool _pushRegisterApiSuccessful;
 
         public override void ClassSetUp()
         {
+            base.ClassSetUp();
             PlayFabSettings.TitleId = TitleId;
-            _pushRegisterApiSuccessful = false;
         }
 
         public override void SetUp(UUnitTestContext testContext)
         {
-            testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available before setup");
+            base.SetUp(testContext);
             PlayFabAndroidPushPlugin.Init();
-            PlayFabAndroidPushPlugin.OnGcmSetupStep += OnGcmSetupStep;
-        }
-
-        private void OnGcmSetupStep(PlayFabAndroidPushPlugin.PushSetupStatus status)
-        {
-            if (status == PlayFabAndroidPushPlugin.PushSetupStatus.PlayFabRegisterApiSuccess)
-            {
-                _pushRegisterApiSuccessful = true;
-                PlayFabAndroidPushPlugin.SendNotificationNow("TS-AL Test Message");
-                PlayFabAndroidPushPlugin.ScheduleNotification("TS-AL UTC Scheduled Test Message", DateTime.UtcNow + TimeSpan.FromSeconds(30), ScheduleTypes.ScheduledUtc);
-                PlayFabAndroidPushPlugin.ScheduleNotification("Canceled UTC message - should not see", DateTime.UtcNow + TimeSpan.FromSeconds(30), ScheduleTypes.ScheduledUtc);
-                PlayFabAndroidPushPlugin.CancelNotification("Canceled UTC message - should not see");
-            }
-        }
-
-        public override void Tick(UUnitTestContext testContext)
-        {
-            if (_pushRegisterApiSuccessful)
-                testContext.EndTest(UUnitFinishState.PASSED, null);
-        }
-
-        public override void TearDown(UUnitTestContext testContext)
-        {
-            testContext.True(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "This test should have made Play Services available");
-            PlayFabAndroidPushPlugin.StopPlugin();
-            testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available after shutdown");
         }
 
         public override void ClassTearDown()
         {
+            base.ClassTearDown();
             PlayFabClientAPI.ForgetClientCredentials();
-        }
-
-        private void SharedErrorCallback(PlayFabError error)
-        {
-            // This error was not expected.  Report it and fail.
-            ((UUnitTestContext)error.CustomData).Fail(error.GenerateErrorReport());
         }
 
         // [UUnitTest] // This test won't pass until the profile can be returned at login
@@ -75,6 +43,7 @@ namespace PlayFab.UUnit
                 // TODO: REQUIRED - ASK FOR PLAYER PROFILE
             };
             PlayFabClientAPI.LoginWithCustomID(loginRequest, PlayFabUUnitUtils.ApiActionWrapper<LoginResult>(testContext, OnLoginSuccess), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback), testContext);
+            ActiveTick += PassOnSuccessfulRegistration;
         }
         private void OnLoginSuccess(LoginResult result)
         {

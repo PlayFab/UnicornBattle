@@ -233,13 +233,13 @@ namespace PlayFab.Android
         }
 
         /// <summary>
-        /// By default: 
-        ///   Every message be delivered to the OnGcmMessage callback if the app is running and in focus
+        /// By default:
+        ///   Every message is delivered to the OnGcmMessage callback if the app is running and in focus
         ///   Every message will also display in the device notification bar
         /// It is possible to hide the notification from the device, if it is properly delivered to OnGcmMessage, by calling
         ///   AlwaysShowOnNotificationBar(false)
         /// </summary>
-        public static void AlwaysShowOnNotificationBar(bool alwaysShow = false)
+        public static void AlwaysShowOnNotificationBar(bool alwaysShow = true)
         {
             _androidPlugin.CallStatic("alwaysShowOnNotificationBar", alwaysShow);
         }
@@ -334,8 +334,11 @@ namespace PlayFab.Android
 
         private void GCMMessageReceived(string json)
         {
-            var pkg = _notificationPkgClass.CallStatic<AndroidJavaClass>("fromJson", json);
+            Debug.Log("PlayFabGCM: Unity GCMMessageReceived, json: " + json);
+            var pkg = _notificationPkgClass.CallStatic<AndroidJavaObject>("fromJson", json);
+            Debug.Log("PlayFabGCM: Unity GCMMessageReceived, pkg: " + pkg.Get<string>("Message"));
             var message = PlayFabNotificationPackage.FromJava(pkg);
+            Debug.Log("PlayFabGCM: Unity GCMMessageReceived, msg: " + message.Message);
             if (OnGcmMessage != null)
                 OnGcmMessage(message);
             PostStatusMessage(PushSetupStatus.ReceivedMessage);
@@ -376,11 +379,12 @@ public class PlayFabNotificationPackage
 
     public PlayFabNotificationPackage() { }
 
-    public PlayFabNotificationPackage(string message, string title = null, int id = 0)
+    public PlayFabNotificationPackage(string message, string title = null, int id = 0, DateTime? scheduleDate = null, ScheduleTypes scheduleType = ScheduleTypes.None)
     {
         Message = message;
         Title = title;
         Id = id;
+        SetScheduleTime(scheduleDate, scheduleType);
     }
 
     public void SetScheduleTime(DateTime? scheduleDate, ScheduleTypes scheduleType)
