@@ -14,7 +14,7 @@ namespace PlayFab.Android
     {
         protected Action<UUnitTestContext> ActiveTick;
 
-        private const int MsgDelay = 5, testExpire = 14; // Can't test anything if this is above 15, but it should be enough to measure an actual delay
+        private const int MsgDelay = 5, TestExpire = 14; // Can't test anything if this is above 15, but it should be enough to measure an actual delay
         private bool _pushRegisterApiSuccessful;
         private bool _messagesTested;
         private readonly HashSet<string> _expectedMessages = new HashSet<string>();
@@ -71,7 +71,7 @@ namespace PlayFab.Android
 
                 if (!_messagesTested)
                 {
-                    PlayFabAndroidPushPlugin.AlwaysShowOnNotificationBar(false);
+                    PlayFabAndroidPushPlugin.AlwaysShowOnNotificationBar(false); // For the purpose of this test, hide the notifications from the device notification tray
                     SendImmediateNotificationsAndWait();
                     SendScheduledNotificationsAndWait();
                     ActiveTick = WaitForExpectedMessages;
@@ -100,7 +100,7 @@ namespace PlayFab.Android
         /// </summary>
         private void SendImmediateNotificationsAndWait()
         {
-            // TODO: !! PlayFabAndroidPushPlugin.SendNotification(new PlayFabNotificationPackage { Id = 0, Message = null, ScheduleDate = null, Title = null, ScheduleType = ScheduleTypes.None, CustomData = null, Icon = null, Sound = null });
+            PlayFabAndroidPushPlugin.SendNotification(new PlayFabNotificationPackage { Id = 0, Message = null, ScheduleDate = null, Title = null, ScheduleType = ScheduleTypes.None, CustomData = null, Icon = null, Sound = null });
             // Don't expect this one to arrive, but it shouldn't crash anything
             PlayFabAndroidPushPlugin.SendNotificationNow("CS-M Test Message");
             _expectedMessages.Add("CS-M Test Message");
@@ -129,7 +129,7 @@ namespace PlayFab.Android
                 _messagesTested = true;
                 testContext.EndTest(UUnitFinishState.PASSED, null);
             }
-            if (DateTime.UtcNow > testContext.StartTime + TimeSpan.FromSeconds(testExpire))
+            if (DateTime.UtcNow > testContext.StartTime + TimeSpan.FromSeconds(TestExpire))
             {
                 var sb = new StringBuilder();
                 sb.Append(_expectedMessages.Count).Append(" Missing Messages: ");

@@ -297,7 +297,7 @@ namespace PlayFab.UUnit
             var timedOut = (now - testContext.StartTime) > TestTimeout;
             if (testContext.ActiveState != UUnitActiveState.READY && !timedOut) // Not finished & not timed out
             {
-                testContext.TestInstance.Tick(testContext);
+                Wrap(testContext, testContext.TestInstance.Tick);
                 return;
             }
             else if (testContext.ActiveState == UUnitActiveState.ACTIVE && timedOut)
