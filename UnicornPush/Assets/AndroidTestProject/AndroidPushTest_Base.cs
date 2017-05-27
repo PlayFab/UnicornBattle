@@ -118,7 +118,7 @@ namespace PlayFab.Android
             PlayFabAndroidPushPlugin.ScheduleNotification("Local Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(MsgDelay), ScheduleTypes.ScheduledLocal);
             _expectedMessages.Add("Local Scheduled Test Message");
             var scheduledMessage = new PlayFabNotificationPackage("Scheduled Message Obj", "Scheduled Title", 0, DateTime.UtcNow + TimeSpan.FromSeconds(MsgDelay), ScheduleTypes.ScheduledUtc);
-            PlayFabAndroidPushPlugin.ScheduleNotification(scheduledMessage);
+            PlayFabAndroidPushPlugin.SendNotification(scheduledMessage);
             _expectedMessages.Add("Scheduled Message Obj");
         }
 

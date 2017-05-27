@@ -170,16 +170,6 @@ namespace PlayFab.Android
             _notificationSender.CallStatic("send", _objActivity, package);
         }
 
-        /// <summary>
-        /// Set up a push notification to display on this device
-        /// </summary>
-        public static void ScheduleNotification(PlayFabNotificationPackage package)
-        {
-            var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, "", 0);
-            package.ToJava(ref javaPackage);
-            _notificationSender.CallStatic("send", _objActivity, javaPackage);
-        }
-
         public static void SendNotificationNow(string message)
         {
             var javaPackage = _notificationSender.CallStatic<AndroidJavaObject>("createNotificationPackage", _objActivity, message, 0);
