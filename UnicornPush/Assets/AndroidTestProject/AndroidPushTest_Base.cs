@@ -18,15 +18,18 @@ namespace PlayFab.Android
         private bool _pushRegisterApiSuccessful;
         private bool _messagesTested;
         private readonly HashSet<string> _expectedMessages = new HashSet<string>();
+        private readonly HashSet<string> _expectedCustom = new HashSet<string>();
 
         public override void SetUp(UUnitTestContext testContext)
         {
             _pushRegisterApiSuccessful = false;
+            PlayFabAndroidPushPlugin.StopPlugin();
             testContext.False(PlayFabAndroidPushPlugin.IsPlayServicesAvailable(), "Play Services should not be available before setup");
             PlayFabAndroidPushPlugin.OnGcmSetupStep += OnGcmSetupStep;
             PlayFabAndroidPushPlugin.OnGcmMessage += OnGcmMessage;
             ActiveTick = null;
             _expectedMessages.Clear();
+            _expectedCustom.Clear();
         }
 
         private void OnGcmSetupStep(PlayFabAndroidPushPlugin.PushSetupStatus status)
@@ -39,6 +42,7 @@ namespace PlayFab.Android
         {
             Debug.Log("PlayFabGCM: Unity message package received: " + package.Message);
             _expectedMessages.Remove(package.Message);
+            _expectedCustom.Remove(package.CustomData);
         }
 
         public override void Tick(UUnitTestContext testContext)
@@ -117,14 +121,15 @@ namespace PlayFab.Android
             _expectedMessages.Add("UTC Scheduled Test Message");
             PlayFabAndroidPushPlugin.ScheduleNotification("Local Scheduled Test Message", DateTime.Now + TimeSpan.FromSeconds(MsgDelay), ScheduleTypes.ScheduledLocal);
             _expectedMessages.Add("Local Scheduled Test Message");
-            var scheduledMessage = new PlayFabNotificationPackage("Scheduled Message Obj", "Scheduled Title", 0, DateTime.UtcNow + TimeSpan.FromSeconds(MsgDelay), ScheduleTypes.ScheduledUtc);
+            var scheduledMessage = new PlayFabNotificationPackage("Scheduled Message Obj", "Scheduled Title", 0, DateTime.UtcNow + TimeSpan.FromSeconds(MsgDelay), ScheduleTypes.ScheduledUtc, "test custom");
             PlayFabAndroidPushPlugin.SendNotification(scheduledMessage);
             _expectedMessages.Add("Scheduled Message Obj");
+            _expectedCustom.Add("test custom");
         }
 
         private void WaitForExpectedMessages(UUnitTestContext testContext)
         {
-            if (_expectedMessages.Count == 0)
+            if (_expectedMessages.Count == 0 && _expectedCustom.Count == 0)
             {
                 _messagesTested = true;
                 testContext.EndTest(UUnitFinishState.PASSED, null);
@@ -132,10 +137,20 @@ namespace PlayFab.Android
             if (DateTime.UtcNow > testContext.StartTime + TimeSpan.FromSeconds(TestExpire))
             {
                 var sb = new StringBuilder();
-                sb.Append(_expectedMessages.Count).Append(" Missing Messages: ");
-                foreach (var eachMsg in _expectedMessages)
-                    sb.Append(eachMsg).Append(",");
-                sb.Length -= 1;
+                if (_expectedMessages.Count > 0)
+                {
+                    sb.Append(_expectedMessages.Count).Append(" Missing Messages: ");
+                    foreach (var eachMsg in _expectedMessages)
+                        sb.Append(eachMsg).Append(",");
+                    sb.Length -= 1;
+                }
+                if (_expectedCustom.Count > 0)
+                {
+                    sb.Append(_expectedCustom.Count).Append("\nMissing Custom: ");
+                    foreach (var eachMsg in _expectedCustom)
+                        sb.Append(eachMsg).Append(",");
+                    sb.Length -= 1;
+                }
                 testContext.Fail(sb.ToString());
             }
         }

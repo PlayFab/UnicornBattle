@@ -72,7 +72,6 @@ namespace PlayFab.Android
         private static AndroidJavaClass _clsUnity;
         private static AndroidJavaObject _objActivity;
 
-
         private static void LoadPlugin()
         {
             _playFabGcmClass = new AndroidJavaClass("com.playfab.unityplugin.GCM.PlayFabGoogleCloudMessaging");
@@ -369,12 +368,13 @@ public class PlayFabNotificationPackage
 
     public PlayFabNotificationPackage() { }
 
-    public PlayFabNotificationPackage(string message, string title = null, int id = 0, DateTime? scheduleDate = null, ScheduleTypes scheduleType = ScheduleTypes.None)
+    public PlayFabNotificationPackage(string message, string title = null, int id = 0, DateTime? scheduleDate = null, ScheduleTypes scheduleType = ScheduleTypes.None, string customData = null)
     {
         Message = message;
         Title = title;
         Id = id;
         SetScheduleTime(scheduleDate, scheduleType);
+        CustomData = customData;
     }
 
     public void SetScheduleTime(DateTime? scheduleDate, ScheduleTypes scheduleType)

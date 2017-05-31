@@ -4,6 +4,7 @@ using PlayFab.Android;
 using PlayFab.ClientModels;
 using PlayFab.Json;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UniPushScript : MonoBehaviour
 {
@@ -26,11 +27,15 @@ public class UniPushScript : MonoBehaviour
     {
         var style = new GUIStyle();
         style.fontSize = Screen.width / 30;
+        style.normal.textColor = Color.white;
         style.wordWrap = true;
-        GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _lastMessageReceived, style);
+        if (GUI.Button(new Rect(0, 0, Screen.width, 250), "Switch To Test Scene", style))
+            SceneManager.LoadScene(1); // Switch to the test scene
+        GUI.Label(new Rect(0, 250, Screen.width, Screen.height-250), _lastMessageReceived, style);
     }
 
-    void OnPushReceived(PlayFabNotificationPackage package) {
+    void OnPushReceived(PlayFabNotificationPackage package)
+    {
         _lastMessageReceived = JsonWrapper.SerializeObject(package);
     }
 
@@ -51,36 +56,5 @@ public class UniPushScript : MonoBehaviour
     void OnLoginSuccess(LoginResult result)
     {
         PlayFabAndroidPushPlugin.TriggerManualRegistration();
-    }
-
-    // Unity/C#
-    public void SchedulePushLocal()
-    {
-        var sDate = DateTime.Now; // UTC USAGE MUST be consistent #1
-        sDate = sDate.AddMinutes(30);
-        var newNotification = new PlayFabNotificationPackage()
-        {
-            ScheduleDate = sDate,
-            ScheduleType = ScheduleTypes.ScheduledLocal, // UTC USAGE MUST be consistent #2
-            Message = "This is a Scheduled Message",
-            Title = "Test Scheduled Push"
-        };
-        PlayFabAndroidPushPlugin.SendNotification(newNotification);
-    }
-
-    // ==============OR==============
-
-    public void SchedulePushUtc()
-    {
-        var sDate = DateTime.UtcNow; // UTC USAGE MUST be consistent #1
-        sDate = sDate.AddMinutes(30);
-        var newNotification = new PlayFabNotificationPackage()
-        {
-            ScheduleDate = sDate,
-            ScheduleType = ScheduleTypes.ScheduledUtc, // UTC USAGE MUST be consistent #2
-            Message = "This is a Scheduled Message",
-            Title = "Test Scheduled Push"
-        };
-        PlayFabAndroidPushPlugin.SendNotification(newNotification);
     }
 }
