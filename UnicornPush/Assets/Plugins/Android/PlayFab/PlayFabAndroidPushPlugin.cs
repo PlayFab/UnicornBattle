@@ -127,19 +127,18 @@ namespace PlayFab.Android
         public static void TriggerManualRegistration(bool? sendMessageNow = null, string message = null)
         {
             var msgSb = new StringBuilder();
-            var notLoggedIn = _registerForAndroidPushApi == null || _androidPushTokens == null;
-            var noSender = string.IsNullOrEmpty(_androidPushSenderId);
-            var alreadyRegistered = _androidPushTokens != null && _androidPushTokens.Contains(_myPushToken);
-            if (notLoggedIn)
+            if (_registerForAndroidPushApi == null || _androidPushTokens == null)
                 msgSb.Append("You must log in before calling TriggerManualRegistration()\n");
-            if (noSender)
+            if (string.IsNullOrEmpty(_androidPushSenderId))
                 msgSb.Append("You must call Setup(androidPushSenderId) before calling TriggerManualRegistration()\n");
-            if (alreadyRegistered)
+            if (string.IsNullOrEmpty(_myPushToken))
+                msgSb.Append("Android Push Token not available\n");
+            if (_androidPushTokens != null && _androidPushTokens.Contains(_myPushToken))
                 msgSb.Append("Already registered, no need to call TriggerManualRegistration\n");
 
             while (msgSb.Length > 0 && msgSb[msgSb.Length - 1] == '\n')
                 msgSb.Length -= 1;
-            if (notLoggedIn || noSender || alreadyRegistered)
+            if (msgSb.Length > 0)
             {
                 _singletonInstance.GCMLog(msgSb.ToString());
                 return;
@@ -340,88 +339,88 @@ namespace PlayFab.Android
         }
         #endregion Internal Unity Monobehavior-Event Hooks
     }
-}
 
-public enum ScheduleTypes
-{
-    None,
-    ScheduledUtc, // Corresponds to DATE_UTC_FORMAT above
-    ScheduledLocal // Corresponds to DATE_LOCAL_FORMAT above
-}
-
-/// <summary>
-/// c# wrapper that matches the Java native com.playfab.unityplugin.GCM.PlayFabNotificationPackage
-/// </summary>
-[Serializable]
-public class PlayFabNotificationPackage
-{
-    public static readonly string[] SUPPORTED_PLUGIN_TIMESTAMP_FORMATS = { "yyyy-MM-dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd HH:mm:ssZ" };
-
-    public DateTime? ScheduleDate;
-    public ScheduleTypes ScheduleType;
-    public string Sound;                // do not set this to use the default device sound; otherwise the sound you provide needs to exist in Android/res/raw/_____.mp3, .wav, .ogg
-    public string Title;                // title of this message
-    public string Icon;                 // to use the default app icon use app_icon, otherwise send the name of the custom image. Image must be in Android/res/drawable/_____.png, .jpg
-    public string Message;              // the actual message to transmit (this is what will be displayed in the notification area)
-    public string CustomData;           // arbitrary key value pairs for game specific usage
-    public int Id = 0;
-
-    public PlayFabNotificationPackage() { }
-
-    public PlayFabNotificationPackage(string message, string title = null, int id = 0, DateTime? scheduleDate = null, ScheduleTypes scheduleType = ScheduleTypes.None, string customData = null)
+    public enum ScheduleTypes
     {
-        Message = message;
-        Title = title;
-        Id = id;
-        SetScheduleTime(scheduleDate, scheduleType);
-        CustomData = customData;
+        None,
+        ScheduledUtc, // Corresponds to DATE_UTC_FORMAT above
+        ScheduledLocal // Corresponds to DATE_LOCAL_FORMAT above
     }
 
-    public void SetScheduleTime(DateTime? scheduleDate, ScheduleTypes scheduleType)
+    /// <summary>
+    /// c# wrapper that matches the Java native com.playfab.unityplugin.GCM.PlayFabNotificationPackage
+    /// </summary>
+    [Serializable]
+    public class PlayFabNotificationPackage
     {
-        ScheduleDate = scheduleDate;
-        ScheduleType = scheduleType;
-    }
+        public static readonly string[] SUPPORTED_PLUGIN_TIMESTAMP_FORMATS = { "yyyy-MM-dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd HH:mm:ssZ" };
 
-    public static PlayFabNotificationPackage FromJava(AndroidJavaObject package)
-    {
-        var output = new PlayFabNotificationPackage
+        public DateTime? ScheduleDate;
+        public ScheduleTypes ScheduleType;
+        public string Sound;                // do not set this to use the default device sound; otherwise the sound you provide needs to exist in Android/res/raw/_____.mp3, .wav, .ogg
+        public string Title;                // title of this message
+        public string Icon;                 // to use the default app icon use app_icon, otherwise send the name of the custom image. Image must be in Android/res/drawable/_____.png, .jpg
+        public string Message;              // the actual message to transmit (this is what will be displayed in the notification area)
+        public string CustomData;           // arbitrary key value pairs for game specific usage
+        public int Id = 0;
+
+        public PlayFabNotificationPackage() { }
+
+        public PlayFabNotificationPackage(string message, string title = null, int id = 0, DateTime? scheduleDate = null, ScheduleTypes scheduleType = ScheduleTypes.None, string customData = null)
         {
-            Id = package.Get<int>("Id"),
-            ScheduleType = (ScheduleTypes)Enum.Parse(typeof(ScheduleTypes), package.Get<string>("ScheduleType")),
-            Title = package.Get<string>("Title"),
-            Message = package.Get<string>("Message"),
-            Icon = package.Get<string>("Icon"),
-            Sound = package.Get<string>("Sound"),
-            CustomData = package.Get<string>("CustomData"),
-            ScheduleDate = null // Assigned below
-        };
+            Message = message;
+            Title = title;
+            Id = id;
+            SetScheduleTime(scheduleDate, scheduleType);
+            CustomData = customData;
+        }
 
-        DateTime temp;
-        if (DateTime.TryParseExact(package.Get<string>("ScheduleDate"), SUPPORTED_PLUGIN_TIMESTAMP_FORMATS, CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind, out temp))
-            output.ScheduleDate = temp;
-
-        return output;
-    }
-
-    public void ToJava(ref AndroidJavaObject package)
-    {
-        package.Set("Id", Id);
-        package.Set("ScheduleType", ScheduleType.ToString());
-        package.Set("Title", Title);
-        package.Set("Message", Message);
-        package.Set("Icon", Icon);
-        package.Set("Sound", Sound);
-        package.Set("CustomData", CustomData);
-
-        if (ScheduleDate == null)
-            package.Call("setScheduleDate", null);
-        else
+        public void SetScheduleTime(DateTime? scheduleDate, ScheduleTypes scheduleType)
         {
-            var dateString = ScheduleDate.Value.ToString(SUPPORTED_PLUGIN_TIMESTAMP_FORMATS[0]);
-            if (ScheduleType == ScheduleTypes.ScheduledUtc)
-                dateString = dateString + "Z";
-            package.Call("setScheduleDate", dateString);
+            ScheduleDate = scheduleDate;
+            ScheduleType = scheduleType;
+        }
+
+        public static PlayFabNotificationPackage FromJava(AndroidJavaObject package)
+        {
+            var output = new PlayFabNotificationPackage
+            {
+                Id = package.Get<int>("Id"),
+                ScheduleType = (ScheduleTypes)Enum.Parse(typeof(ScheduleTypes), package.Get<string>("ScheduleType")),
+                Title = package.Get<string>("Title"),
+                Message = package.Get<string>("Message"),
+                Icon = package.Get<string>("Icon"),
+                Sound = package.Get<string>("Sound"),
+                CustomData = package.Get<string>("CustomData"),
+                ScheduleDate = null // Assigned below
+            };
+
+            DateTime temp;
+            if (DateTime.TryParseExact(package.Get<string>("ScheduleDate"), SUPPORTED_PLUGIN_TIMESTAMP_FORMATS, CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind, out temp))
+                output.ScheduleDate = temp;
+
+            return output;
+        }
+
+        public void ToJava(ref AndroidJavaObject package)
+        {
+            package.Set("Id", Id);
+            package.Set("ScheduleType", ScheduleType.ToString());
+            package.Set("Title", Title);
+            package.Set("Message", Message);
+            package.Set("Icon", Icon);
+            package.Set("Sound", Sound);
+            package.Set("CustomData", CustomData);
+
+            if (ScheduleDate == null)
+                package.Call("setScheduleDate", null);
+            else
+            {
+                var dateString = ScheduleDate.Value.ToString(SUPPORTED_PLUGIN_TIMESTAMP_FORMATS[0]);
+                if (ScheduleType == ScheduleTypes.ScheduledUtc)
+                    dateString = dateString + "Z";
+                package.Call("setScheduleDate", dateString);
+            }
         }
     }
 }
