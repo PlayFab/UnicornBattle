@@ -62,8 +62,12 @@ namespace PlayFab.Internal
                 needsAttribution = registerResult.SettingsForUser.NeedsAttribution;
 
             List<PushNotificationRegistrationModel> pushNotificationRegistrations = null;
-            if (loginResult != null && loginResult.InfoResultPayload != null && loginResult.InfoResultPayload.PlayerProfile != null)
-                pushNotificationRegistrations = loginResult.InfoResultPayload.PlayerProfile.PushNotificationRegistrations;
+            if (loginResult != null && loginResult.InfoResultPayload != null) // && res.InfoResultPayload.Profile != null) // TODO: FINISH THIS WHEN PROFILE IS READY
+            {
+                //pushNotificationRegistrations = res.InfoResultPayload.Profile.PushNotificationRegistrations;
+                pushNotificationRegistrations = new List<PushNotificationRegistrationModel>(); // TODO: This definitely isn't right
+            }
+
             if (needsAttribution)
                 SetDeviceAttribution();
 

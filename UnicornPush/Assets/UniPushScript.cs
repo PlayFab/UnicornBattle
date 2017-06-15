@@ -1,12 +1,17 @@
 using PlayFab;
+
+#if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 using PlayFab.Android;
 using PlayFab.ClientModels;
 using PlayFab.Json;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+#endif
+
+using UnityEngine;
 
 public class UniPushScript : MonoBehaviour
 {
+#if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
     // YOU MUST REPLACE THESE VALUES WITH YOUR TITLE AND YOUR SENDER
     // This is an existing PlayFab title, which is already set up, but you should not use it for more than a single test notification
     private const string TITLE_ID = "A5F3"; // TODO: Use your own titleId
@@ -56,4 +61,5 @@ public class UniPushScript : MonoBehaviour
     {
         PlayFabAndroidPushPlugin.TriggerManualRegistration();
     }
+#endif
 }
