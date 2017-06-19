@@ -4,13 +4,12 @@
 
 using PlayFab.ClientModels;
 using PlayFab.UUnit;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace PlayFab.Android
 {
-    public class PushTest_TitleDataSender_AutoLogin : AndroidPushTest_Base
+    public class AndroidPushTest_TitleDataSender : AndroidPushTest_Ba
     {
         const string TitleId = "A5F3";
         string _androidPushSenderId = "";
@@ -33,14 +32,13 @@ namespace PlayFab.Android
             PlayFabClientAPI.ForgetClientCredentials();
         }
 
-        // [UUnitTest] // This test won't pass until the profile can be returned at login
-        public void Push_TitleDataSender_AutoLogin(UUnitTestContext testContext)
+        [UUnitTest]
+        public void Push_TitleDataSender(UUnitTestContext testContext)
         {
             var loginRequest = new LoginWithCustomIDRequest
             {
                 CustomId = SystemInfo.deviceUniqueIdentifier,
-                CreateAccount = true,
-                // TODO: REQUIRED - ASK FOR PLAYER PROFILE
+                CreateAccount = true
             };
             PlayFabClientAPI.LoginWithCustomID(loginRequest, PlayFabUUnitUtils.ApiActionWrapper<LoginResult>(testContext, OnLoginSuccess), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback), testContext);
             ActiveTick += PassOnSuccessfulRegistration;
@@ -64,7 +62,9 @@ namespace PlayFab.Android
             _androidPushSenderId = result.Data["AndroidPushSenderId"];
             Debug.Log("PlayFab: Sender id: " + _androidPushSenderId);
             PlayFabAndroidPushPlugin.Setup(_androidPushSenderId);
+            PlayFabAndroidPushPlugin.TriggerManualRegistration();
         }
     }
 }
+
 #endif

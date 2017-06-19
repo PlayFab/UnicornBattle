@@ -2,6 +2,7 @@
 
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR
 
+using PlayFab.Android;
 using PlayFab.ClientModels;
 using PlayFab.UUnit;
 using System;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace PlayFab.Android
 {
-    public class PushTest_ConstSender_AutoLogin : AndroidPushTest_Base
+    public class AndroidPushTests_ConstSender : AndroidPushTest_Base
     {
         const string TitleId = "A5F3";
         const string AndroidPushSenderId = "494923569376";
@@ -32,18 +33,22 @@ namespace PlayFab.Android
             PlayFabClientAPI.ForgetClientCredentials();
         }
 
-        // [UUnitTest] // This test won't pass until the profile can be returned at login
-        void Push_ConstSender_AutoLogin(UUnitTestContext testContext)
+        [UUnitTest]
+        public void Push_ConstSender(UUnitTestContext testContext)
         {
             var loginRequest = new LoginWithCustomIDRequest
             {
                 CustomId = SystemInfo.deviceUniqueIdentifier,
-                CreateAccount = true,
-                // TODO: REQUIRED - ASK FOR PLAYER PROFILE
+                CreateAccount = true
             };
-            PlayFabClientAPI.LoginWithCustomID(loginRequest, PlayFabUUnitUtils.ApiActionWrapper<LoginResult>(testContext, null), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback));
+            PlayFabClientAPI.LoginWithCustomID(loginRequest, PlayFabUUnitUtils.ApiActionWrapper<LoginResult>(testContext, OnLoginSuccess), PlayFabUUnitUtils.ApiActionWrapper<PlayFabError>(testContext, SharedErrorCallback));
             ActiveTick += PassOnSuccessfulRegistration;
+        }
+        private void OnLoginSuccess(LoginResult result)
+        {
+            PlayFabAndroidPushPlugin.TriggerManualRegistration();
         }
     }
 }
+
 #endif
