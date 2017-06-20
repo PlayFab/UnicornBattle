@@ -30,7 +30,7 @@ namespace PlayFab.PfEditor
 
         private static SubMenuComponent _menu = null;
 
-        private static Dictionary<string, StudioDisplaySet> studioFoldOutStates = new Dictionary<string, StudioDisplaySet>();
+        private static readonly Dictionary<string, StudioDisplaySet> StudioFoldOutStates = new Dictionary<string, StudioDisplaySet>();
         private static Vector2 _titleScrollPos = Vector2.zero;
         private static Vector2 _packagesScrollPos = Vector2.zero;
         #endregion
@@ -42,10 +42,24 @@ namespace PlayFab.PfEditor
             {
                 var curDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
                 var changedFlags = false;
-                DisplayDefineToggle("ENABLE CLIENT API: ", true, PlayFabEditorHelper.CLIENT_API, ref curDefines, ref changedFlags);
-                DisplayDefineToggle("ENABLE ADMIN API: ", false, PlayFabEditorHelper.ADMIN_API, ref curDefines, ref changedFlags);
-                DisplayDefineToggle("ENABLE SERVER API: ", false, PlayFabEditorHelper.SERVER_API, ref curDefines, ref changedFlags);
-                DisplayDefineToggle("ENABLE REQUEST TIMES: ", false, PlayFabEditorHelper.DEBUG_REQUEST_TIMING, ref curDefines, ref changedFlags);
+                List<string> allFlags = new List<string>(PlayFabEditorHelper.FLAG_LABELS.Keys);
+                var extraDefines = new List<string>(curDefines.Split(' ', ';'));
+                extraDefines.Sort();
+                foreach (var eachFlag in extraDefines)
+                    if (!allFlags.Contains(eachFlag))
+                        allFlags.Add(eachFlag);
+                foreach (var eachDefine in allFlags)
+                {
+                    if (string.IsNullOrEmpty(eachDefine))
+                        continue;
+                    string flagLabel;
+                    if (!PlayFabEditorHelper.FLAG_LABELS.TryGetValue(eachDefine, out flagLabel))
+                        flagLabel = eachDefine;
+                    bool flagInverted;
+                    PlayFabEditorHelper.FLAG_INVERSION.TryGetValue(eachDefine, out flagInverted);
+                    DisplayDefineToggle(flagLabel + ": ", flagInverted, eachDefine, ref curDefines, ref changedFlags);
+                }
+
                 if (changedFlags)
                 {
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, curDefines);
@@ -122,18 +136,18 @@ namespace PlayFab.PfEditor
         {
             float labelWidth = 100;
 
-            if (PlayFabEditorDataService.AccountDetails.studios != null && PlayFabEditorDataService.AccountDetails.studios.Count != studioFoldOutStates.Count + 1)
+            if (PlayFabEditorDataService.AccountDetails.studios != null && PlayFabEditorDataService.AccountDetails.studios.Count != StudioFoldOutStates.Count + 1)
             {
-                studioFoldOutStates.Clear();
+                StudioFoldOutStates.Clear();
                 foreach (var studio in PlayFabEditorDataService.AccountDetails.studios)
                 {
                     if (string.IsNullOrEmpty(studio.Id))
                         continue;
-                    if (!studioFoldOutStates.ContainsKey(studio.Id))
-                        studioFoldOutStates.Add(studio.Id, new StudioDisplaySet { Studio = studio });
+                    if (!StudioFoldOutStates.ContainsKey(studio.Id))
+                        StudioFoldOutStates.Add(studio.Id, new StudioDisplaySet { Studio = studio });
                     foreach (var title in studio.Titles)
-                        if (!studioFoldOutStates[studio.Id].titleFoldOutStates.ContainsKey(title.Id))
-                            studioFoldOutStates[studio.Id].titleFoldOutStates.Add(title.Id, new TitleDisplaySet { Title = title });
+                        if (!StudioFoldOutStates[studio.Id].titleFoldOutStates.ContainsKey(title.Id))
+                            StudioFoldOutStates[studio.Id].titleFoldOutStates.Add(title.Id, new TitleDisplaySet { Title = title });
                 }
             }
 
@@ -147,7 +161,7 @@ namespace PlayFab.PfEditor
                     PlayFabEditorDataService.RefreshStudiosList();
             }
 
-            foreach (var studio in studioFoldOutStates)
+            foreach (var studio in StudioFoldOutStates)
             {
                 var style = new GUIStyle(EditorStyles.foldout);
                 if (studio.Value.isCollapsed)

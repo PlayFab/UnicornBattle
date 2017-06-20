@@ -30,6 +30,21 @@ namespace PlayFab.PfEditor
         public static string SERVER_API = "ENABLE_PLAYFABSERVER_API";
         public static string CLIENT_API = "DISABLE_PLAYFABCLIENT_API";
         public static string DEBUG_REQUEST_TIMING = "PLAYFAB_REQUEST_TIMING";
+        public static string DISABLE_IDFA = "DISABLE_IDFA";
+        public static Dictionary<string, string> FLAG_LABELS = new Dictionary<string, string> {
+            { ADMIN_API, "ENABLE CLIENT API" },
+            { SERVER_API, "ENABLE ADMIN API" },
+            { CLIENT_API, "ENABLE SERVER API" },
+            { DEBUG_REQUEST_TIMING, "ENABLE REQUEST TIMES" },
+            { DISABLE_IDFA, "ENABLE IDFA" },
+        };
+        public static Dictionary<string, bool> FLAG_INVERSION = new Dictionary<string, bool> {
+            { ADMIN_API, true },
+            { SERVER_API, false },
+            { CLIENT_API, false },
+            { DEBUG_REQUEST_TIMING, false },
+            { DISABLE_IDFA, false },
+        };
 
         public static string DEFAULT_SDK_LOCATION = "Assets/PlayFabSdk";
         public static string STUDIO_OVERRIDE = "_OVERRIDE_";

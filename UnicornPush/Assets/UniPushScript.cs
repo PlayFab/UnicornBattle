@@ -1,3 +1,5 @@
+// #define TESTING
+
 using PlayFab;
 
 #if TESTING || !DISABLE_PLAYFABCLIENT_API && UNITY_ANDROID && !UNITY_EDITOR

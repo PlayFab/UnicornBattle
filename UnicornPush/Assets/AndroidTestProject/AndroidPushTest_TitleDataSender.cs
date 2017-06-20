@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace PlayFab.Android
 {
-    public class AndroidPushTest_TitleDataSender : AndroidPushTest_Ba
+    public class AndroidPushTest_TitleDataSender : AndroidPushTest_Base
     {
         const string TitleId = "A5F3";
         string _androidPushSenderId = "";
