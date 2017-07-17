@@ -25,6 +25,7 @@ public class UniPushScript : MonoBehaviour
         PlayFabSettings.TitleId = TITLE_ID;
         PlayFabAndroidPushPlugin.Setup(ANDROID_PUSH_SENDER_ID);
         PlayFabAndroidPushPlugin.OnGcmMessage += OnPushReceived;
+        PlayFabAndroidPushPlugin.OnGcmLog += OnPushLog;
 
         StartLoginSequence();
     }
@@ -43,6 +44,15 @@ public class UniPushScript : MonoBehaviour
     void OnPushReceived(PlayFabNotificationPackage package)
     {
         _lastMessageReceived = JsonWrapper.SerializeObject(package);
+    }
+
+    void OnPushLog(string msg)
+    {
+        if (!msg.StartsWith("Token:"))
+            return;
+        Debug.Log(msg);
+        msg = msg.Replace("Token:","");
+        _lastMessageReceived += "\n\n" + msg;
     }
 
     private static void OnSharedFailure(PlayFabError error)

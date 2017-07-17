@@ -248,6 +248,8 @@ namespace PlayFab.Android
         {
             _myPushToken = token;
             PostStatusMessage(PushSetupStatus.TokenReceived);
+            if (OnGcmLog != null)
+                OnGcmLog("Token:" + token);
 
             // Determine setup failure
             if (string.IsNullOrEmpty(_myPushToken))
