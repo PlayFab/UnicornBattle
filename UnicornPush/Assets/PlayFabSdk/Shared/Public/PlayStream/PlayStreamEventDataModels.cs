@@ -38,6 +38,14 @@ namespace PlayFab.PlayStreamModels
         public string AuthenticationProviderId;
         public EventLocation Location;
     }
+    public class EntityCreatedEventData : PlayStreamEventBase
+    {
+        public string EntityChain;
+    }
+    public class EntityLoggedInEventData : PlayStreamEventBase
+    {
+        public string EntityChain;
+    }
     public class StudioCreatedEventData : PlayStreamEventBase
     {
         public string StudioName;
@@ -163,6 +171,11 @@ namespace PlayFab.PlayStreamModels
     #endregion partner
 
     #region player
+    public class AuthTokenValidatedEventData : PlayStreamEventBase
+    {
+        public string Token;
+        public string TitleId;
+    }
     public class PlayerAdCampaignAttributionEventData : PlayStreamEventBase
     {
         public string CampaignId;
@@ -373,6 +386,7 @@ namespace PlayFab.PlayStreamModels
         public uint? TransactionTotal;
         public Currency? TransactionCurrency;
         public string OrderId;
+        public string TransactionId;
         public List<string> PurchasedProduct;
         public string TitleId;
     }
@@ -395,6 +409,10 @@ namespace PlayFab.PlayStreamModels
     {
         public PushNotificationPlatform? Platform;
         public string DeviceToken;
+        public string TitleId;
+    }
+    public class PlayerRemovedTitleEventData : PlayStreamEventBase
+    {
         public string TitleId;
     }
     public class PlayerReportedAsAbusiveEventData : PlayStreamEventBase
@@ -454,6 +472,13 @@ namespace PlayFab.PlayStreamModels
         public string OriginationUserId;
         public string TitleId;
     }
+    public class PlayerUpdatedContactEmailEventData : PlayStreamEventBase
+    {
+        public string EmailName;
+        public string PreviousEmailAddress;
+        public string NewEmailAddress;
+        public string TitleId;
+    }
     public class PlayerVCPurchaseEventData : PlayStreamEventBase
     {
         public string PurchaseId;
@@ -465,12 +490,29 @@ namespace PlayFab.PlayStreamModels
         public uint UnitPrice;
         public string TitleId;
     }
+    public class PlayerVerifiedContactEmailEventData : PlayStreamEventBase
+    {
+        public string EmailName;
+        public string EmailAddress;
+        public string TitleId;
+    }
     public class PlayerVirtualCurrencyBalanceChangedEventData : PlayStreamEventBase
     {
         public string VirtualCurrencyName;
         public int VirtualCurrencyBalance;
         public int VirtualCurrencyPreviousBalance;
         public string OrderId;
+        public string TitleId;
+    }
+    public class SentEmailEventData : PlayStreamEventBase
+    {
+        public string EmailTemplateId;
+        public string EmailTemplateName;
+        public EmailTemplateType? EmailTemplateType;
+        public bool Success;
+        public string ErrorName;
+        public string ErrorMessage;
+        public string EmailName;
         public string TitleId;
     }
     #endregion player
@@ -754,6 +796,13 @@ namespace PlayFab.PlayStreamModels
     {
         TotalValueToDateInUSD,
         PlayerValuesToDate
+    }
+
+    public enum EmailTemplateType
+    {
+        EmailVerification,
+        Custom,
+        AccountRecovery
     }
 
     public enum AuthenticationProvider
@@ -1056,7 +1105,8 @@ namespace PlayFab.PlayStreamModels
         Other,
         ExcessCapacity,
         LimitExceeded,
-        BuildNotActiveInRegion
+        BuildNotActiveInRegion,
+        Unresponsive
     }
 
     public enum PaymentType
@@ -1486,6 +1536,30 @@ namespace PlayFab.PlayStreamModels
         public string Name;
     }
 
+    public enum EmailVerificationStatus
+    {
+        Unverified,
+        Pending,
+        Confirmed
+    }
+
+    [Serializable]
+    public class ContactEmailInfo
+    {
+        /// <summary>
+        /// The name of the email info data
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// The email address
+        /// </summary>
+        public string EmailAddress;
+        /// <summary>
+        /// The verification status of the email
+        /// </summary>
+        public EmailVerificationStatus? VerificationStatus;
+    }
+
     [Serializable]
     public class PlayerProfile
     {
@@ -1565,6 +1639,10 @@ namespace PlayFab.PlayStreamModels
         /// Array of player statistics
         /// </summary>
         public List<PlayerStatistic> PlayerStatistics;
+        /// <summary>
+        /// Array of contact email addresses associated with the player
+        /// </summary>
+        public List<ContactEmailInfo> ContactEmailAddresses;
     }
 
     /// <summary>
@@ -1624,6 +1702,10 @@ namespace PlayFab.PlayStreamModels
         /// Disable API access by returning errors to all API requests.
         /// </summary>
         public bool DisableAPIAccess;
+        /// <summary>
+        /// Display name randomly-generated suffix length.
+        /// </summary>
+        public int? DisplayNameRandomSuffixLength;
     }
 
     public enum TaskInstanceStatus

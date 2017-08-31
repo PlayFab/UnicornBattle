@@ -51,7 +51,6 @@ public class UniPushScript : MonoBehaviour
         if (!msg.StartsWith("Token:"))
             return;
         Debug.Log(msg);
-        msg = msg.Replace("Token:","");
         _lastMessageReceived += "\n\n" + msg;
     }
 

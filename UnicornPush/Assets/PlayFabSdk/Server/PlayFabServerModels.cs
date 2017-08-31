@@ -572,6 +572,36 @@ namespace PlayFab.ServerModels
         public int RemainingUses;
     }
 
+    [Serializable]
+    public class ContactEmailInfo
+    {
+        /// <summary>
+        /// The name of the email info data
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// The email address
+        /// </summary>
+        public string EmailAddress;
+        /// <summary>
+        /// The verification status of the email
+        /// </summary>
+        public EmailVerificationStatus? VerificationStatus;
+    }
+
+    [Serializable]
+    public class ContactEmailInfoModel
+    {
+        /// <summary>
+        /// The name of the email info data
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// The email address
+        /// </summary>
+        public string EmailAddress;
+    }
+
     public enum ContinentCode
     {
         AF,
@@ -1083,6 +1113,13 @@ namespace PlayFab.ServerModels
     {
     }
 
+    public enum EmailVerificationStatus
+    {
+        Unverified,
+        Pending,
+        Confirmed
+    }
+
     [Serializable]
     public class EmptyResult : PlayFabResultCommon
     {
@@ -1234,6 +1271,10 @@ namespace PlayFab.ServerModels
         /// Available Game Center information (if the user and PlayFab friend are also connected in Game Center).
         /// </summary>
         public UserGameCenterInfo GameCenterInfo;
+        /// <summary>
+        /// The profile of the user, if requested.
+        /// </summary>
+        public PlayerProfileModel Profile;
     }
 
     public enum GameInstanceState
@@ -1503,15 +1544,11 @@ namespace PlayFab.ServerModels
         /// </summary>
         public bool? IncludeFacebookFriends;
         /// <summary>
-        /// The version of the leaderboard to get, when UseSpecificVersion is true.
+        /// The version of the leaderboard to get.
         /// </summary>
         public int? Version;
         /// <summary>
-        /// If true, uses the specified version. If false, gets the most recent version.
-        /// </summary>
-        public bool? UseSpecificVersion;
-        /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. For API calls from the client, only ShowDisplayName, ShowAvatarUrl are allowed at this time.
+        /// If non-null, this determines which properties of the resulting player profiles to return. For API calls from the client, only the allowed client profile properties for the title may be requested. These allowed properties are configured in the Game Manager "Client Profile Options" tab in the "Settings" section.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
     }
@@ -1531,6 +1568,10 @@ namespace PlayFab.ServerModels
         /// Indicates whether Facebook friends should be included in the response. Default is true.
         /// </summary>
         public bool? IncludeFacebookFriends;
+        /// <summary>
+        /// If non-null, this determines which properties of the resulting player profiles to return. For API calls from the client, only the allowed client profile properties for the title may be requested. These allowed properties are configured in the Game Manager "Client Profile Options" tab in the "Settings" section.
+        /// </summary>
+        public PlayerProfileViewConstraints ProfileConstraints;
     }
 
     [Serializable]
@@ -1592,17 +1633,13 @@ namespace PlayFab.ServerModels
         /// </summary>
         public int MaxResultsCount;
         /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. For API calls from the client, only ShowDisplayName, ShowAvatarUrl are allowed at this time.
+        /// If non-null, this determines which properties of the resulting player profiles to return. For API calls from the client, only the allowed client profile properties for the title may be requested. These allowed properties are configured in the Game Manager "Client Profile Options" tab in the "Settings" section.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
         /// <summary>
-        /// The version of the leaderboard to get, when UseSpecificVersion is true.
+        /// The version of the leaderboard to get.
         /// </summary>
         public int? Version;
-        /// <summary>
-        /// If true, uses the specified version. If false, gets the most recent version.
-        /// </summary>
-        public bool? UseSpecificVersion;
     }
 
     [Serializable]
@@ -1664,17 +1701,13 @@ namespace PlayFab.ServerModels
         /// </summary>
         public int MaxResultsCount;
         /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. For API calls from the client, only ShowDisplayName, ShowAvatarUrl are allowed at this time.
+        /// If non-null, this determines which properties of the resulting player profiles to return. For API calls from the client, only the allowed client profile properties for the title may be requested. These allowed properties are configured in the Game Manager "Client Profile Options" tab in the "Settings" section.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
         /// <summary>
-        /// The version of the leaderboard to get, when UseSpecificVersion is true.
+        /// The version of the leaderboard to get.
         /// </summary>
         public int? Version;
-        /// <summary>
-        /// If true, uses the specified version. If false, gets the most recent version.
-        /// </summary>
-        public bool? UseSpecificVersion;
     }
 
     [Serializable]
@@ -1850,7 +1883,7 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string PlayFabId;
         /// <summary>
-        /// If non-null, this determines which properties of the profile to return. If null, playfab will only include display names. For API calls from the client, only ShowDisplayName, ShowAvatarUrl are allowed at this time.
+        /// If non-null, this determines which properties of the resulting player profiles to return. For API calls from the client, only the allowed client profile properties for the title may be requested. These allowed properties are configured in the Game Manager "Client Profile Options" tab in the "Settings" section.
         /// </summary>
         public PlayerProfileViewConstraints ProfileConstraints;
     }
@@ -2976,6 +3009,10 @@ namespace PlayFab.ServerModels
         /// Array of player statistics
         /// </summary>
         public List<PlayerStatistic> PlayerStatistics;
+        /// <summary>
+        /// Array of contact email addresses associated with the player
+        /// </summary>
+        public List<ContactEmailInfo> ContactEmailAddresses;
     }
 
     [Serializable]
@@ -3033,6 +3070,10 @@ namespace PlayFab.ServerModels
         /// List of all authentication systems linked to this player account
         /// </summary>
         public List<LinkedPlatformAccountModel> LinkedAccounts;
+        /// <summary>
+        /// List of all contact email info associated with the player account
+        /// </summary>
+        public List<ContactEmailInfoModel> ContactEmailAddresses;
         /// <summary>
         /// List of advertising campaigns the player has been attributed to
         /// </summary>
@@ -3094,6 +3135,10 @@ namespace PlayFab.ServerModels
         /// Whether to show the linked accounts. Defaults to false
         /// </summary>
         public bool ShowLinkedAccounts;
+        /// <summary>
+        /// Whether to show contact email addresses. Defaults to false
+        /// </summary>
+        public bool ShowContactEmailAddresses;
         /// <summary>
         /// Whether to show the total value to date in usd. Defaults to false
         /// </summary>
@@ -3164,6 +3209,35 @@ namespace PlayFab.ServerModels
         /// time when the statistic version became inactive due to statistic version incrementing
         /// </summary>
         public DateTime? DeactivationTime;
+    }
+
+    [Serializable]
+    public class PushNotificationPackage
+    {
+        /// <summary>
+        /// If set, represents a timestamp for when the device should display the message. Local format should be formatted as: yyyy-MM-dd HH:mm:ss or UTC timestamp formatted as yyyy-MM-ddTHH:mm:ssZ. Delivery is not delayed, scheduling is expected to be handled by the device.
+        /// </summary>
+        public string ScheduleDate;
+        /// <summary>
+        /// Title/Subject of the message
+        /// </summary>
+        public string Title;
+        /// <summary>
+        /// Content of the message
+        /// </summary>
+        public string Message;
+        /// <summary>
+        /// Icon file to display with the message
+        /// </summary>
+        public string Icon;
+        /// <summary>
+        /// Sound file to play with the message
+        /// </summary>
+        public string Sound;
+        /// <summary>
+        /// Arbitrary string that will be delivered with the message. Suggested use: JSON formatted object
+        /// </summary>
+        public string CustomData;
     }
 
     public enum PushNotificationPlatform
@@ -3304,6 +3378,10 @@ namespace PlayFab.ServerModels
     public class RegisterGameRequest : PlayFabRequestCommon
     {
         /// <summary>
+        /// Previous lobby id if re-registering an existing game.
+        /// </summary>
+        public string LobbyId;
+        /// <summary>
         /// IP address of the Game Server Instance.
         /// </summary>
         public string ServerHost;
@@ -3333,7 +3411,7 @@ namespace PlayFab.ServerModels
     public class RegisterGameResponse : PlayFabResultCommon
     {
         /// <summary>
-        /// Unique identifier generated for the Game Server Instance that is registered.
+        /// Unique identifier generated for the Game Server Instance that is registered. If LobbyId is specified in request and the game still exists in PlayFab, the LobbyId in request is returned. Otherwise a new lobby id will be returned.
         /// </summary>
         public string LobbyId;
     }
@@ -3407,11 +3485,6 @@ namespace PlayFab.ServerModels
     [Serializable]
     public class ReportPlayerServerResult : PlayFabResultCommon
     {
-        /// <summary>
-        /// Deprecated: Always true
-        /// </summary>
-        [Obsolete("No longer available", false)]
-        public bool? Updated;
         /// <summary>
         /// The number of remaining reports which may be filed today by this reporting player.
         /// </summary>
@@ -3528,9 +3601,17 @@ namespace PlayFab.ServerModels
         /// </summary>
         public string Message;
         /// <summary>
-        /// Subject of message to send (may not be displayed in all platforms.
+        /// Defines all possible push attributes like message, title, icon, etc. Not supported for iOS devices.
+        /// </summary>
+        public PushNotificationPackage Package;
+        /// <summary>
+        /// Subject of message to send (may not be displayed in all platforms. Not supported for Android devices (use Package instead).
         /// </summary>
         public string Subject;
+        /// <summary>
+        /// Platforms that should receive the message. If omitted, we will send to all available platforms.
+        /// </summary>
+        public List<PushNotificationPlatform> TargetPlatforms;
     }
 
     [Serializable]
@@ -3606,6 +3687,24 @@ namespace PlayFab.ServerModels
 
     [Serializable]
     public class SetGameServerInstanceTagsResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
+    public class SetPlayerSecretRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Player secret that is used to verify API request signatures (Enterprise Only).
+        /// </summary>
+        public string PlayerSecret;
+        /// <summary>
+        /// Unique PlayFab assigned ID of the user on whom the operation will be performed.
+        /// </summary>
+        public string PlayFabId;
+    }
+
+    [Serializable]
+    public class SetPlayerSecretResult : PlayFabResultCommon
     {
     }
 

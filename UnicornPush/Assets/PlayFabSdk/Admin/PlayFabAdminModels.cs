@@ -98,6 +98,23 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class AdCampaignAttributionModel
+    {
+        /// <summary>
+        /// Attribution network name
+        /// </summary>
+        public string Platform;
+        /// <summary>
+        /// Attribution campaign identifier
+        /// </summary>
+        public string CampaignId;
+        /// <summary>
+        /// UTC time stamp of attribution
+        /// </summary>
+        public DateTime AttributedAt;
+    }
+
+    [Serializable]
     public class AddNewsRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -575,6 +592,36 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class ContactEmailInfo
+    {
+        /// <summary>
+        /// The name of the email info data
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// The email address
+        /// </summary>
+        public string EmailAddress;
+        /// <summary>
+        /// The verification status of the email
+        /// </summary>
+        public EmailVerificationStatus? VerificationStatus;
+    }
+
+    [Serializable]
+    public class ContactEmailInfoModel
+    {
+        /// <summary>
+        /// The name of the email info data
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// The email address
+        /// </summary>
+        public string EmailAddress;
+    }
+
+    [Serializable]
     public class ContentInfo
     {
         /// <summary>
@@ -906,6 +953,24 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class CreatePlayerSharedSecretRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Friendly name for this key
+        /// </summary>
+        public string FriendlyName;
+    }
+
+    [Serializable]
+    public class CreatePlayerSharedSecretResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The player shared secret to use when calling Client/GetTitlePublicKey
+        /// </summary>
+        public string SecretKey;
+    }
+
+    [Serializable]
     public class CreatePlayerStatisticDefinitionRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -1116,6 +1181,34 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class DeletePlayerRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Unique PlayFab assigned ID of the user on whom the operation will be performed.
+        /// </summary>
+        public string PlayFabId;
+    }
+
+    [Serializable]
+    public class DeletePlayerResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
+    public class DeletePlayerSharedSecretRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The shared secret key to delete
+        /// </summary>
+        public string SecretKey;
+    }
+
+    [Serializable]
+    public class DeletePlayerSharedSecretResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
     public class DeleteStoreRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -1164,6 +1257,13 @@ namespace PlayFab.AdminModels
     {
         Allow,
         Deny
+    }
+
+    public enum EmailVerificationStatus
+    {
+        Unverified,
+        Pending,
+        Confirmed
     }
 
     [Serializable]
@@ -1536,12 +1636,48 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class GetPlayerProfileRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Unique PlayFab assigned ID of the user on whom the operation will be performed.
+        /// </summary>
+        public string PlayFabId;
+        /// <summary>
+        /// If non-null, this determines which properties of the resulting player profiles to return. For API calls from the client, only the allowed client profile properties for the title may be requested. These allowed properties are configured in the Game Manager "Client Profile Options" tab in the "Settings" section.
+        /// </summary>
+        public PlayerProfileViewConstraints ProfileConstraints;
+    }
+
+    [Serializable]
+    public class GetPlayerProfileResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The profile of the player. This profile is not guaranteed to be up-to-date. For a new player, this profile will not exist.
+        /// </summary>
+        public PlayerProfileModel PlayerProfile;
+    }
+
+    [Serializable]
     public class GetPlayerSegmentsResult : PlayFabResultCommon
     {
         /// <summary>
         /// Array of segments the requested player currently belongs to.
         /// </summary>
         public List<GetSegmentResult> Segments;
+    }
+
+    [Serializable]
+    public class GetPlayerSharedSecretsRequest : PlayFabRequestCommon
+    {
+    }
+
+    [Serializable]
+    public class GetPlayerSharedSecretsResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The player shared secret to use when calling Client/GetTitlePublicKey
+        /// </summary>
+        public List<SharedSecret> SharedSecrets;
     }
 
     [Serializable]
@@ -2208,6 +2344,27 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class LinkedPlatformAccountModel
+    {
+        /// <summary>
+        /// Authentication platform
+        /// </summary>
+        public LoginIdentityProvider? Platform;
+        /// <summary>
+        /// Unique account identifier of the user on the platform
+        /// </summary>
+        public string PlatformUserId;
+        /// <summary>
+        /// Linked account username of the user on the platform, if available
+        /// </summary>
+        public string Username;
+        /// <summary>
+        /// Linked account email of the user on the platform, if available
+        /// </summary>
+        public string Email;
+    }
+
+    [Serializable]
     public class ListBuildsRequest : PlayFabRequestCommon
     {
     }
@@ -2233,6 +2390,31 @@ namespace PlayFab.AdminModels
         /// List of virtual currency names defined for this title
         /// </summary>
         public List<VirtualCurrencyData> VirtualCurrencies;
+    }
+
+    [Serializable]
+    public class LocationModel
+    {
+        /// <summary>
+        /// The two-character continent code for this location
+        /// </summary>
+        public ContinentCode? ContinentCode;
+        /// <summary>
+        /// The two-character ISO 3166-1 country code for the country associated with the location
+        /// </summary>
+        public CountryCode? CountryCode;
+        /// <summary>
+        /// City name.
+        /// </summary>
+        public string City;
+        /// <summary>
+        /// Latitude coordinate of the geographic location.
+        /// </summary>
+        public double? Latitude;
+        /// <summary>
+        /// Longitude coordinate of the geographic location.
+        /// </summary>
+        public double? Longitude;
     }
 
     public enum LoginIdentityProvider
@@ -2582,6 +2764,156 @@ namespace PlayFab.AdminModels
         /// Array of player statistics
         /// </summary>
         public List<PlayerStatistic> PlayerStatistics;
+        /// <summary>
+        /// Array of contact email addresses associated with the player
+        /// </summary>
+        public List<ContactEmailInfo> ContactEmailAddresses;
+    }
+
+    [Serializable]
+    public class PlayerProfileModel
+    {
+        /// <summary>
+        /// Publisher this player belongs to
+        /// </summary>
+        public string PublisherId;
+        /// <summary>
+        /// Title ID this player profile applies to
+        /// </summary>
+        public string TitleId;
+        /// <summary>
+        /// PlayFab player account unique identifier
+        /// </summary>
+        public string PlayerId;
+        /// <summary>
+        /// Player record created
+        /// </summary>
+        public DateTime? Created;
+        /// <summary>
+        /// Player account origination
+        /// </summary>
+        public LoginIdentityProvider? Origination;
+        /// <summary>
+        /// UTC time when the player most recently logged in to the title
+        /// </summary>
+        public DateTime? LastLogin;
+        /// <summary>
+        /// If the player is currently banned, the UTC Date when the ban expires
+        /// </summary>
+        public DateTime? BannedUntil;
+        /// <summary>
+        /// List of geographic locations from which the player has logged in to the title
+        /// </summary>
+        public List<LocationModel> Locations;
+        /// <summary>
+        /// Player display name
+        /// </summary>
+        public string DisplayName;
+        /// <summary>
+        /// URL of the player's avatar image
+        /// </summary>
+        public string AvatarUrl;
+        /// <summary>
+        /// List of player's tags for segmentation
+        /// </summary>
+        public List<TagModel> Tags;
+        /// <summary>
+        /// List of configured end points registered for sending the player push notifications
+        /// </summary>
+        public List<PushNotificationRegistrationModel> PushNotificationRegistrations;
+        /// <summary>
+        /// List of all authentication systems linked to this player account
+        /// </summary>
+        public List<LinkedPlatformAccountModel> LinkedAccounts;
+        /// <summary>
+        /// List of all contact email info associated with the player account
+        /// </summary>
+        public List<ContactEmailInfoModel> ContactEmailAddresses;
+        /// <summary>
+        /// List of advertising campaigns the player has been attributed to
+        /// </summary>
+        public List<AdCampaignAttributionModel> AdCampaignAttributions;
+        /// <summary>
+        /// Sum of the player's purchases made with real-money currencies, converted to US dollars equivalent and represented as a whole number of cents (1/100 USD).              For example, 999 indicates nine dollars and ninety-nine cents.
+        /// </summary>
+        public uint? TotalValueToDateInUSD;
+        /// <summary>
+        /// List of the player's lifetime purchase totals, summed by real-money currency
+        /// </summary>
+        public List<ValueToDateModel> ValuesToDate;
+        /// <summary>
+        /// List of the player's virtual currency balances
+        /// </summary>
+        public List<VirtualCurrencyBalanceModel> VirtualCurrencyBalances;
+        /// <summary>
+        /// List of leaderboard statistic values for the player
+        /// </summary>
+        public List<StatisticModel> Statistics;
+    }
+
+    [Serializable]
+    public class PlayerProfileViewConstraints
+    {
+        /// <summary>
+        /// Whether to show the display name. Defaults to false
+        /// </summary>
+        public bool ShowDisplayName;
+        /// <summary>
+        /// Whether to show the created date. Defaults to false
+        /// </summary>
+        public bool ShowCreated;
+        /// <summary>
+        /// Whether to show origination. Defaults to false
+        /// </summary>
+        public bool ShowOrigination;
+        /// <summary>
+        /// Whether to show the last login time. Defaults to false
+        /// </summary>
+        public bool ShowLastLogin;
+        /// <summary>
+        /// Whether to show the banned until time. Defaults to false
+        /// </summary>
+        public bool ShowBannedUntil;
+        /// <summary>
+        /// Reserved for future development
+        /// </summary>
+        public bool ShowStatistics;
+        /// <summary>
+        /// Whether to show campaign attributions. Defaults to false
+        /// </summary>
+        public bool ShowCampaignAttributions;
+        /// <summary>
+        /// Whether to show push notification registrations. Defaults to false
+        /// </summary>
+        public bool ShowPushNotificationRegistrations;
+        /// <summary>
+        /// Whether to show the linked accounts. Defaults to false
+        /// </summary>
+        public bool ShowLinkedAccounts;
+        /// <summary>
+        /// Whether to show contact email addresses. Defaults to false
+        /// </summary>
+        public bool ShowContactEmailAddresses;
+        /// <summary>
+        /// Whether to show the total value to date in usd. Defaults to false
+        /// </summary>
+        public bool ShowTotalValueToDateInUsd;
+        /// <summary>
+        /// Whether to show the values to date. Defaults to false
+        /// </summary>
+        public bool ShowValuesToDate;
+        /// <summary>
+        /// Whether to show tags. Defaults to false
+        /// </summary>
+        public bool ShowTags;
+        /// <summary>
+        /// Whether to show player's locations. Defaults to false
+        /// </summary>
+        public bool ShowLocations;
+        /// <summary>
+        /// Whether to show player's avatar URL. Defaults to false
+        /// </summary>
+        public bool ShowAvatarUrl;
     }
 
     [Serializable]
@@ -2680,6 +3012,26 @@ namespace PlayFab.AdminModels
         /// Notification configured endpoint
         /// </summary>
         public string NotificationEndpointARN;
+    }
+
+    [Serializable]
+    public class PushNotificationRegistrationModel
+    {
+        /// <summary>
+        /// Push notification platform
+        /// </summary>
+        public PushNotificationPlatform? Platform;
+        /// <summary>
+        /// Notification configured endpoint
+        /// </summary>
+        public string NotificationEndpointARN;
+    }
+
+    public enum PushSetupPlatform
+    {
+        GCM,
+        APNS,
+        APNS_SANDBOX
     }
 
     [Serializable]
@@ -3046,6 +3398,24 @@ namespace PlayFab.AdminModels
     }
 
     [Serializable]
+    public class SetPlayerSecretRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Player secret that is used to verify API request signatures (Enterprise Only).
+        /// </summary>
+        public string PlayerSecret;
+        /// <summary>
+        /// Unique PlayFab assigned ID of the user on whom the operation will be performed.
+        /// </summary>
+        public string PlayFabId;
+    }
+
+    [Serializable]
+    public class SetPlayerSecretResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
     public class SetPublishedRevisionRequest : PlayFabRequestCommon
     {
         /// <summary>
@@ -3109,7 +3479,7 @@ namespace PlayFab.AdminModels
         /// <summary>
         /// supported notification platforms are Apple Push Notification Service (APNS and APNS_SANDBOX) for iOS and Google Cloud Messaging (GCM) for Android
         /// </summary>
-        public string Platform;
+        public PushSetupPlatform Platform;
         /// <summary>
         /// for APNS, this is the PlatformPrincipal (SSL Certificate)
         /// </summary>
@@ -3133,6 +3503,23 @@ namespace PlayFab.AdminModels
         public string ARN;
     }
 
+    [Serializable]
+    public class SharedSecret
+    {
+        /// <summary>
+        /// The player shared secret to use when calling Client/GetTitlePublicKey
+        /// </summary>
+        public string SecretKey;
+        /// <summary>
+        /// Friendly name for this key
+        /// </summary>
+        public string FriendlyName;
+        /// <summary>
+        /// Flag to indicate if this key is disabled
+        /// </summary>
+        public bool Disabled;
+    }
+
     public enum SourceType
     {
         Admin,
@@ -3148,6 +3535,23 @@ namespace PlayFab.AdminModels
         Min,
         Max,
         Sum
+    }
+
+    [Serializable]
+    public class StatisticModel
+    {
+        /// <summary>
+        /// Statistic name
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// Statistic version (0 if not a versioned statistic)
+        /// </summary>
+        public int Version;
+        /// <summary>
+        /// Statistic value
+        /// </summary>
+        public int Value;
     }
 
     public enum StatisticResetIntervalOption
@@ -3240,6 +3644,15 @@ namespace PlayFab.AdminModels
         /// Amount to be subtracted from the user balance of the specified virtual currency.
         /// </summary>
         public int Amount;
+    }
+
+    [Serializable]
+    public class TagModel
+    {
+        /// <summary>
+        /// Full value of the tag, including namespace
+        /// </summary>
+        public string TagValue;
     }
 
     [Serializable]
@@ -3406,6 +3819,28 @@ namespace PlayFab.AdminModels
         /// New revision number created
         /// </summary>
         public int Revision;
+    }
+
+    [Serializable]
+    public class UpdatePlayerSharedSecretRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The shared secret key to update
+        /// </summary>
+        public string SecretKey;
+        /// <summary>
+        /// Friendly name for this key
+        /// </summary>
+        public string FriendlyName;
+        /// <summary>
+        /// Disable or Enable this key
+        /// </summary>
+        public bool Disabled;
+    }
+
+    [Serializable]
+    public class UpdatePlayerSharedSecretResult : PlayFabResultCommon
+    {
     }
 
     [Serializable]
@@ -3596,7 +4031,7 @@ namespace PlayFab.AdminModels
         /// </summary>
         public string PlayFabId;
         /// <summary>
-        /// new title display name for the user - must be between 3 and 25 characters
+        /// New title display name for the user - must be between 3 and 25 characters
         /// </summary>
         public string DisplayName;
     }
@@ -3915,6 +4350,36 @@ namespace PlayFab.AdminModels
         /// XBox user ID
         /// </summary>
         public string XboxUserId;
+    }
+
+    [Serializable]
+    public class ValueToDateModel
+    {
+        /// <summary>
+        /// ISO 4217 code of the currency used in the purchases
+        /// </summary>
+        public string Currency;
+        /// <summary>
+        /// Total value of the purchases in a whole number of 1/100 monetary units. For example, 999 indicates nine dollars and ninety-nine cents when Currency is 'USD')
+        /// </summary>
+        public uint TotalValue;
+        /// <summary>
+        /// Total value of the purchases in a string representation of decimal monetary units. For example, '9.99' indicates nine dollars and ninety-nine cents when Currency is 'USD'.
+        /// </summary>
+        public string TotalValueAsDecimal;
+    }
+
+    [Serializable]
+    public class VirtualCurrencyBalanceModel
+    {
+        /// <summary>
+        /// Name of the virtual currency
+        /// </summary>
+        public string Currency;
+        /// <summary>
+        /// Balance of the virtual currency
+        /// </summary>
+        public int TotalValue;
     }
 
     [Serializable]

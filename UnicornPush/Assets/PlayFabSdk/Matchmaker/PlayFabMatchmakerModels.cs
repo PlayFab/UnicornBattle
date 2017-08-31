@@ -113,11 +113,11 @@ namespace PlayFab.MatchmakerModels
     public class PlayerJoinedRequest : PlayFabRequestCommon
     {
         /// <summary>
-        /// Unique identifier of the Game Server Instance the user is joining.
+        /// Unique identifier of the Game Server Instance the user is joining. This must be a Game Server Instance started with the Matchmaker/StartGame API.
         /// </summary>
         public string LobbyId;
         /// <summary>
-        /// PlayFab unique identifier for the user joining.
+        /// PlayFab unique identifier for the player joining.
         /// </summary>
         public string PlayFabId;
     }
@@ -131,11 +131,11 @@ namespace PlayFab.MatchmakerModels
     public class PlayerLeftRequest : PlayFabRequestCommon
     {
         /// <summary>
-        /// Unique identifier of the Game Server Instance the user is leaving.
+        /// Unique identifier of the Game Server Instance the user is leaving. This must be a Game Server Instance started with the Matchmaker/StartGame API.
         /// </summary>
         public string LobbyId;
         /// <summary>
-        /// PlayFab unique identifier for the user leaving.
+        /// PlayFab unique identifier for the player leaving.
         /// </summary>
         public string PlayFabId;
     }
@@ -159,6 +159,10 @@ namespace PlayFab.MatchmakerModels
     [Serializable]
     public class RegisterGameRequest : PlayFabRequestCommon
     {
+        /// <summary>
+        /// Previous lobby id if re-registering an existing game.
+        /// </summary>
+        public string LobbyId;
         /// <summary>
         /// IP address of the Game Server Instance.
         /// </summary>
@@ -189,7 +193,7 @@ namespace PlayFab.MatchmakerModels
     public class RegisterGameResponse : PlayFabResultCommon
     {
         /// <summary>
-        /// Unique identifier generated for the Game Server Instance that is registered.
+        /// Unique identifier generated for the Game Server Instance that is registered. If LobbyId is specified in request and the game still exists in PlayFab, the LobbyId in request is returned. Otherwise a new lobby id will be returned.
         /// </summary>
         public string LobbyId;
     }

@@ -13,8 +13,11 @@ namespace PlayFab.UUnit
         {
             var assembly = Assembly.GetAssembly(typeof(SceneView));
             var type = assembly.GetType("UnityEditorInternal.LogEntries");
-            var method = type.GetMethod("Clear");
-            method.Invoke(new object(), null);
+            if (type != null)
+            {
+                var method = type.GetMethod("Clear");
+                method.Invoke(new object(), null);
+            }
         }
 
         [MenuItem("PlayFab/Testing/Play and Run Tests")]
