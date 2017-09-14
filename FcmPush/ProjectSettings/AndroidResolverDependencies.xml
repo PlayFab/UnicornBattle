@@ -1,0 +1,30 @@
+<dependencies>
+  <packages>
+    <package>com.google.android.gms:play-services-base:11.2.0</package>
+    <package>com.google.firebase:firebase-common:11.2.0</package>
+    <package>com.google.firebase:firebase-core:11.2.0</package>
+    <package>com.google.firebase:firebase-app-unity:4.1.0</package>
+    <package>com.google.firebase:firebase-messaging:11.2.0</package>
+    <package>com.google.firebase:firebase-messaging-unity:4.1.0</package>
+  </packages>
+  <files>
+    <file>Assets/Plugins/Android/firebase-analytics-11.2.0.aar</file>
+    <file>Assets/Plugins/Android/firebase-analytics-impl-11.2.0.aar</file>
+    <file>Assets/Plugins/Android/firebase-app-unity-4.1.0</file>
+    <file>Assets/Plugins/Android/firebase-common-11.2.0</file>
+    <file>Assets/Plugins/Android/firebase-core-11.2.0</file>
+    <file>Assets/Plugins/Android/firebase-iid-11.2.0</file>
+    <file>Assets/Plugins/Android/firebase-messaging-11.2.0.aar</file>
+    <file>Assets/Plugins/Android/firebase-messaging-unity-4.1.0</file>
+    <file>Assets/Plugins/Android/play-services-base-11.2.0.aar</file>
+    <file>Assets/Plugins/Android/play-services-basement-11.2.0.aar</file>
+    <file>Assets/Plugins/Android/play-services-tasks-11.2.0.aar</file>
+    <file>Assets/Plugins/Android/support-annotations-25.2.0.jar</file>
+    <file>Assets/Plugins/Android/support-compat-25.2.0.aar</file>
+    <file>Assets/Plugins/Android/support-core-ui-25.2.0.aar</file>
+    <file>Assets/Plugins/Android/support-core-utils-25.2.0.aar</file>
+    <file>Assets/Plugins/Android/support-fragment-25.2.0.aar</file>
+    <file>Assets/Plugins/Android/support-media-compat-25.2.0.aar</file>
+    <file>Assets/Plugins/Android/support-v4-25.2.0.aar</file>
+  </files>
+</dependencies>

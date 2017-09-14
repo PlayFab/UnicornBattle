@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="firebase_database_url" translatable="false">https://unicorn-battle-79221.firebaseio.com</string>
+  <string name="gcm_defaultSenderId" translatable="false">494923569376</string>
+  <string name="google_storage_bucket" translatable="false">unicorn-battle-79221.appspot.com</string>
+  <string name="project_id" translatable="false">unicorn-battle-79221</string>
+  <string name="google_api_key" translatable="false">AIzaSyDDvGhIoyS47SHinIdhkDDd_N5wuvdDv7s</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDDvGhIoyS47SHinIdhkDDd_N5wuvdDv7s</string>
+  <string name="google_app_id" translatable="false">1:494923569376:android:7973d638d20af3e4</string>
+  <string name="default_web_client_id" translatable="false">494923569376-cnt6c8mfjsardj6rekmeukep6p955r8s.apps.googleusercontent.com</string>
+</resources>
