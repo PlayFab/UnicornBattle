@@ -1,19 +1,17 @@
-using System.Collections.Generic;
-using Firebase.Messaging;
-using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.Json;
+using UnityEngine;
 
 public class MsgCatcher : MonoBehaviour
 {
-    public string gcmToken;
+    public string pushToken;
     public string playFabId;
     public string lastMsg;
 
     public void OnGUI()
     {
-        GUI.Label(new Rect(0, 0, Screen.width, 200), gcmToken);
+        GUI.Label(new Rect(0, 0, Screen.width, 200), pushToken);
         GUI.Label(new Rect(0, 200, Screen.width, Screen.height - 200), lastMsg);
     }
 
@@ -31,12 +29,13 @@ public class MsgCatcher : MonoBehaviour
 
     private void LoginToPlayFab()
     {
-        var request = new LoginWithAndroidDeviceIDRequest
-        {
-            AndroidDeviceId = SystemInfo.deviceUniqueIdentifier,
-            CreateAccount = true,
-        };
+#if UNITY_ANDROID
+        var request = new LoginWithAndroidDeviceIDRequest { AndroidDeviceId = SystemInfo.deviceUniqueIdentifier, CreateAccount = true, };
         PlayFabClientAPI.LoginWithAndroidDeviceID(request, OnPfLogin, OnPfFail);
+#elif UNITY_IOS
+        var request = new LoginWithIOSDeviceIDRequest { DeviceId = SystemInfo.deviceUniqueIdentifier, CreateAccount = true, };
+        PlayFabClientAPI.LoginWithIOSDeviceID(request, OnPfLogin, OnPfFail);
+#endif
     }
 
     private void OnPfLogin(LoginResult result)
@@ -48,14 +47,24 @@ public class MsgCatcher : MonoBehaviour
 
     private void RegisterForPush()
     {
-        if (string.IsNullOrEmpty(gcmToken) || string.IsNullOrEmpty(playFabId))
+        if (string.IsNullOrEmpty(pushToken) || string.IsNullOrEmpty(playFabId))
             return;
 
-        var request = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = gcmToken };
-        PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, OnPfPushReg, OnPfFail);
+#if UNITY_ANDROID
+        var request = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = pushToken };
+        PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, OnPfAndroidReg, OnPfFail);
+#elif UNITY_IOS
+        var request = new RegisterForIOSPushNotificationRequest { DeviceToken = pushToken };
+        PlayFabClientAPI.RegisterForIOSPushNotification(request, OnPfIosReg, OnPfFail);
+#endif
     }
 
-    private void OnPfPushReg(AndroidDevicePushNotificationRegistrationResult result)
+    private void OnPfAndroidReg(AndroidDevicePushNotificationRegistrationResult result)
+    {
+        Debug.Log("PlayFab: Push Registration Successful");
+    }
+
+    private void OnPfIosReg(RegisterForIOSPushNotificationResult result)
     {
         Debug.Log("PlayFab: Push Registration Successful");
     }
@@ -63,7 +72,7 @@ public class MsgCatcher : MonoBehaviour
     private void OnTokenReceived(object sender, Firebase.Messaging.TokenReceivedEventArgs token)
     {
         Debug.Log("PlayFab: Received Registration Token: " + token.Token);
-        gcmToken = token.Token;
+        pushToken = token.Token;
         RegisterForPush();
     }
 
