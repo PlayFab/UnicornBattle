@@ -7,9 +7,10 @@ using UnityEngine;
 
 public class MsgCatcher : MonoBehaviour
 {
-    public string pushToken;
-    public string playFabId;
-    public string lastMsg;
+    public string pushToken = null;
+    public string playFabId = null;
+    public string lastMsg = null;
+	public string log = "";
 
     public void Start()
     {
@@ -18,25 +19,42 @@ public class MsgCatcher : MonoBehaviour
     }
 
     public void Update()
+	{
+		UpdateToken ();
+		UpdatePollNotifications ();
+	}
+
+	public void UpdateToken()
     {
-        if (pushToken != null)
+		if (!string.IsNullOrEmpty(pushToken))
             return;
         byte[] token = UnityEngine.iOS.NotificationServices.deviceToken;
-        if (token == null)
-            return;
+		if (token == null)
+			return;
         pushToken = System.BitConverter.ToString(token).Replace("-", "").ToLower();
         RegisterForPush();
     }
 
+	public void UpdatePollNotifications()
+	{
+		if (UnityEngine.iOS.NotificationServices.remoteNotifications != null) {
+			foreach (var eachNotify in UnityEngine.iOS.NotificationServices.remoteNotifications) {
+				lastMsg = eachNotify.alertBody;
+			}
+		}
+	}
+
     public void OnGUI()
     {
-        GUI.Label(new Rect(0, 0, Screen.width, 200), pushToken);
-        GUI.Label(new Rect(0, 200, Screen.width, Screen.height - 200), lastMsg);
+		GUI.Label(new Rect(0, 0, Screen.width, 100), "PushToken: " + (string.IsNullOrEmpty(pushToken) ? "null" : pushToken));
+		GUI.Label(new Rect(0, 100, Screen.width, 200), "PlayFabId: " + (string.IsNullOrEmpty(playFabId) ? "null" : playFabId));
+		GUI.Label(new Rect(0, 200, Screen.width, 300), "Push Msg: " + (string.IsNullOrEmpty(lastMsg) ? "null" : lastMsg));
+		GUI.Label(new Rect(0, 300, Screen.width, Screen.height - 300), string.IsNullOrEmpty(log) ? "null" : log);
     }
 
     private void OnPfFail(PlayFabError error)
     {
-        Debug.Log("PlayFab: api error: " + error.GenerateErrorReport());
+		log += "PlayFab: api error: " + error.GenerateErrorReport () + "\n";
     }
 
 
@@ -53,7 +71,7 @@ public class MsgCatcher : MonoBehaviour
 
     private void OnPfLogin(LoginResult result)
     {
-        Debug.Log("PlayFab: login successful");
+		log += "PlayFab: login successful" + "\n";
         playFabId = result.PlayFabId;
         RegisterForPush();
     }
@@ -74,11 +92,11 @@ public class MsgCatcher : MonoBehaviour
 
     private void OnPfAndroidReg(AndroidDevicePushNotificationRegistrationResult result)
     {
-        Debug.Log("PlayFab: Push Registration Successful");
+		log += "PlayFab: Push Registration Successful" + "\n";
     }
 
     private void OnPfIosReg(RegisterForIOSPushNotificationResult result)
     {
-        Debug.Log("PlayFab: Push Registration Successful");
+		log += "PlayFab: Push Registration Successful" + "\n";
     }
 }
