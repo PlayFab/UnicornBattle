@@ -9,6 +9,7 @@ public class MsgCatcher : MonoBehaviour
     public string playFabId;
     public string lastMsg;
 
+    // OnGUI should be deleted/replaced with your own gui - This is only provided for debugging
     public void OnGUI()
     {
         GUI.Label(new Rect(0, 0, Screen.width, 200), pushToken);
@@ -22,6 +23,7 @@ public class MsgCatcher : MonoBehaviour
 
     public void Start()
     {
+        // PlayFabSettings.TitleId = "TITLE_ID";
         Firebase.Messaging.FirebaseMessaging.TokenReceived += OnTokenReceived;
         Firebase.Messaging.FirebaseMessaging.MessageReceived += OnMessageReceived;
         LoginToPlayFab();
@@ -32,9 +34,6 @@ public class MsgCatcher : MonoBehaviour
 #if UNITY_ANDROID
         var request = new LoginWithAndroidDeviceIDRequest { AndroidDeviceId = SystemInfo.deviceUniqueIdentifier, CreateAccount = true, };
         PlayFabClientAPI.LoginWithAndroidDeviceID(request, OnPfLogin, OnPfFail);
-#elif UNITY_IOS
-        var request = new LoginWithIOSDeviceIDRequest { DeviceId = SystemInfo.deviceUniqueIdentifier, CreateAccount = true, };
-        PlayFabClientAPI.LoginWithIOSDeviceID(request, OnPfLogin, OnPfFail);
 #endif
     }
 
@@ -51,11 +50,12 @@ public class MsgCatcher : MonoBehaviour
             return;
 
 #if UNITY_ANDROID
-        var request = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = pushToken };
+        var request = new AndroidDevicePushNotificationRegistrationRequest {
+            DeviceToken = pushToken,
+            SendPushNotificationConfirmation = true,
+            ConfirmationMessage = "Push notifications registered successfully"
+        };
         PlayFabClientAPI.AndroidDevicePushNotificationRegistration(request, OnPfAndroidReg, OnPfFail);
-#elif UNITY_IOS
-        var request = new RegisterForIOSPushNotificationRequest { DeviceToken = pushToken };
-        PlayFabClientAPI.RegisterForIOSPushNotification(request, OnPfIosReg, OnPfFail);
 #endif
     }
 
