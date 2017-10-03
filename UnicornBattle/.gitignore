@@ -20,6 +20,7 @@ sysinfo.txt
 *.user
 *.unityproj
 *.booproj
+
 # ============ #
 # OS generated #
 # ============ #
@@ -30,3 +31,11 @@ sysinfo.txt
 Icon?
 ehthumbs.db
 [Tt]humbs.db
+
+# ==================== #
+# FCM Plugin generated #
+# ==================== #
+// This one is dangerous and should be selectively disabled/re-enabled, but generally all the firebase/android generated files live here
+*/Plugins/Android/*
+AndroidResolverDependencies.xml
+AndroidManifest.xml

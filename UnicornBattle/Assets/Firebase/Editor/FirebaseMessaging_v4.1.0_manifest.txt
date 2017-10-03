@@ -1,0 +1,61 @@
+Assets/Editor Default Resources/Firebase/fb_analytics.png
+Assets/Editor Default Resources/Firebase/fb_analytics_dark.png
+Assets/Editor Default Resources/Firebase/fb_auth.png
+Assets/Editor Default Resources/Firebase/fb_auth_dark.png
+Assets/Editor Default Resources/Firebase/fb_cloud_messaging.png
+Assets/Editor Default Resources/Firebase/fb_cloud_messaging_dark.png
+Assets/Editor Default Resources/Firebase/fb_config.png
+Assets/Editor Default Resources/Firebase/fb_config_dark.png
+Assets/Editor Default Resources/Firebase/fb_database.png
+Assets/Editor Default Resources/Firebase/fb_database_dark.png
+Assets/Editor Default Resources/Firebase/fb_dynamic_links.png
+Assets/Editor Default Resources/Firebase/fb_dynamic_links_dark.png
+Assets/Editor Default Resources/Firebase/fb_invites.png
+Assets/Editor Default Resources/Firebase/fb_invites_dark.png
+Assets/Editor Default Resources/Firebase/fb_storage.png
+Assets/Editor Default Resources/Firebase/fb_storage_dark.png
+Assets/Editor Default Resources/Firebase/firebase_lockup.png
+Assets/Editor Default Resources/Firebase/firebase_lockup_dark.png
+Assets/Firebase/Editor/AppDeps.cs
+Assets/Firebase/Editor/Firebase.Editor.dll
+Assets/Firebase/Editor/FirebaseMessaging_v1.0.0_manifest.txt
+Assets/Firebase/Editor/FirebaseMessaging_v1.0.1_manifest.txt
+Assets/Firebase/Editor/FirebaseMessaging_v1.1.0_manifest.txt
+Assets/Firebase/Editor/FirebaseMessaging_v1.1.1_manifest.txt
+Assets/Firebase/Editor/FirebaseMessaging_v1.1.2_manifest.txt
+Assets/Firebase/Editor/FirebaseMessaging_v4.1.0_manifest.txt
+Assets/Firebase/Editor/MessagingDeps.cs
+Assets/Firebase/Editor/generate_xml_from_google_services_json.exe
+Assets/Firebase/Editor/generate_xml_from_google_services_json.py
+Assets/Firebase/Plugins/Firebase.App.dll
+Assets/Firebase/Plugins/Firebase.Messaging.dll
+Assets/Firebase/Plugins/Google.MiniJson.dll
+Assets/Firebase/Plugins/iOS/Firebase.App.dll
+Assets/Firebase/Plugins/iOS/Firebase.Messaging.dll
+Assets/Firebase/Plugins/link.xml
+Assets/Firebase/m2repository/com/google/firebase/firebase-app-unity/4.1.0/firebase-app-unity-4.1.0.pom
+Assets/Firebase/m2repository/com/google/firebase/firebase-app-unity/4.1.0/firebase-app-unity-4.1.0.srcaar
+Assets/Firebase/m2repository/com/google/firebase/firebase-app-unity/maven-metadata.xml
+Assets/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/4.1.0/firebase-messaging-unity-4.1.0.pom
+Assets/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/4.1.0/firebase-messaging-unity-4.1.0.srcaar
+Assets/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/maven-metadata.xml
+Assets/Parse/Plugins/Unity.Compat.dll
+Assets/Parse/Plugins/Unity.Tasks.dll
+Assets/Parse/Plugins/dotNet45/Unity.Tasks.dll
+Assets/PlayServicesResolver/Editor/Google.IOSResolver_v1.2.45.0.dll
+Assets/PlayServicesResolver/Editor/Google.JarResolver_v1.2.45.0.dll
+Assets/PlayServicesResolver/Editor/Google.VersionHandler.dll
+Assets/PlayServicesResolver/Editor/Google.VersionHandlerImpl_v1.2.45.0.dll
+Assets/PlayServicesResolver/Editor/play-services-resolver_v1.2.45.0.txt
+Assets/Plugins/Android/AndroidManifest.xml
+Assets/Plugins/Android/Firebase/AndroidManifest.xml
+Assets/Plugins/Android/Firebase/project.properties
+Assets/Plugins/Android/libmessaging_unity_player_activity.jar
+Assets/Plugins/iOS/Firebase/libApp.a
+Assets/Plugins/iOS/Firebase/libMessaging.a
+Assets/Plugins/x86_64/Firebase/App.bundle
+Assets/Plugins/x86_64/Firebase/App.dll
+Assets/Plugins/x86_64/Firebase/App.so
+Assets/Plugins/x86_64/Firebase/Messaging.bundle
+Assets/Plugins/x86_64/Firebase/Messaging.dll
+Assets/Plugins/x86_64/Firebase/Messaging.so

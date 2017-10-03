@@ -1,9 +1,8 @@
+using Facebook.Unity;
 using PlayFab.ClientModels;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Facebook.Unity;
-using PlayFab;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -30,21 +29,18 @@ public class AccountStatusController : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("AccountStatusController: Start \"" + PF_GameData.AndroidPushSenderId + "\"");
-#if UNITY_ANDROID && !UNITY_EDITOR
-		PlayFabGoogleCloudMessaging._RegistrationReadyCallback += OnGCMReady;
-		PlayFabGoogleCloudMessaging._RegistrationCallback += OnGCMRegistration;
-#endif
+        Debug.Log("Start PlayFab Token Calls");
+        Firebase.Messaging.FirebaseMessaging.TokenReceived += OnTokenReceived;
+        Firebase.Messaging.FirebaseMessaging.MessageReceived += OnMessageReceived;
         PF_Bridge.OnPlayfabCallbackSuccess += HandleCallbackSuccess;
         CheckPushStatus();
     }
 
     void OnDestroy()
     {
-#if UNITY_ANDROID && !UNITY_EDITOR
-		PlayFabGoogleCloudMessaging._RegistrationReadyCallback -= OnGCMReady;
-		PlayFabGoogleCloudMessaging._RegistrationCallback -= OnGCMRegistration;
-#endif
+        Debug.Log("OnDestroy PlayFab Token Calls");
+        Firebase.Messaging.FirebaseMessaging.TokenReceived -= OnTokenReceived;
+        Firebase.Messaging.FirebaseMessaging.MessageReceived -= OnMessageReceived;
         PF_Bridge.OnPlayfabCallbackSuccess -= HandleCallbackSuccess;
     }
 
@@ -61,32 +57,36 @@ public class AccountStatusController : MonoBehaviour
         if (isFbSet != FB.IsLoggedIn) // FB.IsLoggedIn doesn't update immediately, so you can't check it immediately after logout
             UpdateFacebookStatusButton();
         isFbSet = FB.IsLoggedIn;
+        registerPush.interactable = !string.IsNullOrEmpty(pushToken);
     }
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-	public void OnGCMReady(bool status)
-	{
-		Debug.Log("AccountStatusController: GCM Ready!");
-		PlayFabGoogleCloudMessaging.GetToken();
-	}
-	
-	public void OnGCMRegistration(string token, string error)
+    private void OnTokenReceived(object sender, Firebase.Messaging.TokenReceivedEventArgs token)
     {
-        Debug.Log("AccountStatusController: GCM Token Received: " + token);
-        
-		if(!string.IsNullOrEmpty(error))
-			Debug.Log("GCM Error: " + error);
-		else if (token != null)
-			pushToken = token;
+        Debug.Log("PlayFab: Received Registration Token: " + token.Token);
+        pushToken = token.Token;
         CheckPushStatus();
-	}
-#endif
+    }
+
+    private void OnMessageReceived(object sender, Firebase.Messaging.MessageReceivedEventArgs e)
+    {
+        if (e.Message.Data != null)
+            Debug.Log("PlayFab: Received a message with data");
+        if (e.Message.Notification != null)
+            Debug.Log("PlayFab: Received a notification");
+    }
 
     private void CheckPushStatus()
     {
-        registerPush.interactable = !string.IsNullOrEmpty(PF_GameData.AndroidPushSenderId) && !string.IsNullOrEmpty(pushToken);
-        if (!string.IsNullOrEmpty(PF_GameData.AndroidPushSenderId))
-            PlayFabAndroidPlugin.Init(PF_GameData.AndroidPushSenderId);
+        if (string.IsNullOrEmpty(pushToken))
+            return;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        var androidRequest = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = pushToken };
+        PlayFab.PlayFabClientAPI.AndroidDevicePushNotificationRegistration(androidRequest, null, null);
+#elif UNITY_IPHONE && !UNITY_EDITOR
+        var iosRequest = new RegisterForIOSPushNotificationRequest { DeviceToken = pushToken };
+        PlayFab.PlayFabClientAPI.RegisterForIOSPushNotification(iosRequest, null, null);
+#endif
     }
 
     private void SetCheckBox(Image image, bool isChecked)
@@ -112,6 +112,7 @@ public class AccountStatusController : MonoBehaviour
 
 #if UNITY_IPHONE
 		UnityEngine.iOS.NotificationServices.RegisterForNotifications(UnityEngine.iOS.NotificationType.Alert | UnityEngine.iOS.NotificationType.Badge | UnityEngine.iOS.NotificationType.Sound, true);
+        pushToken = UnityEngine.iOS.NotificationServices.deviceToken;
 #endif
 
         SetCheckBox(registerPush.GetComponent<Image>(), PF_PlayerData.isRegisteredForPush);
