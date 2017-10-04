@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "494923569376",
+    "firebase_url": "https://unicorn-battle-79221.firebaseio.com",
+    "project_id": "unicorn-battle-79221",
+    "storage_bucket": "unicorn-battle-79221.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:494923569376:android:7973d638d20af3e4",
+        "android_client_info": {
+          "package_name": "com.playfab.unicornbattle2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "494923569376-cnt6c8mfjsardj6rekmeukep6p955r8s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDvGhIoyS47SHinIdhkDDd_N5wuvdDv7s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:494923569376:android:b6b2592945826e7f",
+        "android_client_info": {
+          "package_name": "com.playfab.unicorntoss"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "494923569376-cnt6c8mfjsardj6rekmeukep6p955r8s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDvGhIoyS47SHinIdhkDDd_N5wuvdDv7s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
