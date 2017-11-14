@@ -49,6 +49,10 @@ public static class CreateAssetBundles
     [MenuItem("PlayFab/Build Unicorn Battle/Cache: Clear")]
     public static void ClearBundleCache()
     {
+#if UNITY_2017_1_OR_NEWER
+        Caching.ClearCache();
+#else
         Caching.CleanCache();
+#endif
     }
 }

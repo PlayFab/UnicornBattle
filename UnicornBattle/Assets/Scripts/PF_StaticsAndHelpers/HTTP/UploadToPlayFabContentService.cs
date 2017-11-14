@@ -30,7 +30,13 @@ public class UploadToPlayFabContentService : MonoBehaviour
     void Start()
     {
         if (cleanCacheOnStart)
+        {
+#if UNITY_2017_1_OR_NEWER
+            Caching.ClearCache();
+#else
             Caching.CleanCache();
+#endif
+        }
 
         foreach (var asset in assets)
         {
