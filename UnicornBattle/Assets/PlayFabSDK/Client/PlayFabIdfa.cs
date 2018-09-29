@@ -31,7 +31,7 @@ namespace PlayFab.Internal
             if (!PlayFabSettings.DisableAdvertising && PlayFabSettings.AdvertisingIdType != null && PlayFabSettings.AdvertisingIdValue != null)
                 DoAttributeInstall();
         }
-#elif !UNITY_5_3_OR_NEWER
+#elif (!UNITY_5_3 && !UNITY_5_4 && !UNITY_5_5 && !UNITY_5_6) // This section for 5.3 or newer
         public static void OnPlayFabLogin()
         {
             if (PlayFabSettings.DisableAdvertising)

@@ -21,7 +21,7 @@ namespace PlayFab.PfEditor
         public static void DrawMenu()
         {
             if (PlayFabEditorSDKTools.IsInstalled && PlayFabEditorSDKTools.isSdkSupported)
-                _menuState = (MenuStates)PlayFabEditorDataService.EditorView.currentMainMenu;
+                _menuState = (MenuStates)PlayFabEditorPrefsSO.Instance.curMainMenuIdx;
 
             var sdksButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             var settingsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
@@ -75,35 +75,35 @@ namespace PlayFab.PfEditor
         {
             _menuState = MenuStates.Tools;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Tools.ToString());
-            PlayFabEditorDataService.EditorView.currentMainMenu = (int)_menuState;
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
 
         public static void OnDataClicked()
         {
             _menuState = MenuStates.Data;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Data.ToString());
-            PlayFabEditorDataService.EditorView.currentMainMenu = (int)_menuState;
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
 
         public static void OnHelpClicked()
         {
             _menuState = MenuStates.Help;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Help.ToString());
-            PlayFabEditorDataService.EditorView.currentMainMenu = (int)_menuState;
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
 
         public static void OnSdKsClicked()
         {
             _menuState = MenuStates.Sdks;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Sdks.ToString());
-            PlayFabEditorDataService.EditorView.currentMainMenu = (int)_menuState;
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
 
         public static void OnSettingsClicked()
         {
             _menuState = MenuStates.Settings;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Settings.ToString());
-            PlayFabEditorDataService.EditorView.currentMainMenu = (int)_menuState;
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
 
         public static void OnLogoutClicked()
@@ -113,7 +113,7 @@ namespace PlayFab.PfEditor
             PlayFabEditorAuthenticate.Logout();
 
             _menuState = MenuStates.Sdks;
-            PlayFabEditorDataService.EditorView.currentMainMenu = (int)_menuState;
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
     }
 }

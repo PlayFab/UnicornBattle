@@ -1,4 +1,5 @@
 using PlayFab.PfEditor.EditorModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
@@ -15,24 +16,25 @@ namespace PlayFab.PfEditor
             StandardSettings,
             TitleSettings,
             ApiSettings,
-            Packages
         }
 
         public enum WebRequestType
         {
             UnityWww, // High compatability Unity api calls
-            HttpWebRequest // High performance multi-threaded api calls
+            HttpWebRequest, // High performance multi-threaded api calls
+#if UNITY_2017_2_OR_NEWER
+            UnityWebRequest, // Modern unity HTTP component
+#endif
         }
 
-        private static float LABEL_WIDTH = 160;
+        private static float LABEL_WIDTH = 180;
 
         private static readonly StringBuilder Sb = new StringBuilder();
 
         private static SubMenuComponent _menu = null;
 
-        private static Dictionary<string, StudioDisplaySet> studioFoldOutStates = new Dictionary<string, StudioDisplaySet>();
+        private static readonly Dictionary<string, StudioDisplaySet> StudioFoldOutStates = new Dictionary<string, StudioDisplaySet>();
         private static Vector2 _titleScrollPos = Vector2.zero;
-        private static Vector2 _packagesScrollPos = Vector2.zero;
         #endregion
 
         #region draw calls
@@ -42,10 +44,28 @@ namespace PlayFab.PfEditor
             {
                 var curDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
                 var changedFlags = false;
-                DisplayDefineToggle("ENABLE CLIENT API: ", true, PlayFabEditorHelper.CLIENT_API, ref curDefines, ref changedFlags);
-                DisplayDefineToggle("ENABLE ADMIN API: ", false, PlayFabEditorHelper.ADMIN_API, ref curDefines, ref changedFlags);
-                DisplayDefineToggle("ENABLE SERVER API: ", false, PlayFabEditorHelper.SERVER_API, ref curDefines, ref changedFlags);
-                DisplayDefineToggle("ENABLE REQUEST TIMES: ", false, PlayFabEditorHelper.DEBUG_REQUEST_TIMING, ref curDefines, ref changedFlags);
+                var allFlags = new Dictionary<string, PfDefineFlag>(PlayFabEditorHelper.FLAG_LABELS);
+                var extraDefines = new HashSet<string>(curDefines.Split(' ', ';'));
+                foreach (var eachFlag in extraDefines)
+                    if (!string.IsNullOrEmpty(eachFlag) && !allFlags.ContainsKey(eachFlag))
+                        allFlags.Add(eachFlag, new PfDefineFlag { Flag = eachFlag, Label = eachFlag, Category = PfDefineFlag.FlagCategory.Other, isInverted = false, isSafe = false });
+                var allowUnsafe = extraDefines.Contains(PlayFabEditorHelper.ENABLE_BETA_FETURES);
+
+                foreach (PfDefineFlag.FlagCategory activeFlagCategory in Enum.GetValues(typeof(PfDefineFlag.FlagCategory)))
+                {
+                    if (activeFlagCategory == PfDefineFlag.FlagCategory.Other && !allowUnsafe)
+                        continue;
+
+                    using (var fwl = new FixedWidthLabel(activeFlagCategory.ToString())) { }
+
+                    foreach (var eachDefinePair in allFlags)
+                    {
+                        PfDefineFlag eachFlag = eachDefinePair.Value;
+                        if (eachFlag.Category == activeFlagCategory && (eachFlag.isSafe || allowUnsafe))
+                            DisplayDefineToggle(eachFlag.Label + ": ", eachFlag.isInverted, eachFlag.Flag, ref curDefines, ref changedFlags);
+                    }
+                }
+
                 if (changedFlags)
                 {
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, curDefines);
@@ -90,13 +110,10 @@ namespace PlayFab.PfEditor
 
         public static void DrawSettingsPanel()
         {
-            if (!PlayFabEditorDataService.IsDataLoaded)
-                return;
-
             if (_menu != null)
             {
                 _menu.DrawMenu();
-                switch ((SubMenuStates)PlayFabEditorDataService.EditorView.currentSubMenu)
+                switch ((SubMenuStates)PlayFabEditorPrefsSO.Instance.curSubMenuIdx)
                 {
                     case SubMenuStates.StandardSettings:
                         DrawStandardSettingsSubPanel();
@@ -106,9 +123,6 @@ namespace PlayFab.PfEditor
                         break;
                     case SubMenuStates.TitleSettings:
                         DrawTitleSettingsSubPanel();
-                        break;
-                    case SubMenuStates.Packages:
-                        DrawPackagesSubPanel();
                         break;
                 }
             }
@@ -122,18 +136,18 @@ namespace PlayFab.PfEditor
         {
             float labelWidth = 100;
 
-            if (PlayFabEditorDataService.AccountDetails.studios != null && PlayFabEditorDataService.AccountDetails.studios.Count != studioFoldOutStates.Count + 1)
+            if (PlayFabEditorPrefsSO.Instance.StudioList != null && PlayFabEditorPrefsSO.Instance.StudioList.Count != StudioFoldOutStates.Count + 1)
             {
-                studioFoldOutStates.Clear();
-                foreach (var studio in PlayFabEditorDataService.AccountDetails.studios)
+                StudioFoldOutStates.Clear();
+                foreach (var studio in PlayFabEditorPrefsSO.Instance.StudioList)
                 {
                     if (string.IsNullOrEmpty(studio.Id))
                         continue;
-                    if (!studioFoldOutStates.ContainsKey(studio.Id))
-                        studioFoldOutStates.Add(studio.Id, new StudioDisplaySet { Studio = studio });
+                    if (!StudioFoldOutStates.ContainsKey(studio.Id))
+                        StudioFoldOutStates.Add(studio.Id, new StudioDisplaySet { Studio = studio });
                     foreach (var title in studio.Titles)
-                        if (!studioFoldOutStates[studio.Id].titleFoldOutStates.ContainsKey(title.Id))
-                            studioFoldOutStates[studio.Id].titleFoldOutStates.Add(title.Id, new TitleDisplaySet { Title = title });
+                        if (!StudioFoldOutStates[studio.Id].titleFoldOutStates.ContainsKey(title.Id))
+                            StudioFoldOutStates[studio.Id].titleFoldOutStates.Add(title.Id, new TitleDisplaySet { Title = title });
                 }
             }
 
@@ -147,7 +161,7 @@ namespace PlayFab.PfEditor
                     PlayFabEditorDataService.RefreshStudiosList();
             }
 
-            foreach (var studio in studioFoldOutStates)
+            foreach (var studio in StudioFoldOutStates)
             {
                 var style = new GUIStyle(EditorStyles.foldout);
                 if (studio.Value.isCollapsed)
@@ -197,9 +211,9 @@ namespace PlayFab.PfEditor
 
         private static Studio GetStudioForTitleId(string titleId)
         {
-            if (PlayFabEditorDataService.AccountDetails.studios == null)
+            if (PlayFabEditorPrefsSO.Instance.StudioList == null)
                 return Studio.OVERRIDE;
-            foreach (var eachStudio in PlayFabEditorDataService.AccountDetails.studios)
+            foreach (var eachStudio in PlayFabEditorPrefsSO.Instance.StudioList)
                 if (eachStudio.Titles != null)
                     foreach (var eachTitle in eachStudio.Titles)
                         if (eachTitle.Id == titleId)
@@ -216,9 +230,9 @@ namespace PlayFab.PfEditor
                 var studio = GetStudioForTitleId(PlayFabEditorDataService.SharedSettings.TitleId);
                 if (string.IsNullOrEmpty(studio.Id))
                     using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
-                        GUILayout.Label("You are using a TitleId to which you are not a memeber. A title administrator can approve access for your account.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
+                        EditorGUILayout.LabelField("You are using a TitleId to which you are not a member. A title administrator can approve access for your account.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
 
-                PlayFabGuiFieldHelper.SuperFancyDropdown(labelWidth, "STUDIO: ", studio, PlayFabEditorDataService.AccountDetails.studios, eachStudio => eachStudio.Name, OnStudioChange, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
+                PlayFabGuiFieldHelper.SuperFancyDropdown(labelWidth, "STUDIO: ", studio, PlayFabEditorPrefsSO.Instance.StudioList, eachStudio => eachStudio.Name, OnStudioChange, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear"));
                 studio = GetStudioForTitleId(PlayFabEditorDataService.SharedSettings.TitleId); // This might have changed above, so refresh it
 
                 if (string.IsNullOrEmpty(studio.Id))
@@ -249,7 +263,7 @@ namespace PlayFab.PfEditor
 
         private static void DrawPfSharedSettingsOptions(float labelWidth)
         {
-#if ENABLE_PLAYFABADMIN_API || ENABLE_PLAYFABSERVER_API
+#if ENABLE_PLAYFABADMIN_API || ENABLE_PLAYFABSERVER_API || UNITY_EDITOR
             // Set the title secret key, if we're using the dropdown
             var studio = GetStudioForTitleId(PlayFabEditorDataService.SharedSettings.TitleId);
             var correctKey = studio.GetTitleSecretKey(PlayFabEditorDataService.SharedSettings.TitleId);
@@ -291,34 +305,6 @@ namespace PlayFab.PfEditor
                 PlayFabEditorDataService.SharedSettings.CompressApiData = EditorGUILayout.Toggle(PlayFabEditorDataService.SharedSettings.CompressApiData, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"), GUILayout.MinHeight(25));
             }
         }
-
-        private static void DrawPackagesSubPanel()
-        {
-            using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
-            {
-                GUILayout.Label("Packages are additional PlayFab features that can be installed. Enabling a package will install the AsssetPackage; disabling will remove the package.", PlayFabEditorHelper.uiStyle.GetStyle("genTxt"));
-            }
-
-            if (PlayFabEditorSDKTools.IsInstalled && PlayFabEditorSDKTools.isSdkSupported)
-            {
-                float labelWidth = 245;
-                _packagesScrollPos = GUILayout.BeginScrollView(_packagesScrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-                using (var fwl = new FixedWidthLabel("Push Notification Plugin (Android): "))
-                {
-                    GUILayout.Space(labelWidth - fwl.fieldWidth);
-                    PlayFabEditorPackageManager.AndroidPushPlugin = EditorGUILayout.Toggle(PlayFabEditorPackageManager.AndroidPushPlugin, PlayFabEditorHelper.uiStyle.GetStyle("Toggle"));
-                }
-                GUILayout.Space(5);
-                using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
-                {
-                    if (GUILayout.Button("VIEW GUIDE", PlayFabEditorHelper.uiStyle.GetStyle("Button")))
-                    {
-                        Application.OpenURL("https://github.com/PlayFab/UnitySDK/tree/master/PluginsSource/UnityAndroidPluginSource#playfab-push-notification-plugin");
-                    }
-                }
-                GUILayout.EndScrollView();
-            }
-        }
         #endregion
 
         #region menu and helper methods
@@ -331,12 +317,6 @@ namespace PlayFab.PfEditor
             _menu.RegisterMenuItem("PROJECT", OnStandardSetttingsClicked);
             _menu.RegisterMenuItem("STUDIOS", OnTitleSettingsClicked);
             _menu.RegisterMenuItem("API", OnApiSettingsClicked);
-            _menu.RegisterMenuItem("PACKAGES", OnPackagesClicked);
-        }
-
-        private static void OnPackagesClicked()
-        {
-            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSubmenuItemClicked, SubMenuStates.Packages.ToString(), "" + (int)SubMenuStates.Packages);
         }
 
         private static void OnApiSettingsClicked()
@@ -356,7 +336,7 @@ namespace PlayFab.PfEditor
 
         private static void OnStudioChange(Studio newStudio)
         {
-            var newTitleId = newStudio.Titles == null ? "" : newStudio.Titles[0].Id;
+            var newTitleId = (newStudio.Titles == null || newStudio.Titles.Length == 0) ? "" : newStudio.Titles[0].Id;
             OnTitleIdChange(newTitleId);
         }
 
@@ -368,12 +348,12 @@ namespace PlayFab.PfEditor
         private static void OnTitleIdChange(string newTitleId)
         {
             var studio = GetStudioForTitleId(newTitleId);
-            PlayFabEditorDataService.EnvDetails.selectedStudio = studio.Name;
+            PlayFabEditorPrefsSO.Instance.SelectedStudio = studio.Name;
             PlayFabEditorDataService.SharedSettings.TitleId = newTitleId;
-#if ENABLE_PLAYFABADMIN_API || ENABLE_PLAYFABSERVER_API
+#if ENABLE_PLAYFABADMIN_API || ENABLE_PLAYFABSERVER_API || UNITY_EDITOR
             PlayFabEditorDataService.SharedSettings.DeveloperSecretKey = studio.GetTitleSecretKey(newTitleId);
 #endif
-            PlayFabEditorDataService.EnvDetails.titleData.Clear();
+            PlayFabEditorPrefsSO.Instance.TitleDataCache.Clear();
             if (PlayFabEditorDataMenu.tdViewer != null)
                 PlayFabEditorDataMenu.tdViewer.items.Clear();
             PlayFabEditorDataService.SaveEnvDetails();

@@ -41,7 +41,7 @@ public static class CreateAssetBundles
     [MenuItem("PlayFab/Build Unicorn Battle/Bundles: All AssetBundles")]
     public static void BuildAllAssetBundles()
     {
-        BuildPipeline.BuildAssetBundles("Assets/StreamingAssets/", BuildAssetBundleOptions.None, BuildTarget.StandaloneOSXUniversal);
+        BuildPipeline.BuildAssetBundles("Assets/StreamingAssets/", BuildAssetBundleOptions.None, BuildTarget.StandaloneOSX);
         BuildPipeline.BuildAssetBundles("Assets/StreamingAssets/Android", BuildAssetBundleOptions.None, BuildTarget.Android);
         BuildPipeline.BuildAssetBundles("Assets/StreamingAssets/iOS", BuildAssetBundleOptions.None, BuildTarget.iOS);
     }

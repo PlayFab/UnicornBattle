@@ -180,7 +180,7 @@ namespace PlayFab.PfEditor.Json
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>
-        ///     <c>true</c> if the specified key contains key; otherwise, <c>false</c>.
+        ///   <c>true</c> if the specified key contains key; otherwise, <c>false</c>.
         /// </returns>
         public bool ContainsKey(string key)
         {
@@ -258,7 +258,7 @@ namespace PlayFab.PfEditor.Json
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>
-        /// 	<c>true</c> if [contains] [the specified item]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [contains] [the specified item]; otherwise, <c>false</c>.
         /// </returns>
         public bool Contains(KeyValuePair<string, object> item)
         {
@@ -295,7 +295,7 @@ namespace PlayFab.PfEditor.Json
         /// Gets a value indicating whether this instance is read only.
         /// </summary>
         /// <value>
-        /// 	<c>true</c> if this instance is read only; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is read only; otherwise, <c>false</c>.
         /// </value>
         public bool IsReadOnly
         {

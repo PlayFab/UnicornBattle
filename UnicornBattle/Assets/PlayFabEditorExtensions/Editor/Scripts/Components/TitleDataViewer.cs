@@ -19,7 +19,7 @@ namespace PlayFab.PfEditor
         public void Draw()
         {
             using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
-                GUILayout.Label("TitleData provides Key-Value storage available to all API sets. TitleData is designed to store game-wide configuration data.", PlayFabEditorHelper.uiStyle.GetStyle("genTxt"));
+                EditorGUILayout.LabelField("TitleData provides Key-Value storage available to all API sets. TitleData is designed to store game-wide configuration data.", PlayFabEditorHelper.uiStyle.GetStyle("genTxt"));
 
             using (new UnityHorizontal())
             {
@@ -56,10 +56,10 @@ namespace PlayFab.PfEditor
 
                         using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
                         {
-                            items[z].Key = GUILayout.TextField(items[z].Key, keyStyle, GUILayout.Width(keyInputBoxWidth));
+                            items[z].Key = EditorGUILayout.TextField(items[z].Key, keyStyle, GUILayout.Width(keyInputBoxWidth));
 
                             EditorGUILayout.LabelField(":", GUILayout.MaxWidth(10));
-                            GUILayout.Label("" + items[z].Value, valStyle, GUILayout.MaxWidth(valueInputBoxWidth), GUILayout.MaxHeight(25));
+                            EditorGUILayout.LabelField("" + items[z].Value, valStyle, GUILayout.MaxWidth(valueInputBoxWidth), GUILayout.MaxHeight(25));
 
                             if (GUILayout.Button("EDIT", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxHeight(19), GUILayout.MinWidth(35)))
                             {
@@ -113,7 +113,9 @@ namespace PlayFab.PfEditor
                 foreach (var kvp in result.Data)
                     items.Add(new KvpItem(kvp.Key, kvp.Value));
 
-                PlayFabEditorDataService.EnvDetails.titleData = result.Data;
+                PlayFabEditorPrefsSO.Instance.TitleDataCache.Clear();
+                foreach (var pair in result.Data)
+                    PlayFabEditorPrefsSO.Instance.TitleDataCache.Add(pair.Key, pair.Value);
                 PlayFabEditorDataService.SaveEnvDetails();
             };
 

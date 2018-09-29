@@ -4,19 +4,9 @@ using PlayFab.SharedModels;
 
 namespace PlayFab.Internal
 {
-    public interface IPlayFabHttp
+    [Obsolete("This interface is deprecated, please use PlayFab.ITransportPlugin instead.", false)]
+    public interface IPlayFabHttp: ITransportPlugin
     {
-        bool SessionStarted { get; set; }
-        string AuthKey { get; set; }
-        void InitializeHttp();
-
-        // Mirroring MonoBehaviour - Relayed from PlayFabHTTP
-        void Update();
-        void OnDestroy();
-
-        void MakeApiCall(CallRequestContainer reqContainer);
-
-        int GetPendingMessages();
     }
 
     public enum AuthType
@@ -25,8 +15,8 @@ namespace PlayFab.Internal
         PreLoginSession, // Not yet defined
         LoginSession, // "X-Authorization"
         DevSecretKey, // "X-SecretKey"
+        EntityToken, // "X-EntityToken"
     }
-
 
     public enum HttpRequestState
     {

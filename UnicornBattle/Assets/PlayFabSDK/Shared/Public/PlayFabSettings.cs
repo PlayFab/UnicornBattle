@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace PlayFab
@@ -7,6 +9,7 @@ namespace PlayFab
     {
         UnityWww, // High compatability Unity api calls
         HttpWebRequest, // High performance multi-threaded api calls
+        UnityWebRequest, // Modern unity HTTP component
         CustomHttp //If this is used, you must set the Http to an IPlayFabHttp object.
     }
 
@@ -27,32 +30,27 @@ namespace PlayFab
 
         private static PlayFabSharedSettings _playFabShared = null;
         private static PlayFabSharedSettings PlayFabSharedPrivate { get { if (_playFabShared == null) _playFabShared = GetSharedSettingsObjectPrivate(); return _playFabShared; } }
-        [Obsolete("This field will become private after Mar 1, 2017", false)]
-        public static PlayFabSharedSettings PlayFabShared { get { if (_playFabShared == null) _playFabShared = GetSharedSettingsObjectPrivate(); return _playFabShared; } }
-        public const string SdkVersion = "2.21.170508";
-        public const string BuildIdentifier = "jbuild_unitysdk_0";
-        public const string VersionString = "UnitySDK-2.21.170508";
+        public const string SdkVersion = "2.52.180924";
+        public const string BuildIdentifier = "jbuild_unitysdk__sdk-unity-1-slave_0";
+        public const string VersionString = "UnitySDK-2.52.180924";
+
+        public static readonly Dictionary<string, string> RequestGetParams = new Dictionary<string, string> {
+            { "sdk", VersionString }
+        };
+
         private const string DefaultPlayFabApiUrlPrivate = ".playfabapi.com";
-        [Obsolete("This field will become private after Mar 1, 2017", false)]
-        public static string DefaultPlayFabApiUrl { get { return DefaultPlayFabApiUrlPrivate; } }
 
         private static PlayFabSharedSettings GetSharedSettingsObjectPrivate()
         {
             var settingsList = Resources.LoadAll<PlayFabSharedSettings>("PlayFabSharedSettings");
             if (settingsList.Length != 1)
             {
-                throw new Exception("Either Missing PlayFabSharedSettings data file or multiple data files exist.");
+                throw new Exception("The number of PlayFabSharedSettings objects should be 1: " + settingsList.Length);
             }
             return settingsList[0];
         }
-        [Obsolete("This field will become private after Mar 1, 2017", false)]
-        public static PlayFabSharedSettings GetSharedSettingsObject()
-        {
-            return GetSharedSettingsObjectPrivate();
-        } 
 
-
-#if ENABLE_PLAYFABSERVER_API || ENABLE_PLAYFABADMIN_API
+#if ENABLE_PLAYFABSERVER_API || ENABLE_PLAYFABADMIN_API || UNITY_EDITOR
         public static string DeveloperSecretKey
         {
             set { PlayFabSharedPrivate.DeveloperSecretKey = value;}
@@ -84,18 +82,18 @@ namespace PlayFab
             get { return !string.IsNullOrEmpty(PlayFabSharedPrivate.ProductionEnvironmentUrl) ? PlayFabSharedPrivate.ProductionEnvironmentUrl : DefaultPlayFabApiUrlPrivate; }
             set { PlayFabSharedPrivate.ProductionEnvironmentUrl = value; }
         }
-        [Obsolete("This field will become private after Mar 1, 2017", false)]
-        public static string ProductionEnvironmentUrl
-        {
-            get { return ProductionEnvironmentUrlPrivate; }
-            set { ProductionEnvironmentUrlPrivate = value; }
-        }
 
         // You must set this value for PlayFabSdk to work properly (Found in the Game Manager for your title, at the PlayFab Website)
         public static string TitleId
         {
             get { return PlayFabSharedPrivate.TitleId; }
             set { PlayFabSharedPrivate.TitleId = value; }
+        }
+        
+        public static string VerticalName
+        {
+            get { return PlayFabSharedPrivate.VerticalName; }
+            set { PlayFabSharedPrivate.VerticalName = value; }
         }
 
         public static PlayFabLogLevel LogLevel
@@ -154,15 +152,44 @@ namespace PlayFab
             set { PlayFabSharedPrivate.LogCapLimit = value; }
         }
 
-        public static string GetFullUrl(string apiCall)
+        public static string GetFullUrl(string apiCall, Dictionary<string, string> getParams)
         {
-            string output;
+            StringBuilder sb = new StringBuilder(1000);
+        
             var baseUrl = ProductionEnvironmentUrlPrivate;
-            if (baseUrl.StartsWith("http"))
-                output = baseUrl + apiCall;
-            else
-                output = "https://" + TitleId + baseUrl + apiCall;
-            return output;
+            if (!baseUrl.StartsWith("http"))
+            {
+                if (!string.IsNullOrEmpty(VerticalName))
+                {
+                    sb.Append("https://").Append(VerticalName);
+                }
+                else
+                {
+                    sb.Append("https://").Append(TitleId);
+                }
+            }
+        
+            sb.Append(baseUrl).Append(apiCall);
+        
+            if (getParams != null)
+            {
+                bool firstParam = true;
+                foreach (var paramPair in getParams)
+                {
+                    if (firstParam)
+                    {
+                        sb.Append("?");
+                        firstParam = false;
+                    }
+                    else
+                    {
+                        sb.Append("&");
+                    }
+                    sb.Append(paramPair.Key).Append("=").Append(paramPair.Value);
+                }
+            }
+        
+            return sb.ToString();
         }
     }
 }

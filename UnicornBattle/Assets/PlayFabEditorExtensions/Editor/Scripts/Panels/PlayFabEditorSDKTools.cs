@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace PlayFab.PfEditor
         private static string installedSdkVersion = string.Empty;
         private static string latestSdkVersion = string.Empty;
         private static UnityEngine.Object sdkFolder;
-        private static UnityEngine.Object _previoussSdkFolderPath;
+        private static UnityEngine.Object _previousSdkFolderPath;
         private static bool isObjectFieldActive;
         private static bool isInitialized; //used to check once, gets reset after each compile;
         public static bool isSdkSupported = true;
@@ -31,7 +32,7 @@ namespace PlayFab.PfEditor
 
                 if (sdkFolder != null)
                 {
-                    PlayFabEditorDataService.EnvDetails.sdkPath = AssetDatabase.GetAssetPath(sdkFolder);
+                    PlayFabEditorPrefsSO.Instance.SdkPath = AssetDatabase.GetAssetPath(sdkFolder);
                     PlayFabEditorDataService.SaveEnvDetails();
                 }
             }
@@ -46,12 +47,12 @@ namespace PlayFab.PfEditor
         {
             isObjectFieldActive = sdkFolder == null;
 
-            if (_previoussSdkFolderPath != sdkFolder)
+            if (_previousSdkFolderPath != sdkFolder)
             {
                 // something changed, better save the result.
-                _previoussSdkFolderPath = sdkFolder;
+                _previousSdkFolderPath = sdkFolder;
 
-                PlayFabEditorDataService.EnvDetails.sdkPath = (AssetDatabase.GetAssetPath(sdkFolder));
+                PlayFabEditorPrefsSO.Instance.SdkPath = (AssetDatabase.GetAssetPath(sdkFolder));
                 PlayFabEditorDataService.SaveEnvDetails();
 
                 isObjectFieldActive = false;
@@ -60,7 +61,7 @@ namespace PlayFab.PfEditor
             var labelStyle = new GUIStyle(PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"));
             using (new UnityVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
             {
-                GUILayout.Label(string.Format("SDK {0} is installed", string.IsNullOrEmpty(installedSdkVersion) ? "Unknown" : installedSdkVersion),
+                EditorGUILayout.LabelField(string.Format("SDK {0} is installed", string.IsNullOrEmpty(installedSdkVersion) ? "Unknown" : installedSdkVersion),
                     labelStyle, GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
 
                 if (!isObjectFieldActive)
@@ -69,7 +70,7 @@ namespace PlayFab.PfEditor
                 }
                 else
                 {
-                    GUILayout.Label(
+                    EditorGUILayout.LabelField(
                         "An SDK was detected, but we were unable to find the directory. Drag-and-drop the top-level PlayFab SDK folder below.",
                         PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
                 }
@@ -119,7 +120,7 @@ namespace PlayFab.PfEditor
                         //older version of the SDK
                         using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
                         {
-                            GUILayout.Label("Most of the Editor Extensions depend on SDK versions >2.0. Consider upgrading to the get most features.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
+                            EditorGUILayout.LabelField("Most of the Editor Extensions depend on SDK versions >2.0. Consider upgrading to the get most features.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
                         }
 
                         using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
@@ -151,7 +152,7 @@ namespace PlayFab.PfEditor
                         else if (isSdkSupported)
                         {
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label("You have the latest SDK!", labelStyle, GUILayout.MinHeight(32));
+                            EditorGUILayout.LabelField("You have the latest SDK!", labelStyle, GUILayout.MinHeight(32));
                             GUILayout.FlexibleSpace();
                         }
                     }
@@ -162,7 +163,7 @@ namespace PlayFab.PfEditor
             {
                 using (new UnityVertical(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
                 {
-                    GUILayout.Label("Before making PlayFab API calls, the SDK must be configured to your PlayFab Title.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
+                    EditorGUILayout.LabelField("Before making PlayFab API calls, the SDK must be configured to your PlayFab Title.", PlayFabEditorHelper.uiStyle.GetStyle("orTxt"));
                     using (new UnityHorizontal())
                     {
                         GUILayout.FlexibleSpace();
@@ -194,7 +195,7 @@ namespace PlayFab.PfEditor
             {
                 var labelStyle = new GUIStyle(PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"));
 
-                GUILayout.Label("No SDK is installed.", labelStyle, GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+                EditorGUILayout.LabelField("No SDK is installed.", labelStyle, GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
                 GUILayout.Space(20);
 
                 using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
@@ -202,11 +203,11 @@ namespace PlayFab.PfEditor
                     var buttonWidth = 150;
 
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("Install PlayFab SDK", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(buttonWidth),
-                        GUILayout.MinHeight(32)))
-                    {
+                    if (GUILayout.Button("Refresh", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(buttonWidth), GUILayout.MinHeight(32)))
+                        playFabSettingsType = null;
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("Install PlayFab SDK", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(buttonWidth), GUILayout.MinHeight(32)))
                         ImportLatestSDK();
-                    }
                     GUILayout.FlexibleSpace();
                 }
             }
@@ -219,7 +220,7 @@ namespace PlayFab.PfEditor
                 Debug.Log("PlayFab SDK Install: Complete");
                 AssetDatabase.ImportPackage(fileName, false);
 
-                PlayFabEditorDataService.EnvDetails.sdkPath = PlayFabEditorHelper.DEFAULT_SDK_LOCATION;
+                PlayFabEditorPrefsSO.Instance.SdkPath = PlayFabEditorHelper.DEFAULT_SDK_LOCATION;
                 PlayFabEditorDataService.SaveEnvDetails();
 
             });
@@ -233,10 +234,15 @@ namespace PlayFab.PfEditor
                 return playFabSettingsType;
 
             playFabSettingsType = typeof(object); // Sentinel value to indicate that PlayFabSettings doesn't exist
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in allAssemblies)
                 foreach (var eachType in assembly.GetTypes())
                     if (eachType.Name == PlayFabEditorHelper.PLAYFAB_SETTINGS_TYPENAME)
                         playFabSettingsType = eachType;
+            //if (playFabSettingsType == typeof(object))
+            //    Debug.LogWarning("Should not have gotten here: "  + allAssemblies.Length);
+            //else
+            //    Debug.Log("Found Settings: " + allAssemblies.Length + ", " + playFabSettingsType.Assembly.FullName);
             return playFabSettingsType == typeof(object) ? null : playFabSettingsType;
         }
 
@@ -247,9 +253,21 @@ namespace PlayFab.PfEditor
 
             var types = new List<Type>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                foreach (var type in assembly.GetTypes())
-                    if (type.Name == "PlayFabVersion" || type.Name == PlayFabEditorHelper.PLAYFAB_SETTINGS_TYPENAME)
-                        types.Add(type);
+            {
+                try
+                {
+                    foreach (var type in assembly.GetTypes())
+                        if (type.Name == "PlayFabVersion" || type.Name == PlayFabEditorHelper.PLAYFAB_SETTINGS_TYPENAME)
+                            types.Add(type);
+                }
+                catch (ReflectionTypeLoadException)
+                {
+                    // For this failure, silently skip this assembly unless we have some expectation that it contains PlayFab
+                    if (assembly.FullName.StartsWith("Assembly-CSharp")) // The standard "source-code in unity proj" assembly name
+                        Debug.LogWarning("PlayFab EdEx Error, failed to access the main CSharp assembly that probably contains PlayFab. Please report this on the PlayFab Forums");
+                    continue;
+                }
+            }
 
             foreach (var type in types)
             {
@@ -267,9 +285,9 @@ namespace PlayFab.PfEditor
             UnityEngine.Object sdkAsset = null;
 
             // look in editor prefs
-            if (PlayFabEditorDataService.EnvDetails.sdkPath != null)
+            if (PlayFabEditorPrefsSO.Instance.SdkPath != null)
             {
-                sdkAsset = AssetDatabase.LoadAssetAtPath(PlayFabEditorDataService.EnvDetails.sdkPath, typeof(UnityEngine.Object));
+                sdkAsset = AssetDatabase.LoadAssetAtPath(PlayFabEditorPrefsSO.Instance.SdkPath, typeof(UnityEngine.Object));
             }
             if (sdkAsset != null)
                 return sdkAsset;
@@ -282,7 +300,7 @@ namespace PlayFab.PfEditor
             if (fileList.Length == 0)
                 return null;
 
-            var relPath = fileList[0].Substring(fileList[0].IndexOf("Assets/"));
+            var relPath = fileList[0].Substring(fileList[0].LastIndexOf("Assets/"));
             return AssetDatabase.LoadAssetAtPath(relPath, typeof(UnityEngine.Object));
         }
 
@@ -338,7 +356,7 @@ namespace PlayFab.PfEditor
                     FileUtil.DeleteFileOrDirectory(file);
             }
 
-            if (FileUtil.DeleteFileOrDirectory(PlayFabEditorDataService.EnvDetails.sdkPath))
+            if (FileUtil.DeleteFileOrDirectory(PlayFabEditorPrefsSO.Instance.SdkPath))
             {
                 PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnSuccess, "PlayFab SDK Removed!");
 
@@ -356,19 +374,19 @@ namespace PlayFab.PfEditor
 
         private static void GetLatestSdkVersion()
         {
-            var threshold = PlayFabEditorDataService.EditorSettings.lastSdkVersionCheck != DateTime.MinValue ? PlayFabEditorDataService.EditorSettings.lastSdkVersionCheck.AddHours(1) : DateTime.MinValue;
+            var threshold = PlayFabEditorPrefsSO.Instance.EdSet_lastSdkVersionCheck != DateTime.MinValue ? PlayFabEditorPrefsSO.Instance.EdSet_lastSdkVersionCheck.AddHours(1) : DateTime.MinValue;
 
             if (DateTime.Today > threshold)
             {
                 PlayFabEditorHttp.MakeGitHubApiCall("https://api.github.com/repos/PlayFab/UnitySDK/git/refs/tags", (version) =>
                 {
                     latestSdkVersion = version ?? "Unknown";
-                    PlayFabEditorDataService.EditorSettings.latestSdkVersion = latestSdkVersion;
+                    PlayFabEditorPrefsSO.Instance.EdSet_latestSdkVersion = latestSdkVersion;
                 });
             }
             else
             {
-                latestSdkVersion = PlayFabEditorDataService.EditorSettings.latestSdkVersion;
+                latestSdkVersion = PlayFabEditorPrefsSO.Instance.EdSet_latestSdkVersion;
             }
         }
     }

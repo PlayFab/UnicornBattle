@@ -39,7 +39,7 @@ namespace PlayFab.PfEditor
             if (!items.ContainsKey(n))
             {
                 var selectState = false;
-                var activeSubmenu = PlayFabEditorDataService.EditorView == null ? 0 : PlayFabEditorDataService.EditorView.currentSubMenu;
+                var activeSubmenu = PlayFabEditorPrefsSO.Instance.curSubMenuIdx;
                 if (items.Count == 0 && activeSubmenu == 0 || activeSubmenu == items.Count)
                     selectState = true;
 
