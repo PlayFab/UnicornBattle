@@ -1,0 +1,23 @@
+<!-- Copyright (C) 2018 Google Inc. All Rights Reserved.
+
+FirebaseApp iOS and Android Dependencies.
+-->
+
+<dependencies>
+  <iosPods>
+    <iosPod name="Firebase/Core" version="5.9.0" minTargetSdk="8.0">
+    </iosPod>
+  </iosPods>
+  <androidPackages>
+    <androidPackage spec="com.google.firebase:firebase-common:16.0.2">
+    </androidPackage>
+    <androidPackage spec="com.google.firebase:firebase-core:16.0.3">
+    </androidPackage>
+    <androidPackage spec="com.google.firebase:firebase-app-unity:5.3.1">
+      <repositories>
+        <repository>Assets/Firebase/m2repository</repository>
+      </repositories>
+    </androidPackage>
+  </androidPackages>
+</dependencies>
+
