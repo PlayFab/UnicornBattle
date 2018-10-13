@@ -5,6 +5,10 @@ namespace PlayFab.PfEditor
 {
     public class TitleDataEditor : UnityEditor.EditorWindow
     {
+#if !UNITY_5_3_OR_NEWER
+        public GUIContent titleContent;
+#endif
+
         public string key = string.Empty;
         public string Value = string.Empty;
         public Vector2 scrollPos = Vector2.zero;
@@ -13,12 +17,11 @@ namespace PlayFab.PfEditor
         {
             // The actual window code goes here
             using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
-                GUILayout.Label(string.Format("Editing: {0}", key), PlayFabEditorHelper.uiStyle.GetStyle("orTitle"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+                EditorGUILayout.LabelField(string.Format("Editing: {0}", key), PlayFabEditorHelper.uiStyle.GetStyle("orTitle"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
 
             scrollPos = GUILayout.BeginScrollView(scrollPos, PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1"));
-            Value = GUILayout.TextArea(Value, PlayFabEditorHelper.uiStyle.GetStyle("editTxt"));
+            Value = EditorGUILayout.TextArea(Value, PlayFabEditorHelper.uiStyle.GetStyle("editTxt"));
             GUILayout.EndScrollView();
-
 
             using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
             {

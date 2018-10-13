@@ -20,13 +20,163 @@ from xml.etree import ElementTree
 DEFAULT_INPUT_FILENAME = 'app/google-services.json'
 # Output filename if it isn't set.
 DEFAULT_OUTPUT_FILENAME = 'res/values/googleservices.xml'
+# Input filename for .plist files, if it isn't set.
+DEFAULT_PLIST_INPUT_FILENAME = 'GoogleServices-Info.plist'
+# Output filename for .json files, if it isn't set.
+DEFAULT_JSON_OUTPUT_FILENAME = 'google-services-desktop.json'
 
 # Indicates a web client in the oauth_client list.
 OAUTH_CLIENT_TYPE_WEB = 3
 
+
+def read_xml_value(xml_node):
+  """Utility method for reading values from the plist XML.
+
+  Args:
+    xml_node: An ElementTree node, that contains a value.
+
+  Returns:
+    The value of the node, or None, if it could not be read.
+  """
+  if xml_node.tag == 'string':
+    return xml_node.text
+  elif xml_node.tag == 'integer':
+    return int(xml_node.text)
+  elif xml_node.tag == 'real':
+    return float(xml_node.text)
+  elif xml_node.tag == 'false':
+    return 0
+  elif xml_node.tag == 'true':
+    return 1
+  else:
+    # other types of input are ignored.  (data, dates, arrays, etc.)
+    return None
+
+
+def construct_plist_dictionary(xml_root):
+  """Constructs a dictionary of values based on the contents of a plist file.
+
+  Args:
+    xml_root: An ElementTree node, that represents the root of the xml file
+              that is to be parsed.  (Which should be a dictionary containing
+              key-value pairs of the properties that need to be extracted.)
+
+  Returns:
+    A dictionary, containing key-value pairs for all (supported) entries in the
+    node.
+  """
+  xml_dict = xml_root.find('dict')
+
+  if xml_dict is None:
+    return None
+
+  plist_dict = {}
+  i = 0
+  while i < len(xml_dict):
+    if xml_dict[i].tag == 'key':
+      key = xml_dict[i].text
+      i += 1
+      if i < len(xml_dict):
+        value = read_xml_value(xml_dict[i])
+        if value is not None:
+          plist_dict[key] = value
+    i += 1
+
+  return plist_dict
+
+
+def construct_google_services_json(xml_dict):
+  """Constructs a google services json file from a dictionary.
+
+  Args:
+    xml_dict: A dictionary of all the key/value pairs that are needed for the
+              output json file.
+  Returns:
+    A string representing the output json file.
+  """
+  try:
+    json_struct = {
+        'project_info': {
+            'project_number': xml_dict['GCM_SENDER_ID'],
+            'firebase_url': xml_dict['DATABASE_URL'],
+            'project_id': xml_dict['PROJECT_ID'],
+            'storage_bucket': xml_dict['STORAGE_BUCKET']
+        },
+        'client': [{
+            'client_info': {
+                'mobilesdk_app_id': xml_dict['GOOGLE_APP_ID'],
+                'android_client_info': {
+                    'package_name': xml_dict['BUNDLE_ID']
+                }
+            },
+            'oauth_client': [{
+                'client_id': xml_dict['CLIENT_ID'],
+            }],
+            'api_key': [{
+                'current_key': xml_dict['API_KEY']
+            }],
+            'services': {
+                'analytics_service': {
+                    'status': xml_dict['IS_ANALYTICS_ENABLED']
+                },
+                'appinvite_service': {
+                    'status': xml_dict['IS_APPINVITE_ENABLED']
+                }
+            }
+        },],
+        'configuration_version':
+            '1'
+    }
+    return json.dumps(json_struct, indent=2)
+  except KeyError as e:
+    sys.stderr.write('Could not find key in plist file: [%s]\n' % (e.args[0]))
+    return None
+
+
+def convert_plist_to_json(plist_string, input_filename):
+  """Converts an input plist string into a .json file and saves it.
+
+  Args:
+    plist_string:    The contents of the loaded plist file.
+
+    input_filename:  The file name that the plist data was read from.
+  Returns:
+    the converted string, or None if there were errors.
+  """
+
+  try:
+    root = ElementTree.fromstring(plist_string)
+  except ElementTree.ParseError:
+    sys.stderr.write('Error parsing file %s.\n'
+                     'It does not appear to be valid XML.\n' % (input_filename))
+    return None
+
+  plist_dict = construct_plist_dictionary(root)
+  if plist_dict is None:
+    sys.stderr.write('In file %s, could not locate a top-level \'dict\' '
+                     'element.\n'
+                     'File format should be plist XML, with a top-level '
+                     'dictionary containing project settings as key-value '
+                     'pairs.\n' % (input_filename))
+    return None
+
+  json_string = construct_google_services_json(plist_dict)
+  return json_string
+
+
 def gen_string(parent, name, text):
-  """Generate one <string /> element."""
+  """Generate one <string /> element and put into the list of keeps.
+
+  Args:
+    parent:  The object that will hold the string.
+    name:    The name to store the string under.
+    text:    The text of the string.
+  """
   if text:
+    prev = parent.get('tools:keep', '')
+    if prev:
+      prev += ','
+    parent.set('tools:keep', prev + '@string/' + name)
     child = ElementTree.SubElement(parent, 'string', {
         'name': name,
         'translatable': 'false'
@@ -35,7 +185,12 @@ def gen_string(parent, name, text):
 
 
 def indent(elem, level=0):
-  """Recurse through XML tree and add intentation."""
+  """Recurse through XML tree and add indentation.
+
+  Args:
+    elem:  The element to recurse over
+    level: The current indentation level.
+  """
   i = '\n' + level*'  '
   if elem is not None:
     if not elem.text or not elem.text.strip():
@@ -52,9 +207,12 @@ def indent(elem, level=0):
 
 
 def main():
-  parser = argparse.ArgumentParser(description=(
-      ('Converts a Firebase %s into %s similar to the Gradle plugin.' %
-       (DEFAULT_INPUT_FILENAME, DEFAULT_OUTPUT_FILENAME))))
+  parser = argparse.ArgumentParser(
+      description=((
+          'Converts a Firebase %s into %s similar to the Gradle plugin, or '
+          'converts a Firebase %s into a %s suitible for use on desktop apps.' %
+          (DEFAULT_INPUT_FILENAME, DEFAULT_OUTPUT_FILENAME,
+           DEFAULT_PLIST_INPUT_FILENAME, DEFAULT_JSON_OUTPUT_FILENAME))))
   parser.add_argument('-i', help='Override input file name',
                       metavar='FILE', required=False)
   parser.add_argument('-o', help='Override destination file name',
@@ -72,19 +230,47 @@ def main():
                                   'field.  If this is specified, the output '
                                   'is not created.'),
                       action='store_true', default=False, required=False)
+  parser.add_argument(
+      '--plist',
+      help=(
+          'Specifies a plist file to convert to a JSON configuration file. '
+          'If this is enabled, the script will expect a .plist file as input, '
+          'which it will convert into %s file.  The output file is '
+          '*not* suitable for use with Firebase on Android.' %
+          (DEFAULT_JSON_OUTPUT_FILENAME)),
+      action='store_true',
+      default=False,
+      required=False)
+
   args = parser.parse_args()
+
+  if args.plist:
+    input_filename = DEFAULT_PLIST_INPUT_FILENAME
+    output_filename = DEFAULT_JSON_OUTPUT_FILENAME
+  else:
+    input_filename = DEFAULT_INPUT_FILENAME
+    output_filename = DEFAULT_OUTPUT_FILENAME
 
   if args.i:
     input_filename = args.i
-  else:
-    input_filename = DEFAULT_INPUT_FILENAME
+
+  if args.o:
+    output_filename = args.o
 
   with open(input_filename, 'r') as ifile:
-    json_string = ifile.read()
+    file_string = ifile.read()
 
-  jsobj = json.loads(json_string)
+  json_string = None
+  if args.plist:
+    json_string = convert_plist_to_json(file_string, input_filename)
+    if json_string is None:
+      return 1
+    jsobj = json.loads(json_string)
+  else:
+    jsobj = json.loads(file_string)
 
   root = ElementTree.Element('resources')
+  root.set('xmlns:tools', 'http://schemas.android.com/tools')
 
   project_info = jsobj.get('project_info')
   if project_info:
@@ -151,6 +337,8 @@ def main():
         client_id = oauth_client.get('client_id')
         if client_type and client_type == OAUTH_CLIENT_TYPE_WEB and client_id:
           gen_string(root, 'default_web_client_id', client_id)
+          # Only include the first matching OAuth web client ID.
+          break
 
     services = selected_client.get('services')
     if services:
@@ -189,17 +377,16 @@ def main():
       if package:
         sys.stdout.write(package + '\n')
   else:
-    if args.o:
-      output_filename = args.o
-    else:
-      output_filename = DEFAULT_OUTPUT_FILENAME
-
     path = os.path.dirname(output_filename)
 
     if path and not os.path.exists(path):
       os.makedirs(path)
 
-    tree.write(output_filename, 'utf-8', True)
+    if not args.plist:
+      tree.write(output_filename, 'utf-8', True)
+    else:
+      with open(output_filename, 'w') as ofile:
+        ofile.write(json_string)
 
   return 0
 

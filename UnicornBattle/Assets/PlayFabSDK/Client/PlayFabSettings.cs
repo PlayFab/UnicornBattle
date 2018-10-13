@@ -10,6 +10,8 @@ namespace PlayFab
         public static string AdvertisingIdType = null; // Set this to the appropriate AD_TYPE_X constant above
         public static string AdvertisingIdValue = null;
         public static bool DisableAdvertising = false;
+        public static bool DisableDeviceInfo = false;
+        public static bool DisableFocusTimeCollection = false;
     }
 }
 #endif

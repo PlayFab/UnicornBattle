@@ -1,0 +1,25 @@
+<!-- Copyright (C) 2018 Google Inc. All Rights Reserved.
+
+FirebaseMessaging iOS and Android Dependencies.
+-->
+
+<dependencies>
+  <iosPods>
+    <iosPod name="Firebase/Messaging" version="5.9.0" minTargetSdk="8.0">
+    </iosPod>
+  </iosPods>
+  <androidPackages>
+    <androidPackage spec="com.google.firebase:firebase-iid:[17.0.2]">
+    </androidPackage>
+    <androidPackage spec="com.google.firebase:firebase-core:16.0.3">
+    </androidPackage>
+    <androidPackage spec="com.google.firebase:firebase-messaging:17.3.2">
+    </androidPackage>
+    <androidPackage spec="com.google.firebase:firebase-messaging-unity:5.3.1">
+      <repositories>
+        <repository>Assets/Firebase/m2repository</repository>
+      </repositories>
+    </androidPackage>
+  </androidPackages>
+</dependencies>
+

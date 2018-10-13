@@ -7,7 +7,7 @@ namespace PlayFab.PfEditor
     public class PlayFabEditorApi
     {
         #region FROM EDITOR API SETS ----------------------------------------------------------------------------------------------------------------------------------------
-        public static void RegisterAccouint(RegisterAccountRequest request, Action<RegisterAccountResult> resultCallback, Action<EditorModels.PlayFabError> errorCb)
+        public static void RegisterAccount(RegisterAccountRequest request, Action<RegisterAccountResult> resultCallback, Action<EditorModels.PlayFabError> errorCb)
         {
             PlayFabEditorHttp.MakeApiCall("/DeveloperTools/User/RegisterAccount", PlayFabEditorHelper.DEV_API_ENDPOINT, request, resultCallback, errorCb);
         }
@@ -25,14 +25,14 @@ namespace PlayFab.PfEditor
 
         public static void GetStudios(GetStudiosRequest request, Action<GetStudiosResult> resultCallback, Action<EditorModels.PlayFabError> errorCb)
         {
-            var token = PlayFabEditorDataService.AccountDetails.devToken;
+            var token = PlayFabEditorPrefsSO.Instance.DevAccountToken;
             request.DeveloperClientToken = token;
             PlayFabEditorHttp.MakeApiCall("/DeveloperTools/User/GetStudios", PlayFabEditorHelper.DEV_API_ENDPOINT, request, resultCallback, errorCb);
         }
 
         public static void CreateTitle(CreateTitleRequest request, Action<RegisterAccountResult> resultCallback, Action<EditorModels.PlayFabError> errorCb)
         {
-            var token = PlayFabEditorDataService.AccountDetails.devToken;
+            var token = PlayFabEditorPrefsSO.Instance.DevAccountToken;
             request.DeveloperClientToken = token;
             PlayFabEditorHttp.MakeApiCall("/DeveloperTools/User/CreateTitle", PlayFabEditorHelper.DEV_API_ENDPOINT, request, resultCallback, errorCb);
         }

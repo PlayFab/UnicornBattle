@@ -1,0 +1,33 @@
+fileFormatVersion: 2
+guid: 33ee8d6580a8412d811e9c6eab8c2cb9
+labels:
+- gvh
+- gvh_version-5.3.1
+PluginImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  isPreloaded: 0
+  isOverridable: 0
+  platformData:
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
+      enabled: 0
+      settings:
+        DefaultValueInitialized: true
+  - first:
+      iPhone: iOS
+    second:
+      enabled: 1
+      settings:
+        AddToEmbeddedBinaries: false
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -107,7 +107,7 @@ namespace PlayFab.PfEditor
         private readonly ZeroIndent indentReset; //helper class to reset and restore indentation
         public float fieldWidth = 0;
 
-        public FixedWidthLabel(GUIContent label, GUIStyle style) //	constructor.
+        public FixedWidthLabel(GUIContent label, GUIStyle style) // constructor.
         {
             //state changes are applied here.
 

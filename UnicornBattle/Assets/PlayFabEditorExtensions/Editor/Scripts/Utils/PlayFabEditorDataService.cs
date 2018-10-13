@@ -1,6 +1,5 @@
 using PlayFab.PfEditor.EditorModels;
 using PlayFab.PfEditor.Json;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
@@ -12,136 +11,66 @@ namespace PlayFab.PfEditor
     public class PlayFabEditorDataService : UnityEditor.Editor
     {
         #region EditorPref data classes
-        public class PlayFab_DeveloperAccountDetails
-        {
-            public static string Name = "PlayFab_DeveloperAccountDetails";
-
-            public string email;
-            public string devToken;
-            public List<Studio> studios;
-
-            public PlayFab_DeveloperAccountDetails()
-            {
-                studios = null; // Null means not fetched, empty is a possible return result from GetStudios
-            }
-        }
-
-        public class PlayFab_DeveloperEnvironmentDetails
-        {
-            public static string Name = "PlayFab_DeveloperEnvironmentDetails";
-
-            public string selectedStudio;
-            public Dictionary<string, string> titleData;
-            public Dictionary<string, string> titleInternalData;
-            public string sdkPath;
-            public string edexPath;
-            public string localCloudScriptPath;
-
-            public PlayFab_DeveloperEnvironmentDetails()
-            {
-                titleData = new Dictionary<string, string>();
-                titleInternalData = new Dictionary<string, string>();
-            }
-        }
-
         public class PlayFab_SharedSettingsProxy
         {
-            private readonly PropertyInfo _titleId;
-            private readonly PropertyInfo _developerSecretKey;
-            private readonly PropertyInfo _webRequestType;
-            private readonly PropertyInfo _compressApiData;
-            private readonly PropertyInfo _keepAlive;
-            private readonly PropertyInfo _timeOut;
+            private readonly Dictionary<string, PropertyInfo> _settingProps = new Dictionary<string, PropertyInfo>();
+            private readonly string[] expectedProps = new[] { "titleid", "developersecretkey", "requesttype", "compressapidata", "requestkeepalive", "requesttimeout" };
 
-            public string TitleId { get { return (string)_titleId.GetValue(null, null); } set { _titleId.SetValue(null, value, null); } }
-            public string DeveloperSecretKey { get { return (string)_developerSecretKey.GetValue(null, null); } set { _developerSecretKey.SetValue(null, value, null); } }
-            public PlayFabEditorSettings.WebRequestType WebRequestType { get { return (PlayFabEditorSettings.WebRequestType)_webRequestType.GetValue(null, null); } set { _webRequestType.SetValue(null, (int)value, null); } }
-            public bool CompressApiData { get { return (bool)_compressApiData.GetValue(null, null); } set { _compressApiData.SetValue(null, value, null); } }
-            public bool KeepAlive { get { return (bool)_keepAlive.GetValue(null, null); } set { _keepAlive.SetValue(null, value, null); } }
-            public int TimeOut
-            {
-                get
-                {
-                    return (int)_timeOut.GetValue(null, null);
-                }
-                set
-                {
-                    _timeOut.SetValue(null, value, null);
-                }
-            }
+            public string TitleId { get { return Get<string>("titleid"); } set { Set("titleid", value); } }
+            public string DeveloperSecretKey { get { return Get<string>("developersecretkey"); } set { Set("developersecretkey", value); } }
+            public PlayFabEditorSettings.WebRequestType WebRequestType { get { return Get<PlayFabEditorSettings.WebRequestType>("requesttype"); } set { Set("requesttype", (int)value); } }
+            public bool CompressApiData { get { return Get<bool>("compressapidata"); } set { Set("compressapidata", value); } }
+            public bool KeepAlive { get { return Get<bool>("requestkeepalive"); } set { Set("requestkeepalive", value); } }
+            public int TimeOut { get { return Get<int>("requesttimeout"); } set { Set("requesttimeout", value); } }
 
             public PlayFab_SharedSettingsProxy()
             {
+                LoadProps();
+            }
+
+            private PropertyInfo LoadProps(string name = null)
+            {
                 var playFabSettingsType = PlayFabEditorSDKTools.GetPlayFabSettings();
                 if (playFabSettingsType == null)
-                    return;
+                    return null;
 
-                var settingProperties = playFabSettingsType.GetProperties();
-                foreach (var eachProperty in settingProperties)
+                if (string.IsNullOrEmpty(name))
                 {
-                    var lcName = eachProperty.Name.ToLower();
-                    switch (lcName)
-                    {
-                        case "titleid":
-                            _titleId = eachProperty; break;
-                        case "developersecretkey":
-                            _developerSecretKey = eachProperty; break;
-                        case "requesttype":
-                            _webRequestType = eachProperty; break;
-                        case "compressapidata":
-                            _compressApiData = eachProperty; break;
-                        case "requestkeepalive":
-                            _keepAlive = eachProperty; break;
-                        case "requesttimeout":
-                            _timeOut = eachProperty; break;
-                    }
+                    for (var i = 0; i < expectedProps.Length; i++)
+                        LoadProps(expectedProps[i]);
+                    return null;
+                }
+                else
+                {
+                    var eachProperty = playFabSettingsType.GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Static);
+                    if (eachProperty != null)
+                        _settingProps[name.ToLowerInvariant()] = eachProperty;
+                    return eachProperty;
                 }
             }
-        }
 
-        public class PlayFab_EditorSettings
-        {
-            public static string Name = "PlayFab_EditorSettings";
-
-            private bool _isEdExShown;
-            private string _latestSdkVersion;
-            private string _latestEdExVersion;
-            private DateTime _lastSdkVersionCheck;
-            private DateTime _lastEdExVersionCheck;
-            public bool isEdExShown { get { return _isEdExShown; } set { _isEdExShown = value; Save(); } }
-            public string latestSdkVersion { get { return _latestSdkVersion; } set { _latestSdkVersion = value; _lastSdkVersionCheck = DateTime.UtcNow; Save(); } }
-            public string latestEdExVersion { get { return _latestEdExVersion; } set { _latestEdExVersion = value; _lastEdExVersionCheck = DateTime.UtcNow; Save(); } }
-            public DateTime lastSdkVersionCheck { get { return _lastSdkVersionCheck; } }
-            public DateTime lastEdExVersionCheck { get { return _lastEdExVersionCheck; } }
-
-            public static void Save()
+            private T Get<T>(string name)
             {
-                SaveToEditorPrefs(EditorSettings, Name);
-            }
-        }
-
-        public class PlayFab_EditorView
-        {
-            public static string Name = "PlayFab_EditorView";
-
-            private int _currentMainMenu;
-            private int _currentSubMenu;
-            public int currentMainMenu { get { return _currentMainMenu; } set { _currentMainMenu = value; Save(); } }
-            public int currentSubMenu { get { return _currentSubMenu; } set { _currentSubMenu = value; Save(); } }
-
-            private static void Save()
-            {
-                SaveToEditorPrefs(EditorView, Name);
+                PropertyInfo propInfo;
+                var success = _settingProps.TryGetValue(name.ToLowerInvariant(), out propInfo);
+                T output = !success ? default(T) : (T)propInfo.GetValue(null, null);
+                return output;
             }
 
+            private void Set<T>(string name, T value)
+            {
+                PropertyInfo propInfo;
+                if (!_settingProps.TryGetValue(name.ToLowerInvariant(), out propInfo))
+                    propInfo = LoadProps(name);
+                if (propInfo != null)
+                    propInfo.SetValue(null, value, null);
+                else
+                    Debug.LogWarning("Could not save " + name + " because PlayFabSettings could not be found.");
+            }
         }
         #endregion EditorPref data classes
 
-        public static PlayFab_DeveloperAccountDetails AccountDetails;
-        public static PlayFab_DeveloperEnvironmentDetails EnvDetails;
         public static PlayFab_SharedSettingsProxy SharedSettings = new PlayFab_SharedSettingsProxy();
-        public static PlayFab_EditorSettings EditorSettings;
-        public static PlayFab_EditorView EditorView;
 
         private static string KeyPrefix
         {
@@ -154,59 +83,31 @@ namespace PlayFab.PfEditor
             }
         }
 
-        private static bool _IsDataLoaded = false;
-        public static bool IsDataLoaded { get { return _IsDataLoaded && AccountDetails != null && EnvDetails != null && EditorSettings != null && EditorView != null; } }
+        public static bool IsDataLoaded = false;
 
         public static Title ActiveTitle
         {
             get
             {
-                if (AccountDetails != null && AccountDetails.studios != null && AccountDetails.studios.Count > 0 && EnvDetails != null)
+                if (PlayFabEditorPrefsSO.Instance.StudioList != null && PlayFabEditorPrefsSO.Instance.StudioList.Count > 0)
                 {
-                    if (string.IsNullOrEmpty(EnvDetails.selectedStudio) || EnvDetails.selectedStudio == PlayFabEditorHelper.STUDIO_OVERRIDE)
+                    if (string.IsNullOrEmpty(PlayFabEditorPrefsSO.Instance.SelectedStudio) || PlayFabEditorPrefsSO.Instance.SelectedStudio == PlayFabEditorHelper.STUDIO_OVERRIDE)
                         return new Title { Id = SharedSettings.TitleId, SecretKey = SharedSettings.DeveloperSecretKey, GameManagerUrl = PlayFabEditorHelper.GAMEMANAGER_URL };
 
-                    if (string.IsNullOrEmpty(EnvDetails.selectedStudio) || string.IsNullOrEmpty(SharedSettings.TitleId))
+                    if (string.IsNullOrEmpty(PlayFabEditorPrefsSO.Instance.SelectedStudio) || string.IsNullOrEmpty(SharedSettings.TitleId))
                         return null;
 
-                    try
-                    {
-                        int studioIndex; int titleIndex;
-                        if (DoesTitleExistInStudios(SharedSettings.TitleId, out studioIndex, out titleIndex))
-                            return AccountDetails.studios[studioIndex].Titles[titleIndex];
-                    }
-                    catch (Exception ex)
-                    {
-                        PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnError, ex.Message);
-                    }
+                    int studioIndex; int titleIndex;
+                    if (DoesTitleExistInStudios(SharedSettings.TitleId, out studioIndex, out titleIndex))
+                        return PlayFabEditorPrefsSO.Instance.StudioList[studioIndex].Titles[titleIndex];
                 }
                 return null;
             }
         }
 
-        private static void SaveToEditorPrefs(object obj, string key)
-        {
-            try
-            {
-                var json = JsonWrapper.SerializeObject(obj);
-                EditorPrefs.SetString(KeyPrefix + key, json);
-            }
-            catch (Exception ex)
-            {
-                PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnError, ex.Message);
-            }
-        }
-
-        public static void SaveAccountDetails()
-        {
-            SaveToEditorPrefs(AccountDetails, PlayFab_DeveloperAccountDetails.Name);
-        }
-
         public static void SaveEnvDetails(bool updateToScriptableObj = true)
         {
-            SaveToEditorPrefs(EnvDetails, PlayFab_DeveloperEnvironmentDetails.Name);
-            if (updateToScriptableObj)
-                UpdateScriptableObject();
+            UpdateScriptableObject();
         }
 
         private static TResult LoadFromEditorPrefs<TResult>(string key) where TResult : class, new()
@@ -215,31 +116,10 @@ namespace PlayFab.PfEditor
                 return new TResult();
 
             var serialized = EditorPrefs.GetString(KeyPrefix + key);
-            try
-            {
-                var result = JsonWrapper.DeserializeObject<TResult>(serialized);
-                if (result != null)
-                    return JsonWrapper.DeserializeObject<TResult>(serialized);
-            }
-            catch (Exception ex)
-            {
-                PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnError, ex.Message);
-            }
+            var result = JsonWrapper.DeserializeObject<TResult>(serialized);
+            if (result != null)
+                return JsonWrapper.DeserializeObject<TResult>(serialized);
             return new TResult();
-        }
-
-        public static void LoadAllData()
-        {
-            if (IsDataLoaded)
-                return;
-
-            AccountDetails = LoadFromEditorPrefs<PlayFab_DeveloperAccountDetails>(PlayFab_DeveloperAccountDetails.Name);
-            EnvDetails = LoadFromEditorPrefs<PlayFab_DeveloperEnvironmentDetails>(PlayFab_DeveloperEnvironmentDetails.Name);
-            EditorSettings = LoadFromEditorPrefs<PlayFab_EditorSettings>(PlayFab_EditorSettings.Name);
-            EditorView = LoadFromEditorPrefs<PlayFab_EditorView>(PlayFab_EditorView.Name);
-
-            _IsDataLoaded = true;
-            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnDataLoaded, "Complete");
         }
 
         private static void UpdateScriptableObject()
@@ -251,7 +131,7 @@ namespace PlayFab.PfEditor
             var props = playfabSettingsType.GetProperties();
             foreach (var property in props)
             {
-                switch (property.Name.ToLower())
+                switch (property.Name.ToLowerInvariant())
                 {
                     case "productionenvironmenturl":
                         property.SetValue(null, PlayFabEditorHelper.TITLE_ENDPOINT, null); break;
@@ -265,23 +145,16 @@ namespace PlayFab.PfEditor
                 if (so != null)
                     EditorUtility.SetDirty(so);
             }
+            PlayFabEditorPrefsSO.Save();
             AssetDatabase.SaveAssets();
-        }
-
-        public static void RemoveEditorPrefs()
-        {
-            EditorPrefs.DeleteKey(KeyPrefix + PlayFab_EditorSettings.Name);
-            EditorPrefs.DeleteKey(KeyPrefix + PlayFab_DeveloperEnvironmentDetails.Name);
-            EditorPrefs.DeleteKey(KeyPrefix + PlayFab_DeveloperAccountDetails.Name);
-            EditorPrefs.DeleteKey(KeyPrefix + PlayFab_EditorView.Name);
         }
 
         public static bool DoesTitleExistInStudios(string searchFor) //out Studio studio
         {
-            if (AccountDetails.studios == null)
+            if (PlayFabEditorPrefsSO.Instance.StudioList == null)
                 return false;
             searchFor = searchFor.ToLower();
-            foreach (var studio in AccountDetails.studios)
+            foreach (var studio in PlayFabEditorPrefsSO.Instance.StudioList)
                 if (studio.Titles != null)
                     foreach (var title in studio.Titles)
                         if (title.Id.ToLower() == searchFor)
@@ -294,14 +167,14 @@ namespace PlayFab.PfEditor
             studioIndex = 0; // corresponds to our _OVERRIDE_
             titleIndex = -1;
 
-            if (AccountDetails.studios == null)
+            if (PlayFabEditorPrefsSO.Instance.StudioList == null)
                 return false;
 
-            for (var studioIdx = 0; studioIdx < AccountDetails.studios.Count; studioIdx++)
+            for (var studioIdx = 0; studioIdx < PlayFabEditorPrefsSO.Instance.StudioList.Count; studioIdx++)
             {
-                for (var titleIdx = 0; titleIdx < AccountDetails.studios[studioIdx].Titles.Length; titleIdx++)
+                for (var titleIdx = 0; titleIdx < PlayFabEditorPrefsSO.Instance.StudioList[studioIdx].Titles.Length; titleIdx++)
                 {
-                    if (AccountDetails.studios[studioIdx].Titles[titleIdx].Id.ToLower() == searchFor.ToLower())
+                    if (PlayFabEditorPrefsSO.Instance.StudioList[studioIdx].Titles[titleIdx].Id.ToLower() == searchFor.ToLower())
                     {
                         studioIndex = studioIdx;
                         titleIndex = titleIdx;
@@ -313,18 +186,23 @@ namespace PlayFab.PfEditor
             return false;
         }
 
-        public static void RefreshStudiosList()
+        public static void RefreshStudiosList(bool onlyIfNull = false)
         {
-            if (AccountDetails.studios != null)
-                AccountDetails.studios.Clear();
+            if (string.IsNullOrEmpty(PlayFabEditorPrefsSO.Instance.DevAccountToken))
+                return; // Can't load studios when not logged in
+            if (onlyIfNull && PlayFabEditorPrefsSO.Instance.StudioList != null)
+                return; // Don't spam load this, only load it the first time
+
+            if (PlayFabEditorPrefsSO.Instance.StudioList != null)
+                PlayFabEditorPrefsSO.Instance.StudioList.Clear();
             PlayFabEditorApi.GetStudios(new GetStudiosRequest(), (getStudioResult) =>
             {
-                if (AccountDetails.studios == null)
-                    AccountDetails.studios = new List<Studio>();
+                if (PlayFabEditorPrefsSO.Instance.StudioList == null)
+                    PlayFabEditorPrefsSO.Instance.StudioList = new List<Studio>();
                 foreach (var eachStudio in getStudioResult.Studios)
-                    AccountDetails.studios.Add(eachStudio);
-                AccountDetails.studios.Add(Studio.OVERRIDE);
-                SaveAccountDetails();
+                    PlayFabEditorPrefsSO.Instance.StudioList.Add(eachStudio);
+                PlayFabEditorPrefsSO.Instance.StudioList.Add(Studio.OVERRIDE);
+                PlayFabEditorPrefsSO.Save();
             }, PlayFabEditorHelper.SharedErrorCallback);
         }
     }

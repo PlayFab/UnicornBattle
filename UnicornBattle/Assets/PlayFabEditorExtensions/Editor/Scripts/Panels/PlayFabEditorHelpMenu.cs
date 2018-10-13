@@ -15,7 +15,7 @@ namespace PlayFab.PfEditor
 
             using (new UnityVertical())
             {
-                GUILayout.Label("LEARN PLAYFAB:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
+                EditorGUILayout.LabelField("LEARN PLAYFAB:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
 
                 using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
                 {
@@ -68,7 +68,7 @@ namespace PlayFab.PfEditor
 
             using (new UnityVertical())
             {
-                GUILayout.Label("TROUBLESHOOTING:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
+                EditorGUILayout.LabelField("TROUBLESHOOTING:", PlayFabEditorHelper.uiStyle.GetStyle("labelStyle"));
 
                 using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleClear")))
                 {

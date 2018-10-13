@@ -148,7 +148,7 @@ namespace PlayFab.PfEditor
                 {
                     GUILayout.FlexibleSpace();
                 }
-                GUILayout.Label("", pbarStyle, GUILayout.Width(progressWidth));
+                EditorGUILayout.LabelField("", pbarStyle, GUILayout.Width(progressWidth));
             }
         }
     }

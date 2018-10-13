@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace PlayFab.PfEditor.EditorModels
 {
@@ -158,20 +160,19 @@ namespace PlayFab.PfEditor.EditorModels
         public Dictionary<string, List<string>> ErrorDetails;
         public object CustomData;
 
-        public override string ToString()
+        [ThreadStatic]
+        private static StringBuilder _tempSb;
+        public string GenerateErrorReport()
         {
-            var sb = new System.Text.StringBuilder();
+            if (_tempSb == null)
+                _tempSb = new StringBuilder();
+            _tempSb.Length = 0;
+            _tempSb.Append(ErrorMessage);
             if (ErrorDetails != null)
-            {
-                foreach (var kv in ErrorDetails)
-                {
-                    sb.Append(kv.Key);
-                    sb.Append(": ");
-                    sb.Append(string.Join(", ", kv.Value.ToArray()));
-                    sb.Append(" | ");
-                }
-            }
-            return string.Format("PlayFabError({0}, {1}, {2} {3}", Error, ErrorMessage, HttpCode, HttpStatus) + (sb.Length > 0 ? " - Details: " + sb.ToString() + ")" : ")");
+                foreach (var pair in ErrorDetails)
+                    foreach (var msg in pair.Value)
+                        _tempSb.Append("\n").Append(pair.Key).Append(": ").Append(msg);
+            return _tempSb.ToString();
         }
     }
 

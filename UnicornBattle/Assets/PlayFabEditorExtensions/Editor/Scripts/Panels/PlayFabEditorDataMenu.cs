@@ -1,4 +1,3 @@
-using PlayFab.PfEditor.EditorModels;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,9 +22,6 @@ namespace PlayFab.PfEditor
         #region draw calls
         public static void DrawDataPanel()
         {
-            if (!PlayFabEditorDataService.IsDataLoaded)
-                return;
-
             if (menu == null)
             {
                 RegisterMenu();
@@ -33,7 +29,7 @@ namespace PlayFab.PfEditor
             }
 
             menu.DrawMenu();
-            switch ((DataMenuStates)PlayFabEditorDataService.EditorView.currentSubMenu)
+            switch ((DataMenuStates)PlayFabEditorPrefsSO.Instance.curSubMenuIdx)
             {
                 case DataMenuStates.TitleData:
                     if (tdViewer == null)
@@ -60,7 +56,7 @@ namespace PlayFab.PfEditor
                 default:
                     using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
                     {
-                        GUILayout.Label("Coming Soon!", PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
+                        EditorGUILayout.LabelField("Coming Soon!", PlayFabEditorHelper.uiStyle.GetStyle("titleLabel"), GUILayout.MinWidth(EditorGUIUtility.currentViewWidth));
                     }
                     break;
             }
