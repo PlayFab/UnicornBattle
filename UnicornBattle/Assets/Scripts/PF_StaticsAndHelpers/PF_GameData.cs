@@ -40,8 +40,25 @@ public static class PF_GameData
     public static List<PlayerLeaderboardEntry> currentTop10LB = new List<PlayerLeaderboardEntry>();
     public static List<PlayerLeaderboardEntry> friendsLB = new List<PlayerLeaderboardEntry>();
 
+    public static void GetEventData()
+    {
+        // first get list of events --- these are stored in a special catalog
+        var request = new GetCatalogItemsRequest { CatalogVersion = "Events" };
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetEvents);
+        PlayFabClientAPI.GetCatalogItems(request, OnGetEventsSuccess, PF_Bridge.PlayFabErrorCallback);
+    }
+
+    public static void GetActiveEventData()
+    {
+        // get active events via a special store
+        var request = new GetStoreItemsRequest { CatalogVersion = "Events", StoreId = "events" };
+        // DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetActiveEvents); // not needed because called inside GetEventData
+        PlayFabClientAPI.GetStoreItems(request, OnGetActiveEventsSuccess, PF_Bridge.PlayFabErrorCallback);
+    }
+
     public static void GetTitleData()
     {
+        // now get the rest of the title data -- these are stored in traditional title data
         var request = new GetTitleDataRequest { Keys = GlobalStrings.InitTitleKeys };
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData_General);
         PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccess, PF_Bridge.PlayFabErrorCallback);
@@ -63,20 +80,57 @@ public static class PF_GameData
         }
     }
 
+    private static void OnGetEventsSuccess(GetCatalogItemsResult result)
+    {
+        // process the catalog items returned; put these into the "events" object
+        // then go and get the rest of the title data
+
+        Events.Clear();
+        foreach (var eachItem in result.Catalog)
+        {
+            var newEvent = new UB_EventData
+            {
+                EventName = eachItem.DisplayName,
+                EventDescription = eachItem.Description,
+                StoreToUse = eachItem.ItemClass,
+                BundleId = eachItem.ItemImageUrl,
+                EventKey = eachItem.ItemId
+            };
+
+            Events[eachItem.ItemId] = newEvent;
+            Debug.Log("Loaded event: " + eachItem.ItemId);
+
+        }
+        GetActiveEventData();
+    }
+
+    private static void OnGetActiveEventsSuccess(GetStoreItemsResult result)
+    {
+        // now process the results of the store to determine what events are active
+        ActiveEventKeys.Clear();
+        foreach (var eachItem in result.Store)
+        {
+            ActiveEventKeys.Add(eachItem.ItemId);
+        }
+        Debug.Log("Active events: " + String.Join(", ", ActiveEventKeys.ToArray()));
+        BuildCDNRequests();
+        PF_Bridge.RaiseCallbackSuccess("Events Loaded", PlayFabAPIMethods.GetEvents, MessageDisplayStyle.none);
+    }
+
     private static void OnGetTitleDataSuccess(GetTitleDataResult result)
     {
         ExtractJsonTitleData(result.Data, "Achievements", ref Achievements);
-        ExtractJsonTitleData(result.Data, "ActiveEventKeys", ref ActiveEventKeys);
+//        ExtractJsonTitleData(result.Data, "ActiveEventKeys", ref ActiveEventKeys);
         ExtractJsonTitleData(result.Data, "CharacterLevelRamp", ref CharacterLevelRamp);
         ExtractJsonTitleData(result.Data, "Classes", ref Classes);
-        ExtractJsonTitleData(result.Data, "Events", ref Events);
+//        ExtractJsonTitleData(result.Data, "Events", ref Events);
         ExtractJsonTitleData(result.Data, "Levels", ref Levels);
         ExtractJsonTitleData(result.Data, "MinimumInterstitialWait", ref MinimumInterstitialWait);
         ExtractJsonTitleData(result.Data, "Spells", ref Spells);
         ExtractJsonTitleData(result.Data, "StandardStores", ref StandardStores);
         ExtractJsonTitleData(result.Data, "StartingCharacterSlots", ref StartingCharacterSlots);
 
-        DoExtraEventProcessing();
+//        DoExtraEventProcessing();
 
         AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
         if (result.Data.ContainsKey("AndroidPushSenderId"))
@@ -85,7 +139,6 @@ public static class PF_GameData
         if (result.Data.ContainsKey("CommunityWebsite"))
             CommunityWebsite = result.Data["CommunityWebsite"];
 
-        BuildCDNRequests();
         PF_Bridge.RaiseCallbackSuccess("Title Data Loaded", PlayFabAPIMethods.GetTitleData_General, MessageDisplayStyle.none);
     }
 
@@ -134,7 +187,9 @@ public static class PF_GameData
             PromoAssets.Clear();
             foreach (var obj in requests)
                 if (obj.IsUnpacked)
+                {
                     PromoAssets.Add(obj.Unpacked);
+                }
             GameController.Instance.cdnController.isInitalContentUnpacked = true;
         };
 

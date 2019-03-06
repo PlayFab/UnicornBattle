@@ -103,6 +103,8 @@ public class GameController : Singleton<GameController>
     public static void CharacterSelectDataRefresh()
     {
         //Debug.Log("Ran CharacterSelectDataRefresh");
+        PF_GameData.GetEventData();
+//        PF_GameData.GetActiveEventData(); // now called directly from GetEventData to ensure ordering
         PF_GameData.GetTitleData();
         PF_GameData.GetTitleNews();
         PF_GameData.GetCatalogInfo();

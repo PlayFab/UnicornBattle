@@ -172,6 +172,7 @@ public class QuestOutroController : MonoBehaviour
         userUpdates.Add("Total_UnicornsRescued", PF_GamePlay.QuestProgress.HeroRescues);
         userUpdates.Add("Total_ItemsUsed", PF_GamePlay.QuestProgress.ItemsUsed);
         userUpdates.Add("Total_XPGained", PF_GamePlay.QuestProgress.XpCollected);
+        userUpdates.Add(prefix + "XPGained", PF_GamePlay.QuestProgress.XpCollected);
         userUpdates.Add("Total_ItemsFound", PF_GamePlay.QuestProgress.ItemsFound.Count);
         userUpdates.Add("Total_GoldFound", PF_GamePlay.QuestProgress.GoldCollected);
         userUpdates.Add("Total_QuestsCompleted", 1);

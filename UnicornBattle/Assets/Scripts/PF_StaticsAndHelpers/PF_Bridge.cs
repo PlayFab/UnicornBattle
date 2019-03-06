@@ -176,6 +176,8 @@ public enum PlayFabAPIMethods
     GetCDNConent,
     GetTitleData_General,
     GetTitleData_Specific,
+    GetEvents,
+    GetActiveEvents,
     GetTitleNews,
     GetCloudScriptUrl,
     GetAllUsersCharacters,
