@@ -9,6 +9,7 @@ namespace PlayFab.PfEditor
 {
     public class PlayFabEditorSDKTools : UnityEditor.Editor
     {
+        private const int buttonWidth = 150;
         public static bool IsInstalled { get { return GetPlayFabSettings() != null; } }
 
         private static Type playFabSettingsType = null;
@@ -200,14 +201,13 @@ namespace PlayFab.PfEditor
 
                 using (new UnityHorizontal(PlayFabEditorHelper.uiStyle.GetStyle("gpStyleGray1")))
                 {
-                    var buttonWidth = 150;
-
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("Refresh", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(buttonWidth), GUILayout.MinHeight(32)))
                         playFabSettingsType = null;
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("Install PlayFab SDK", PlayFabEditorHelper.uiStyle.GetStyle("Button"), GUILayout.MaxWidth(buttonWidth), GUILayout.MinHeight(32)))
                         ImportLatestSDK();
+
                     GUILayout.FlexibleSpace();
                 }
             }

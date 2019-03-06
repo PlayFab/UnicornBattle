@@ -5,6 +5,13 @@ using PlayFab.SharedModels;
 
 namespace PlayFab.MatchmakerModels
 {
+    /// <summary>
+    /// This API allows the external match-making service to confirm that the user has a valid Session Ticket for the title, in
+    /// order
+    /// to securely enable match-making. The client passes the user's Session Ticket to the external match-making service, which
+    /// then passes the Session Ticket in as the
+    /// AuthorizationTicket in this call.
+    /// </summary>
     [Serializable]
     public class AuthUserRequest : PlayFabRequestCommon
     {
@@ -182,11 +189,6 @@ namespace PlayFab.MatchmakerModels
         /// Unique identifier for the game/lobby in the new Game Server Instance.
         /// </summary>
         public string GameID;
-        /// <summary>
-        /// IPV4 address of the new Game Server Instance.
-        /// </summary>
-        [Obsolete("Use 'ServerIPV4Address' instead", true)]
-        public string ServerHostname;
         /// <summary>
         /// IPV4 address of the server
         /// </summary>

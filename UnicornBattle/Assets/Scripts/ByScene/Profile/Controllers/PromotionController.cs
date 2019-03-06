@@ -40,13 +40,13 @@ public class PromotionController : MonoBehaviour
 
     void OnEnable()
     {
-        SupersonicEvents.OnAdRewarded += EvaluateAdState;
+        // SupersonicEvents.OnAdRewarded += EvaluateAdState;
         InvokeRepeating("EvaluateAdState", 60, 300); //start after 1m, repeat every 5m
     }
 
     void OnDisable()
     {
-        SupersonicEvents.OnAdRewarded -= EvaluateAdState;
+        // SupersonicEvents.OnAdRewarded -= EvaluateAdState;
         CancelInvoke("EvaluateAdState");
     }
 
@@ -79,15 +79,17 @@ public class PromotionController : MonoBehaviour
             }
         };
 
-        SupersonicEvents.queuedAd = null;
+        // SupersonicEvents.queuedAd = null;
 
         if (placement != null)
         {
-            PF_Advertising.GetAdPlacements(new GetAdPlacementsRequest { Identifier = new NameIdentifier() { Name = placement }, AppId = SupersonicEvents.appKey }, OnCheckForPlayFabPlacementSuccess, errorCb);
+            // PF_Advertising.GetAdPlacements(new GetAdPlacementsRequest { Identifier = new NameIdentifier() { Name = placement }, AppId = SupersonicEvents.appKey }, OnCheckForPlayFabPlacementSuccess, errorCb);
+            PF_Advertising.GetAdPlacements(new GetAdPlacementsRequest { Identifier = new NameIdentifier() { Name = placement }, AppId = "0" }, OnCheckForPlayFabPlacementSuccess, errorCb);
         }
         else
         {
-            PF_Advertising.GetAdPlacements(new GetAdPlacementsRequest { AppId = SupersonicEvents.appKey }, OnCheckForPlayFabPlacementSuccess, errorCb);
+            // PF_Advertising.GetAdPlacements(new GetAdPlacementsRequest { AppId = SupersonicEvents.appKey }, OnCheckForPlayFabPlacementSuccess, errorCb);
+            PF_Advertising.GetAdPlacements(new GetAdPlacementsRequest { AppId = "0" }, OnCheckForPlayFabPlacementSuccess, errorCb);
         }
     }
 
@@ -242,10 +244,11 @@ public class PromotionController : MonoBehaviour
     public void WatchAd()
     {
 
-        if (activePromo != null && activePromo.linkedAd != null && SupersonicEvents.rewardedVideoAvailability && Time.time > _watchLastClickedAt + _watchCD)
-        {
-            _watchLastClickedAt = Time.time;
-            SupersonicEvents.ShowRewardedVideo(activePromo.linkedAd.Details);
+        //if (activePromo != null && activePromo.linkedAd != null && SupersonicEvents.rewardedVideoAvailability && Time.time > _watchLastClickedAt + _watchCD)
+        if (activePromo != null && activePromo.linkedAd != null && false && Time.time > _watchLastClickedAt + _watchCD)
+            {
+                _watchLastClickedAt = Time.time;
+            // SupersonicEvents.ShowRewardedVideo(activePromo.linkedAd.Details);
         }
         else
         {

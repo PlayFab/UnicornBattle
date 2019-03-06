@@ -7,7 +7,7 @@ namespace PlayFab
 {
     public class PluginManager
     {
-        private Dictionary<KeyValuePair<PluginContract, string>, IPlayFabPlugin> plugins = new Dictionary<KeyValuePair<PluginContract, string>, IPlayFabPlugin>();
+        private Dictionary<PluginContractKey, IPlayFabPlugin> plugins = new Dictionary<PluginContractKey, IPlayFabPlugin>(new PluginContractKeyComparator());
 
         /// <summary>
         /// The singleton instance of plugin manager.
@@ -44,11 +44,11 @@ namespace PlayFab
 
         private IPlayFabPlugin GetPluginInternal(PluginContract contract, string instanceName)
         {
-            var key = new KeyValuePair<PluginContract, string>(contract, instanceName);
-            if (!this.plugins.ContainsKey(key))
+            var key = new PluginContractKey { _pluginContract = contract, _pluginName = instanceName };
+            IPlayFabPlugin plugin;
+            if (!this.plugins.TryGetValue(key, out plugin))
             {
                 // Requested plugin is not in the cache, create the default one
-                IPlayFabPlugin plugin;
                 switch (contract)
                 {
                     case PluginContract.PlayFab_Serializer:
@@ -64,7 +64,7 @@ namespace PlayFab
                 this.plugins[key] = plugin;
             }
 
-            return this.plugins[key];
+            return plugin;
         }
 
         private void SetPluginInternal(IPlayFabPlugin plugin, PluginContract contract, string instanceName)
@@ -74,7 +74,7 @@ namespace PlayFab
                 throw new ArgumentNullException("plugin", "Plugin instance cannot be null");
             }
 
-            var key = new KeyValuePair<PluginContract, string>(contract, instanceName);
+            var key = new PluginContractKey { _pluginContract = contract, _pluginName = instanceName };
             this.plugins[key] = plugin;
         }
 

@@ -33,6 +33,7 @@ namespace PlayFab.PfEditor
         public static string DEBUG_REQUEST_TIMING = "PLAYFAB_REQUEST_TIMING";
         public static string ENABLE_PLAYFABPLAYSTREAM_API = "ENABLE_PLAYFABPLAYSTREAM_API";
         public static string ENABLE_BETA_FETURES = "ENABLE_PLAYFAB_BETA";
+        public static string ENABLE_PLAYFABPUBSUB_API = "ENABLE_PLAYFABPUBSUB_API";
         public static Dictionary<string, PfDefineFlag> FLAG_LABELS = new Dictionary<string, PfDefineFlag> {
             { ADMIN_API, new PfDefineFlag { Flag = ADMIN_API, Label = "ENABLE ADMIN API", Category = PfDefineFlag.FlagCategory.Api, isInverted = false, isSafe = true } },
             { CLIENT_API, new PfDefineFlag { Flag = CLIENT_API, Label = "ENABLE CLIENT API", Category = PfDefineFlag.FlagCategory.Api, isInverted = true, isSafe = true } },
@@ -41,7 +42,7 @@ namespace PlayFab.PfEditor
 
             { DEBUG_REQUEST_TIMING, new PfDefineFlag { Flag = DEBUG_REQUEST_TIMING, Label = "ENABLE REQUEST TIMES", Category = PfDefineFlag.FlagCategory.Feature, isInverted = false, isSafe = true } },
             { ENABLE_BETA_FETURES, new PfDefineFlag { Flag = ENABLE_BETA_FETURES, Label = "ENABLE UNSTABLE FEATURES", Category = PfDefineFlag.FlagCategory.Feature, isInverted = false, isSafe = true } },
-            { ENABLE_PLAYFABPLAYSTREAM_API, new PfDefineFlag { Flag = ENABLE_PLAYFABPLAYSTREAM_API, Label = "ENABLE SIGNALR", Category = PfDefineFlag.FlagCategory.Feature, isInverted = false, isSafe = false } },
+            { ENABLE_PLAYFABPUBSUB_API, new PfDefineFlag { Flag = ENABLE_PLAYFABPUBSUB_API, Label = "ENABLE PubSub", Category = PfDefineFlag.FlagCategory.Feature, isInverted = false, isSafe = false } },
         };
 
         public static string DEFAULT_SDK_LOCATION = "Assets/PlayFabSdk";

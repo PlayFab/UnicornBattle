@@ -136,6 +136,9 @@ namespace PlayFab.PfEditor
                         case PlayFabEditorMenu.MenuStates.Tools:
                             PlayFabEditorToolsMenu.DrawToolsPanel();
                             break;
+                        case PlayFabEditorMenu.MenuStates.Packages:
+                            PlayFabEditorPackages.DrawPackagesMenu();
+                            break;
                         default:
                             break;
                     }
