@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 402876215
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 900ffd0f608983edbf522252a8e7f093
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c1642440719609290a7e09a50a7286f4
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+Assets:
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Events/Background_EventPresSplash.jpg
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Events/Background_EventPresBanner.jpg
+Dependencies: []

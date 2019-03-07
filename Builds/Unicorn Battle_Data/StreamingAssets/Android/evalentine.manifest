@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 1375549805
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 7c7405e053f420ce2ff6e9ff15b7aa0c
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c1642440719609290a7e09a50a7286f4
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+Assets:
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Events/Background_EventValentineBanner.jpg
+- Assets/Art/Sprites/AshleyAdd/SplashAndBanners/jpgs/Events/Background_EventValentineSplash.jpg
+Dependencies: []
