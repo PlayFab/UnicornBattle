@@ -1,0 +1,14 @@
+<linker>
+    <!-- Need ignoreIfMissing for all of the assemblies because build fails on Mac in some cases without -->
+    <assembly fullname="System">
+        <!-- Need to use Newtonsoft Json.NET library with IL2CPP build. -->
+        <namespace fullname="System.ComponentModel" preserve="all" ignoreIfMissing="1"/>
+    </assembly>
+
+    <!-- Keep all our assemblies. -->
+    <assembly fullname="Microsoft.AppCenter" preserve="all" ignoreIfMissing="1"/>
+    <assembly fullname="Microsoft.AppCenter.Analytics" preserve="all" ignoreIfMissing="1"/>
+    <assembly fullname="Microsoft.AppCenter.Crashes" preserve="all" ignoreIfMissing="1"/>
+    <assembly fullname="Microsoft.AppCenter.Push" preserve="all" ignoreIfMissing="1"/>
+    <assembly fullname="SQLite-net" preserve="all" ignoreIfMissing="1"/>
+</linker>

@@ -19,7 +19,7 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController>
     public Text displayVersion;
     public Text activeTitleId;
 
-    public enum SettingButtonTypes { none = 0, returnToCharacterSelect, leaveBattle, logout, accountSettings, setTitleId, communityPortal, redeemCoupon }
+    public enum SettingButtonTypes { none = 0, returnToCharacterSelect, leaveBattle, logout, accountSettings, setTitleId, communityPortal, redeemCoupon, triggerCrash }
 
     public List<SettingsButtonDetails> settingsButtons = new List<SettingsButtonDetails>();
     public List<SceneToSettingsMapping> settingsByScene = new List<SceneToSettingsMapping>();
@@ -203,6 +203,12 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController>
         };
 
         DialogCanvasController.RequestTextInputPrompt("Redeem a Coupon Code", "Enter a valid code to redeem rewards.", (string response) => { afterPrompt(response); }, "XXX-XXXX-XXX");
+    }
+
+    public void ForceCrash()
+    {
+        // Crashes.GenerateTestCrash();
+        Application.ForceCrash(0);
     }
 
     public void SetTitleId()

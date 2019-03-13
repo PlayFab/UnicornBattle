@@ -1,0 +1,36 @@
+    if (m_AppCallbacks && args->Kind == ActivationKind::Launch)
+    {
+        auto launchTypeArgs = safe_cast<LaunchActivatedEventArgs^>(args);
+        auto launchArgs = launchTypeArgs->Arguments;
+        Platform::String ^stringPrefix = L"{\"appcenter\":{";
+        if (launchArgs && launchArgs->Length() >= stringPrefix->Length())
+        {
+            bool hasPrefix = true;
+            for (int i = 0; i < stringPrefix->Length(); ++i)
+            {
+                if (stringPrefix->Data()[i] != launchArgs->Data()[i])
+                {
+                    hasPrefix = false;
+                    break;
+                }
+            }
+            if (hasPrefix)
+            {
+                Platform::String ^launchArgsCopy = stringPrefix;
+                for (int i = stringPrefix->Length(); i < launchArgs->Length() - 1; ++i)
+                {
+                    launchArgsCopy += launchArgs->Data()[i];
+                }
+                launchArgsCopy += L", \"appcenterunity\":\"";
+                GUID guid;
+                CoCreateGuid(&guid);
+                Platform::String ^guidString = guid.Data1.ToString() + guid.Data2.ToString() + guid.Data3.ToString();
+                for (int i = 0; i < 8; ++i)
+                {
+                    guidString += guid.Data4[i].ToString();
+                }
+                launchArgsCopy += guidString + L"\"}";
+                m_AppCallbacks->SetAppArguments(launchArgsCopy);
+            }
+        }
+    }

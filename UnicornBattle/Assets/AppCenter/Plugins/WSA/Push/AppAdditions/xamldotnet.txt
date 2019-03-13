@@ -1,0 +1,7 @@
+            var launchArgs = args.Arguments;
+            if (launchArgs != null && launchArgs.Contains("{\"appcenter\":{"))
+            {
+                var idString = Guid.NewGuid();
+                launchArgs = launchArgs.Substring(0, launchArgs.Length - 1) + ", \"appcenterunity\":\"" + idString + "\"}";
+            }
+            InitializeUnity(launchArgs);
