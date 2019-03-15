@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Microsoft.AppCenter.Unity.Crashes;
 
 public class SettingsCanvasController : Singleton<SettingsCanvasController>
 {
@@ -207,8 +208,9 @@ public class SettingsCanvasController : Singleton<SettingsCanvasController>
 
     public void ForceCrash()
     {
+        Crashes.GenerateTestCrash();
+        // Application.ForceCrash(2);
         // Crashes.GenerateTestCrash();
-        Application.ForceCrash(0);
     }
 
     public void SetTitleId()
