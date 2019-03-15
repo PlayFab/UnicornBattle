@@ -14,12 +14,22 @@ public class ProfileUIController : MonoBehaviour
     {
         PF_Bridge.OnPlayFabCallbackError += HandleCallbackError;
         PF_Bridge.OnPlayfabCallbackSuccess += HandleCallbackSuccess;
+
+        PF_PubSub.OnMessageToPlayer += HandleOnMessageToPlayer;
+        //PF_PubSub.OnMessageToAllPlayers += HandleOnMessageToAllPlayers;
+    }
+    MessageFromServer msgToProcess = null;
+    private void HandleOnMessageToPlayer(MessageFromServer msg)
+    {
+        msgToProcess = msg;
     }
 
     public void OnDisable()
     {
         PF_Bridge.OnPlayFabCallbackError -= HandleCallbackError;
         PF_Bridge.OnPlayfabCallbackSuccess -= HandleCallbackSuccess;
+        PF_PubSub.OnMessageToPlayer -= HandleOnMessageToPlayer;
+        //PF_PubSub.OnMessageToAllPlayers -= HandleOnMessageToAllPlayers;
     }
 
     public void HandleCallbackError(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
@@ -87,4 +97,30 @@ public class ProfileUIController : MonoBehaviour
     {
         DialogCanvasController.RequestStore(PF_GameData.StandardStores[0]);
     }
+
+    private void Update() {
+        if (msgToProcess != null) 
+        {
+            if (!(msgToProcess.showStore) && (msgToProcess.message != null))
+            {
+                DialogCanvasController.RequestStatusPrompt(msgToProcess.title, msgToProcess.message, () => {});
+            }
+
+            if ((msgToProcess.showStore) && (msgToProcess.message != null))
+            {
+                DialogCanvasController.RequestConfirmationPrompt(msgToProcess.title, msgToProcess.message, 
+                    (response) => 
+                    {
+                        if (response) 
+                        { 
+                            DialogCanvasController.RequestStore(PF_GameData.StandardStores[0]);
+                        }
+                    }
+                );
+            }            
+                
+        }
+        msgToProcess = null;
+    }    
 }
+

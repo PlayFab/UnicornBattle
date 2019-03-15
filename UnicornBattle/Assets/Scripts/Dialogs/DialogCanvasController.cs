@@ -27,6 +27,8 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
     public LeaderboardPaneController socialPrompt;
     public AccountStatusController accountSettingsPrompt;
 
+    public StatusPromptController statusPrompt;
+
     public bool showOpenCloseButton = true;
     private List<OutgoingAPICounter> waitingOnRequests = new List<OutgoingAPICounter>();
     //Coroutine to manage the 10 second timeout.
@@ -38,6 +40,10 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
     public delegate void ConfirmationPromptHandler(string title, string message, Action<bool> responseCallback);
     public static event ConfirmationPromptHandler RaiseConfirmationPromptRequest;
+
+    public delegate void StatusPromptHandler(string title, string message, Action responseCallback);
+    public static event StatusPromptHandler RaiseStatusPromptRequest;
+
 
     public delegate void TextInputPromptHandler(string title, string message, Action<string> responseCallback, string defaultValue = null);
     public static event TextInputPromptHandler RaiseTextInputPromptRequest;
@@ -73,6 +79,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
         RaiseLoadingPromptRequest += HandleLoadingPromptRequest;
         RaiseConfirmationPromptRequest += HandleConfirmationPromptRequest;
+        RaiseStatusPromptRequest += HandleStatusPromptRequest;
         RaiseTextInputPromptRequest += HandleTextInputRequest;
         RaiseInterstitialRequest += HandleInterstitialRequest;
         RaiseStoreRequest += HandleStoreRequest;
@@ -93,6 +100,7 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
 
         RaiseLoadingPromptRequest -= HandleLoadingPromptRequest;
         RaiseConfirmationPromptRequest -= HandleConfirmationPromptRequest;
+        RaiseStatusPromptRequest -= HandleStatusPromptRequest;
         RaiseTextInputPromptRequest -= HandleTextInputRequest;
         RaiseInterstitialRequest -= HandleInterstitialRequest;
         RaiseStoreRequest -= HandleStoreRequest;
@@ -101,6 +109,9 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         RaiseAccountSettingsRequest -= HandleRaiseAccountSettingsRequest;
         RaiseSelectorPromptRequest -= HandleSelectorPromptRequest;
         RaiseSocialRequest -= HandleSocialRequest;
+        
+        
+
     }
 
     void HandleSocialRequest()
@@ -216,7 +227,17 @@ public class DialogCanvasController : Singleton<DialogCanvasController>
         confirmPrompt.ShowConfirmationPrompt(title, message, responseCallback, HideTint);
     }
 
+    public static void RequestStatusPrompt(string title, string message, Action responseCallback)
+    {
+        if (RaiseStatusPromptRequest != null)
+            RaiseStatusPromptRequest(title, message, responseCallback);
+    }
 
+    public void HandleStatusPromptRequest(string title, string message, Action responseCallback)
+    {
+        //ShowTint();
+        statusPrompt.ShowMessagePrompt(title, message, responseCallback);        
+    }
     public static void RequestLoadingPrompt(PlayFabAPIMethods method)
     {
         if (RaiseLoadingPromptRequest != null)
