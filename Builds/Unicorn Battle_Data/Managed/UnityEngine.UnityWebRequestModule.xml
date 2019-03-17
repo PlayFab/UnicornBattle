@@ -635,11 +635,20 @@
     </member>
     <member name="M:UnityEngine.Networking.UnityWebRequest.Get(System.String)">
       <summary>
-        <para>Creates a UnityWebRequest configured for HTTP GET.</para>
+        <para>Create a UnityWebRequest for HTTP GET.</para>
       </summary>
       <param name="uri">The URI of the resource to retrieve via HTTP GET.</param>
       <returns>
-        <para>A UnityWebRequest object configured to retrieve data from uri.</para>
+        <para>An object that retrieves data from the uri.</para>
+      </returns>
+    </member>
+    <member name="M:UnityEngine.Networking.UnityWebRequest.Get(System.Uri)">
+      <summary>
+        <para>Create a UnityWebRequest for HTTP GET.</para>
+      </summary>
+      <param name="uri">The URI of the resource to retrieve via HTTP GET.</param>
+      <returns>
+        <para>An object that retrieves data from the uri.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.Networking.UnityWebRequest.GetAssetBundle(System.String,System.UInt32)">
