@@ -7,7 +7,7 @@ namespace PlayFab.Sockets
     using UnityEngine.Events;
     using PlayFab.Sockets.Models;
     
-    public class PlayFabSocketsAPI 
+    public partial class PlayFabSocketsAPI 
     {
         public static readonly OnConnectEvent OnConnected = new OnConnectEvent();
         public static readonly OnDisconnectEvent OnDisconnected  = new OnDisconnectEvent();
@@ -24,6 +24,8 @@ namespace PlayFab.Sockets
 
 
         private static PlayFabSocketsBehaviour _transport;
+        
+        public static bool IsConnected(){ return _transport != null && _transport.IsConnected(); }
         
         /// <summary>
         /// Initialize the Sockets API, this will create a Monobehaviour in the scene
@@ -53,7 +55,7 @@ namespace PlayFab.Sockets
         /// </summary>
         public static void Connect()
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
             _transport.Connect();
         }
 
@@ -88,7 +90,24 @@ namespace PlayFab.Sockets
         /// <param name="exceptionCallback">Fires if the subscription was unsuccessful</param>
         public static void Subscribe(Topic topic, Action successCallback, Action<Exception> exceptionCallback)
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
+            if (!_transport.IsConnected())
+            {
+                Debug.LogError(ErrorStrings.MustBeConnectedSubscribe);
+                return;
+            }
+            _transport.Subscribe(topic, successCallback, exceptionCallback);
+        }
+
+        /// <summary>
+        /// Subscribe to a PlayStream or Message topic
+        /// </summary>
+        /// <param name="topic">The topic you wish to subscribe to</param>
+        /// <param name="successCallback">Fires if subscription was successful</param>
+        /// <param name="exceptionCallback">Fires if the subscription was unsuccessful</param>
+        public static void Subscribe(Topic topic, Action<Topic> successCallback, Action<Exception> exceptionCallback)
+        {
+            _transport.InitializeBehaviour();
             if (!_transport.IsConnected())
             {
                 Debug.LogError(ErrorStrings.MustBeConnectedSubscribe);
@@ -105,7 +124,7 @@ namespace PlayFab.Sockets
         /// <param name="exceptionCallback">Fires upon failure to subscribe, returns a list of Exceptions from failed subscriptions. pass null to omit event</param>
         public static void Subscribe(List<Topic> topics, Action<List<Topic>> successCallback, Action<List<Exception>> exceptionCallback)
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
             if (!_transport.IsConnected())
             {
                 Debug.LogError(ErrorStrings.MustBeConnectedSubscribe);
@@ -122,7 +141,7 @@ namespace PlayFab.Sockets
         /// <param name="exceptionCallback">Fires if unsubscription was not successful, pass null to omit event</param>
         public static void Unsubscribe(Topic topic, Action unsubscribeComplete, Action<Exception> exceptionCallback)
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
             if (!_transport.IsConnected())
             {
                 Debug.LogError(ErrorStrings.MustBeConnectedUnSubscribe);
@@ -140,7 +159,7 @@ namespace PlayFab.Sockets
         public static void Unsubscribe(List<Topic> topics, Action<List<Topic>> unsubscribeComplete,
             Action<List<Exception>> exceptionCallback)
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
             if (!_transport.IsConnected())
             {
                 Debug.LogError(ErrorStrings.MustBeConnectedUnSubscribe);
@@ -156,7 +175,7 @@ namespace PlayFab.Sockets
         /// <param name="handler">Function (Action) handler that can receive the message</param>
         public static void RegisterHandler(Topic topic, Action<PlayFabNetworkMessage> handler)
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
             _transport.RegisterHandler(topic, handler);
         }
 
@@ -167,7 +186,7 @@ namespace PlayFab.Sockets
         /// <param name="handler">Original handler that you previously registered to handle the message</param>
         public static void UnRegisterHandler(Topic topic, Action<PlayFabNetworkMessage> handler)
         {
-            _transport.Initialize();
+            _transport.InitializeBehaviour();
             _transport.UnregisterHandler(topic, handler);
         }
 
@@ -214,6 +233,9 @@ namespace PlayFab.Sockets
         {
             OnTopicResubscriptionFailed.Invoke(topic);
         }
+
+        
+
     }
 
 }

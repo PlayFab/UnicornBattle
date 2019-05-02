@@ -1,6 +1,3 @@
-
-using UnityEngine.Networking.NetworkSystem;
-
 namespace PlayFab.Sockets
 {
     using System;
@@ -11,7 +8,6 @@ namespace PlayFab.Sockets
     using PlayFab.Internal;
     using PlayFab.Sockets.Models;
     
-
     public class PlayFabSocketsBehaviour : SingletonMonoBehaviour<PlayFabSocketsBehaviour>
     {
         //Delegates for events fired from the service
@@ -81,12 +77,12 @@ namespace PlayFab.Sockets
         /// Internal variable to ensure we only initialize this compoenent once.
         /// </summary>
         private bool initializeComplete = false;
-        
+
         /// <summary>
         /// Initialize this Monobehaviour object, it will create an instance of this object in the scene.
         /// Note: this object persists between scene loads (Always!),
         /// </summary>
-        public void Initialize()
+        public void InitializeBehaviour()
         {
             if (initializeComplete) return;
             _service = new PlayFabSignalRService();
@@ -128,12 +124,15 @@ namespace PlayFab.Sockets
         /// </summary>
         public void Disconnect()
         {
-            _service.OnConnect -= OnInternalConnected;
-            _service.OnConnectionError -= OnInternalConnectionError;
             initializeComplete = false;
             _currentState = ConnectionStates.Disconnected;
-            _service.Disconnect();
-            _service.OnDisconnect -= OnInternalDisconnected;
+            if (_service != null)
+            {
+                _service.OnConnect -= OnInternalConnected;
+                _service.OnConnectionError -= OnInternalConnectionError;
+                _service.Disconnect();
+                _service.OnDisconnect -= OnInternalDisconnected;
+            }
         }
         
         /// <summary>
@@ -148,6 +147,21 @@ namespace PlayFab.Sockets
             {
                 _currentlySubscribed.Add(topic);
                 successCallback?.Invoke();
+            }, exceptionCallback);
+        }
+
+        /// <summary>
+        /// Subscribe to a PlayStream or Message topic
+        /// </summary>
+        /// <param name="topic">The topic you wish to subscribe to</param>
+        /// <param name="successCallback">Fires if subscription was successful</param>
+        /// <param name="exceptionCallback">Fires if the subscription was unsuccessful</param>
+        public void Subscribe(Topic topic, Action<Topic> successCallback, Action<Exception> exceptionCallback)
+        {
+            _service.Subscribe(topic, () =>
+            {
+                _currentlySubscribed.Add(topic);
+                successCallback?.Invoke(topic);
             }, exceptionCallback);
         }
 
@@ -259,7 +273,7 @@ namespace PlayFab.Sockets
             
             _CurrentErrorState = ErrorStates.Ok;
             
-            OnConnected?.Invoke();	
+            OnConnected?.Invoke();
         }
 
         /// <summary>

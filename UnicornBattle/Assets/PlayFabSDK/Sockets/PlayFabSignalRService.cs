@@ -11,6 +11,7 @@ namespace PlayFab.Sockets
     using Microsoft.AspNetCore.Http.Connections;
     using Microsoft.AspNetCore.SignalR.Client;
     using Models;
+    using Newtonsoft.Json.Linq;
 
     public class PlayFabSignalRService
     {
@@ -133,9 +134,9 @@ namespace PlayFab.Sockets
         /// <param name="topic">The topic you wish to subscribe to</param>
         /// <param name="subscribeComplete">Fires if subscription was successful</param>
         /// <param name="exceptionCallback">Fires if the subscription was unsuccessful</param>
-        public void Subscribe(Topic topic, Action subscribeComplete, Action<Exception> exceptionCallback)
+        public void Subscribe(Topic topic, Action subscribeComplete, Action<Exception> exceptionCallback, Action<PubSubServiceException> subscribeFailedCallback = null)
         {
-            InternalSubscribe(topic, subscribeComplete, exceptionCallback);
+            InternalSubscribe(topic, subscribeComplete, exceptionCallback, subscribeFailedCallback);
         }
 
         /// <summary>
@@ -161,7 +162,7 @@ namespace PlayFab.Sockets
                         topicProgress++;
                         if (Debugging)
                         {
-                            Debug.LogFormat("Topic: {0} added", t.EventName);
+                            Debug.LogFormat("Topic: {0} added", t.FullName);
                         }
                     }, (error) =>
                     {
@@ -187,18 +188,28 @@ namespace PlayFab.Sockets
             taskList.Start();
         }
 
+
         /// <summary>
         /// Internal method to perform the subscription aysc
         /// </summary>
         /// <param name="topic"></param>
         /// <param name="subscribeComplete"></param>
         /// <param name="exceptionCallback"></param>
-        private async void InternalSubscribe(Topic topic, Action subscribeComplete, Action<Exception> exceptionCallback)
+        private async void InternalSubscribe(Topic topic, Action subscribeComplete, Action<Exception> exceptionCallback, Action<PubSubServiceException> subscribeExceptionCallback)
         {
             try
             {
-                await _hubConnection.SendAsync("Subscribe", new SubscribeRequest { Topic = topic });
-                subscribeComplete?.Invoke();
+                var pubSubResponse = await _hubConnection.InvokeAsync<PubSubResponse>("Subscribe", new SubscribeRequest { Topic = topic });
+                if (pubSubResponse.code != 200)
+                {
+                    PubSubJsonError errorResponse = ((JObject)pubSubResponse.content).ToObject<PubSubJsonError>();
+
+                    subscribeExceptionCallback?.Invoke(new PubSubServiceException(errorResponse.error, errorResponse.errorDetails["requestId"]));
+                }
+                else
+                {
+                    subscribeComplete?.Invoke();
+                }
             }
             catch (Exception ex)
             {
@@ -212,9 +223,9 @@ namespace PlayFab.Sockets
         /// <param name="topic">The topic you wish to unsubscribe from</param>
         /// <param name="unsubscribeComplete">Fires if unsubscription was successful, pass null to omit event</param>
         /// <param name="exceptionCallback">Fires if unsubscription was not successful, pass null to omit event</param>
-        public void Unsubscribe(Topic topic, Action unsubscribeComplete, Action<Exception> exceptionCallback)
+        public void Unsubscribe(Topic topic, Action unsubscribeComplete, Action<Exception> exceptionCallback, Action<PubSubServiceException> unsubscribeExceptionCallback = null)
         {
-            InternalUnsubscribe(topic, unsubscribeComplete, exceptionCallback);
+            InternalUnsubscribe(topic, unsubscribeComplete, exceptionCallback, unsubscribeExceptionCallback);
         }
 
 
@@ -265,12 +276,21 @@ namespace PlayFab.Sockets
         /// <param name="topic"></param>
         /// <param name="unsubscribeComplete"></param>
         /// <param name="exceptionCallback"></param>
-        private async void InternalUnsubscribe(Topic topic, Action unsubscribeComplete, Action<Exception> exceptionCallback)
+        private async void InternalUnsubscribe(Topic topic, Action unsubscribeComplete, Action<Exception> exceptionCallback, Action<PubSubServiceException> unsubscribeExceptionCallback)
         {
             try
             {
-                await _hubConnection.SendAsync("Unsubscribe", new UnsubscribeRequest { Topic = topic });
-                unsubscribeComplete?.Invoke();
+                var pubSubResponse = await _hubConnection.InvokeAsync<PubSubResponse>("Unsubscribe", new UnsubscribeRequest { Topic = topic });
+                if (pubSubResponse.code != 200)
+                {
+                    PubSubJsonError errorResponse = ((JObject)pubSubResponse.content).ToObject<PubSubJsonError>();
+
+                    unsubscribeExceptionCallback?.Invoke(new PubSubServiceException(errorResponse.error, errorResponse.errorDetails["requestId"]));
+                }
+                else
+                {
+                    unsubscribeComplete?.Invoke();
+                }
             }
             catch (Exception ex)
             {
@@ -372,11 +392,11 @@ namespace PlayFab.Sockets
         /// <summary>
         /// Internally Handle messages received and forward them to the Registered Handlers
         /// </summary>
-        /// <param name="netMsg"></param>
+        /// <param name="netMsgString"></param>
         private void InternalOnReceiveMessage(PlayFabNetworkMessage netMsg)
         {
-            if (!UserTopicHandlers.ContainsKey(netMsg.Topic)) { return; }
-            foreach (var action in UserTopicHandlers[netMsg.Topic])
+            if(UserTopicHandlers.Keys.ToList().Find(k=>k.Equals(netMsg.@event.GetTopic())) == null) return;
+            foreach (var action in UserTopicHandlers[netMsg.@event.GetTopic()])
             {
                 action?.Invoke(netMsg);
             }

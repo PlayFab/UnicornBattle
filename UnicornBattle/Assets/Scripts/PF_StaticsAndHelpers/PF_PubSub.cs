@@ -49,8 +49,10 @@ public class PF_PubSub
         var sendMessageToPlayerTopic= new Topic()
         {
             Entity = entity,
-            EventName = "MessageToPlayer",
-            EventNamespace = "com.playfab.events.unicornbattle"
+            FullName = new PlayFab.Sockets.Models.EventFullName() {
+                Name =  "MessageToPlayer",
+                Namespace = "custom.UnicornBattle"
+            }
         };
         //Add that topic to the array		
         topics.Add(sendMessageToPlayerTopic);
@@ -63,8 +65,11 @@ public class PF_PubSub
                 Type = "Title",
                 Id = PlayFabSettings.TitleId
             },
-            EventName = "MessageToAllPlayers",
-            EventNamespace = "com.playfab.events.unicornbattle"
+
+            FullName = new PlayFab.Sockets.Models.EventFullName() {
+                Name =  "MessageToAllPlayers",
+                Namespace = "custom.UnicornBattle"
+            }
         };
         //Add that topic to the array		
         topics.Add(sendMessageToAllPlayersTopic);
@@ -78,21 +83,21 @@ public class PF_PubSub
             if (PlayFabSocketsAPI.Debugging)
                 Debug.Log("Subscribe Success");
                 
-            subscribedTopics.ForEach((t) =>
+   /*          subscribedTopics.ForEach((t) =>
             {
                 if (PlayFabSocketsAPI.Debugging)
                     Debug.LogFormat("{0} Subscribed Successfully", t.EventName);
-            });
+            }); */
         }, (subscribedErrors) =>
         {
             if (PlayFabSocketsAPI.Debugging)
                 Debug.Log("Subscribe Failed");
             
-            subscribedErrors.ForEach((t) =>
+           /*  subscribedErrors.ForEach((t) =>
             {
                 if (PlayFabSocketsAPI.Debugging)
                     Debug.LogFormat("{0}", t.Message);
-            });			
+            });		 */	
         });
 
     }
@@ -108,11 +113,11 @@ public class PF_PubSub
     }
 
     private static void OnReceiveMessageToPlayer(PlayFabNetworkMessage netMsg) {
-        Debug.Log(netMsg.PayloadJSON);		
+        Debug.Log(netMsg.@event);		
         var jsonSerializer = PlayFab.PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
-        if (netMsg.PayloadJSON != null) 
+        if (netMsg.@event.payload != null) 
         {
-            var msg = jsonSerializer.DeserializeObject<MessageFromServer>(netMsg.PayloadJSON);
+            var msg = jsonSerializer.DeserializeObject<MessageFromServer>(netMsg.@event.payload);
             
             
 
