@@ -24,6 +24,8 @@ public static class PF_GameData
     public static float MinimumInterstitialWait;
     public static string CommunityWebsite = string.Empty;
     public static string AndroidPushSenderId = null;
+    public static int UseCDN;
+    
 
     // all the items in our "Offers" catalog
     public static List<CatalogItem> offersCataogItems = new List<CatalogItem>();
@@ -112,6 +114,9 @@ public static class PF_GameData
             ActiveEventKeys.Add(eachItem.ItemId);
         }
         Debug.Log("Active events: " + String.Join(", ", ActiveEventKeys.ToArray()));
+
+        //Use pre-cached Assets or Load from CDN decided by title data.
+        GameController.Instance.cdnController.useCDN = UseCDN != 0;
         BuildCDNRequests();
         PF_Bridge.RaiseCallbackSuccess("Events Loaded", PlayFabAPIMethods.GetEvents, MessageDisplayStyle.none);
     }
@@ -128,7 +133,7 @@ public static class PF_GameData
         ExtractJsonTitleData(result.Data, "Spells", ref Spells);
         ExtractJsonTitleData(result.Data, "StandardStores", ref StandardStores);
         ExtractJsonTitleData(result.Data, "StartingCharacterSlots", ref StartingCharacterSlots);
-
+        ExtractJsonTitleData(result.Data, "UseCDN", ref UseCDN);
 //        DoExtraEventProcessing();
 
         AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
@@ -147,7 +152,7 @@ public static class PF_GameData
         foreach (var eachEvent in Events)
             eachEvent.Value.EventKey = eachEvent.Key;
     }
-
+    
     public static void BuildCDNRequests()
     {
         List<AssetBundleHelperObject> requests = new List<AssetBundleHelperObject>();
@@ -191,11 +196,15 @@ public static class PF_GameData
                 }
             GameController.Instance.cdnController.isInitalContentUnpacked = true;
         };
-
+        
         if (GameController.Instance.cdnController.isInitalContentUnpacked == false && GameController.Instance.cdnController.useCDN)
         {
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCDNConent);
             GameController.Instance.cdnController.KickOffCDNGet(requests, afterCdnRequest);
+        }
+        else
+        {
+            GameController.Instance.cdnController.KickOffStreamingAssetsGet(requests, afterCdnRequest);
         }
     }
 
