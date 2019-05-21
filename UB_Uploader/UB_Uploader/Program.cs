@@ -425,6 +425,16 @@ namespace UB_Uploader
 
         private static bool UploadCdnAssets()
         {
+            var tdParsedFile = ParseFile(titleDataPath);
+            var titleDataDict = JsonWrapper.DeserializeObject<Dictionary<string, string>>(tdParsedFile);
+            var useCDN = titleDataDict.ContainsKey("UseCDN") && int.Parse(titleDataDict["UseCDN"]) == 1;
+
+            if (!useCDN)
+            {
+                LogToFile("\tSkipping CDN Upload, because UseCDN is set to 0");
+                return true;
+            }
+            
             if (string.IsNullOrEmpty(cdnAssetsPath))
                 return false;
 
