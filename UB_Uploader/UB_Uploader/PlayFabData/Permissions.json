@@ -1,0 +1,12 @@
+[
+  {
+    "Resource": "pfrn:topic--*!*/Topics/custom.UnicornBattle/MessageToPlayer",
+    "Action": "Subscribe",
+    "Effect": "Allow",
+    "Principal": "[SELF]",
+    "Comment": "title_player_account:subscribe:self",
+    "Condition": {
+      "ResourceEntityType": "title_player_account"
+    }
+  }
+]
