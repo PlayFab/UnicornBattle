@@ -20,11 +20,13 @@ namespace UB_Uploader
         private const string titleSettingsPath = "./PlayFabData/TitleSettings.json";
         private const string titleDataPath = "./PlayFabData/TitleData.json";
         private const string catalogPath = "./PlayFabData/Catalog.json";
+        private const string catalogPathEvents = "./PlayFabData/CatalogEvents.json";
         private const string dropTablesPath = "./PlayFabData/DropTables.json";
         private const string cloudScriptPath = "./PlayFabData/CloudScript.js";
         private const string titleNewsPath = "./PlayFabData/TitleNews.json";
         private const string statsDefPath = "./PlayFabData/StatisticsDefinitions.json";
         private const string storesPath = "./PlayFabData/Stores.json";
+        private const string storesPathEvents = "./PlayFabData/StoresEvents.json";
         private const string cdnAssetsPath = "./PlayFabData/CdnData.json";
 
         // log file details
@@ -61,6 +63,8 @@ namespace UB_Uploader
                     throw new Exception("\tFailed to upload TitleData.");
                 if (!UploadEconomyData())
                     throw new Exception("\tFailed to upload Economy Data.");
+                if (!UploadEventData())
+                    throw new Exception("\tFailed to upload Event Data.");
                 if (!UploadCloudScript())
                     throw new Exception("\tFailed to upload CloudScript.");
                 if (!UploadTitleNews())
@@ -111,26 +115,79 @@ namespace UB_Uploader
         #region Uploading Functions -- these are straightforward calls that push the data to the backend
         private static bool UploadEconomyData()
         {
-            ////MUST upload these in this order so that the economy data is properly imported: VC -> Catalogs -> DropTables -> Stores
+            ////MUST upload these in this order so that the economy data is properly imported: VC -> Catalogs -> DropTables -> Catalogs part 2 -> Stores
             if (!UploadVc())
                 return false;
 
+            if (string.IsNullOrEmpty(catalogPath))
+                return false;
+
+            LogToFile("Uploading CatalogItems...");
+
+            // now go through the catalog; split into two parts. 
             var reUploadList = new List<CatalogItem>();
-            if (!UploadCatalog(ref reUploadList))
+            var parsedFile = ParseFile(catalogPath);
+
+            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
+            if (catalogWrapper == null)
+            {
+                LogToFile("\tAn error occurred deserializing the Catalog.json file.", ConsoleColor.Red);
+                return false;
+            }
+            for (var z = 0; z < catalogWrapper.Catalog.Count; z++)
+            {
+                if (catalogWrapper.Catalog[z].Bundle != null || catalogWrapper.Catalog[z].Container != null)
+                {
+                    var original = catalogWrapper.Catalog[z];
+                    var strippedClone = CloneCatalogItemAndStripTables(original);
+
+                    reUploadList.Add(original);
+                    catalogWrapper.Catalog.Remove(original);
+                    catalogWrapper.Catalog.Add(strippedClone);
+                }
+            }
+
+            if (!UpdateCatalog(catalogWrapper.Catalog, defaultCatalog, true))
                 return false;
 
             if (!UploadDropTables())
                 return false;
 
-            if (!UploadStores())
+            if (!UploadStores(storesPath, defaultCatalog))
                 return false;
 
             // workaround for the DropTable conflict
             if (reUploadList.Count > 0)
             {
                 LogToFile("Re-uploading [" + reUploadList.Count + "] CatalogItems due to DropTable conflicts...");
-                UpdateCatalog(reUploadList);
+                if (!UpdateCatalog(reUploadList, defaultCatalog, true))
+                    return false;
             }
+            return true;
+        }
+
+        private static bool UploadEventData()
+        {
+            if (string.IsNullOrEmpty(catalogPathEvents))
+                return false;
+
+            LogToFile("Uploading Event Items...");
+            var parsedFile = ParseFile(catalogPathEvents);
+            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
+            if (catalogWrapper == null)
+            {
+                LogToFile("\tAn error occurred deserializing the CatalogEvents.json file.", ConsoleColor.Red);
+                return false;
+            }
+
+            if (!UpdateCatalog(catalogWrapper.Catalog, "Events", false))
+                return false;
+
+            LogToFile("\tUploaded Event Catalog!", ConsoleColor.Green);
+
+            if (!UploadStores(storesPathEvents, "Events"))
+                return false;
+
             return true;
         }
 
@@ -316,36 +373,6 @@ namespace UB_Uploader
             return true;
         }
 
-        private static bool UploadCatalog(ref List<CatalogItem> reUploadList)
-        {
-            if (string.IsNullOrEmpty(catalogPath))
-                return false;
-
-            LogToFile("Uploading CatalogItems...");
-            var parsedFile = ParseFile(catalogPath);
-
-            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
-            if (catalogWrapper == null)
-            {
-                LogToFile("\tAn error occurred deserializing the Catalog.json file.", ConsoleColor.Red);
-                return false;
-            }
-            for (var z = 0; z < catalogWrapper.Catalog.Count; z++)
-            {
-                if (catalogWrapper.Catalog[z].Bundle != null || catalogWrapper.Catalog[z].Container != null)
-                {
-                    var original = catalogWrapper.Catalog[z];
-                    var strippedClone = CloneCatalogItemAndStripTables(original);
-
-                    reUploadList.Add(original);
-                    catalogWrapper.Catalog.Remove(original);
-                    catalogWrapper.Catalog.Add(strippedClone);
-                }
-            }
-
-            return UpdateCatalog(catalogWrapper.Catalog);
-        }
-
         private static bool UploadDropTables()
         {
             if (string.IsNullOrEmpty(dropTablesPath))
@@ -390,13 +417,13 @@ namespace UB_Uploader
             return true;
         }
 
-        private static bool UploadStores()
+        private static bool UploadStores(string filePath, string catalogName)
         {
-            if (string.IsNullOrEmpty(storesPath))
+            if (string.IsNullOrEmpty(filePath))
                 return false;
 
             LogToFile("Uploading Stores...");
-            var parsedFile = ParseFile(storesPath);
+            var parsedFile = ParseFile(filePath);
 
             var storesList = JsonWrapper.DeserializeObject<List<StoreWrapper>>(parsedFile);
 
@@ -406,7 +433,7 @@ namespace UB_Uploader
 
                 var request = new UpdateStoreItemsRequest
                 {
-                    CatalogVersion = defaultCatalog,
+                    CatalogVersion = catalogName,
                     StoreId = eachStore.StoreId,
                     Store = eachStore.Store,
                     MarketingData = eachStore.MarketingData
@@ -527,12 +554,13 @@ namespace UB_Uploader
             };
         }
 
-        private static bool UpdateCatalog(List<CatalogItem> catalog)
+        private static bool UpdateCatalog(List<CatalogItem> catalog, string catalogName, bool isDefault)
         {
             var request = new UpdateCatalogItemsRequest
             {
-                CatalogVersion = defaultCatalog,
-                Catalog = catalog
+                CatalogVersion = catalogName,
+                Catalog = catalog,
+                SetAsDefaultCatalog = isDefault
             };
 
             var updateCatalogItemsTask = PlayFabAdminAPI.UpdateCatalogItemsAsync(request);
