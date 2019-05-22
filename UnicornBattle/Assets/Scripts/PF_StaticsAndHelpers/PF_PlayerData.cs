@@ -138,30 +138,33 @@ public static class PF_PlayerData
 
     public static void UpdateUserStatistics(Dictionary<string, int> updates)
     {
-        var request = new UpdatePlayerStatisticsRequest();
-        request.Statistics = new List<StatisticUpdate>();
-
+        var statistics = new List<StatisticUpdate>();
         foreach (var eachUpdate in updates) // Copy the stats from the inputs to the request
         {
             int eachStat;
             userStatistics.TryGetValue(eachUpdate.Key, out eachStat);
-            request.Statistics.Add(new StatisticUpdate { StatisticName = eachUpdate.Key, Value = eachUpdate.Value }); // Send the value to the server
+            statistics.Add(new StatisticUpdate { StatisticName = eachUpdate.Key, Value = eachUpdate.Value }); // Send the value to the server
             userStatistics[eachUpdate.Key] = eachStat + eachUpdate.Value; // Update the local cache so that future updates are using correct values
         }
 
-        PlayFabClientAPI.UpdatePlayerStatistics(request, OnUpdateUserStatisticsSuccess, OnUpdateUserStatisticsError);
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "SetPlayerStats",
+            FunctionParameter = new { statistics = statistics },
+            GeneratePlayStreamEvent = true
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, OnUpdateUserStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    private static void OnUpdateUserStatisticsSuccess(UpdatePlayerStatisticsResult result)
+    private static void OnUpdateUserStatisticsSuccess(ExecuteCloudScriptResult result)
     {
-        PF_Bridge.RaiseCallbackSuccess("User Statistics Loaded", PlayFabAPIMethods.UpdateUserStatistics, MessageDisplayStyle.none);
+        if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
+            return;
+
+        PF_Bridge.RaiseCallbackSuccess("User Statistics Uploaded", PlayFabAPIMethods.UpdateUserStatistics, MessageDisplayStyle.none);
         GetCharacterStatistics(); // Refresh stats that we just updated
     }
 
-    private static void OnUpdateUserStatisticsError(PlayFabError error)
-    {
-        PF_Bridge.RaiseCallbackError(error.ErrorMessage, PlayFabAPIMethods.UpdateUserStatistics, MessageDisplayStyle.error);
-    }
     #endregion
 
     #region User Account APIs
@@ -355,14 +358,24 @@ public static class PF_PlayerData
         }
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateCharacterStatistics);
-        var request = new UpdateCharacterStatisticsRequest { CharacterId = characterId, CharacterStatistics = activeStats };
-        PlayFabClientAPI.UpdateCharacterStatistics(request, OnUpdateCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
+
+        var request = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "SetCharacterStats",
+            FunctionParameter = new { characterId = characterId, statistics = activeStats },
+            GeneratePlayStreamEvent = true
+        };
+        PlayFabClientAPI.ExecuteCloudScript(request, OnUpdateCharacterStatisticsSuccess, PF_Bridge.PlayFabErrorCallback);
     }
 
-    private static void OnUpdateCharacterStatisticsSuccess(UpdateCharacterStatisticsResult result)
+    private static void OnUpdateCharacterStatisticsSuccess(ExecuteCloudScriptResult result)
     {
+        if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
+            return;
+
         PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.UpdateCharacterStatistics, MessageDisplayStyle.none);
     }
+
     public static void GetPlayerCharacters()
     {
         var request = new ListUsersCharactersRequest();
