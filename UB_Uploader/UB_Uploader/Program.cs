@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using PlayFab;
+using PlayFab.AuthenticationModels;
 using PlayFab.AdminModels;
 using PlayFab.Json;
-// using PlayFab.ServerModels;
-
 namespace UB_Uploader
 {
     public static class Program
@@ -28,6 +28,10 @@ namespace UB_Uploader
         private const string storesPath = "./PlayFabData/Stores.json";
         private const string storesPathEvents = "./PlayFabData/StoresEvents.json";
         private const string cdnAssetsPath = "./PlayFabData/CdnData.json";
+        private const string permissionPath = "./PlayFabData/Permissions.json";
+
+        // authentication tokens
+        private static string authToken;
 
         // log file details
         private static FileInfo logFile;
@@ -58,6 +62,9 @@ namespace UB_Uploader
                 if (!GetTitleSettings())
                     throw new Exception("\tFailed to load Title Settings");
 
+                if (!GetAuthToken())
+                    throw new Exception("\tFailed to retrieve Auth Token");
+
                 // start uploading
                 if (!UploadTitleData())
                     throw new Exception("\tFailed to upload TitleData.");
@@ -73,6 +80,8 @@ namespace UB_Uploader
                     throw new Exception("\tFailed to upload Statistics Definitions.");
                 if (!UploadCdnAssets())
                     throw new Exception("\tFailed to upload CDN Assets.");
+                if (!UploadPolicy(permissionPath))
+                    throw new Exception("\tFailed to upload permissions policy.");
             }
             catch (Exception ex)
             {
@@ -98,12 +107,12 @@ namespace UB_Uploader
             var titleSettings = JsonWrapper.DeserializeObject<Dictionary<string, string>>(parsedFile);
 
             if (titleSettings != null &&
-                titleSettings.TryGetValue("TitleId", out PlayFabSettings.TitleId) && !string.IsNullOrEmpty(PlayFabSettings.TitleId) &&
-                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.DeveloperSecretKey) && !string.IsNullOrEmpty(PlayFabSettings.DeveloperSecretKey) &&
+                titleSettings.TryGetValue("TitleId", out PlayFabSettings.staticSettings.TitleId) && !string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId) &&
+                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.staticSettings.DeveloperSecretKey) && !string.IsNullOrEmpty(PlayFabSettings.staticSettings.DeveloperSecretKey) &&
                 titleSettings.TryGetValue("CatalogName", out defaultCatalog))
             {
-                LogToFile("Setting Destination TitleId to: " + PlayFabSettings.TitleId);
-                LogToFile("Setting DeveloperSecretKey to: " + PlayFabSettings.DeveloperSecretKey);
+                LogToFile("Setting Destination TitleId to: " + PlayFabSettings.staticSettings.TitleId);
+                LogToFile("Setting DeveloperSecretKey to: " + PlayFabSettings.staticSettings.DeveloperSecretKey);
                 LogToFile("Setting defaultCatalog name to: " + defaultCatalog);
                 return true;
             }
@@ -279,6 +288,26 @@ namespace UB_Uploader
             return true;
         }
 
+        // retrieves and stores an auth token
+        // returns false if it fails
+        private static bool GetAuthToken()
+        {
+            var entityTokenRequest = new GetEntityTokenRequest();
+            var authTask = PlayFabAuthenticationAPI.GetEntityTokenAsync(entityTokenRequest);
+            authTask.Wait();
+            if (authTask.Result.Error != null)
+            {
+                OutputPlayFabError("\t\tError retrieving auth token: ", authTask.Result.Error);
+                return false;
+            }
+            else
+            {
+                authToken = authTask.Result.Result.EntityToken;
+                LogToFile("\t\tAuth token retrieved.", ConsoleColor.Green);
+            }
+            return true;
+        }
+
         private static bool UploadCloudScript()
         {
             if (string.IsNullOrEmpty(cloudScriptPath))
@@ -447,6 +476,31 @@ namespace UB_Uploader
                 else
                     LogToFile("\t\tStore: " + eachStore.StoreId + " Uploaded. ", ConsoleColor.Green);
             }
+            return true;
+        }
+
+        private static bool UploadPolicy(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return false;
+
+            LogToFile("Uploading Policy...");
+            var parsedFile = ParseFile(filePath);
+
+            var permissionList = JsonWrapper.DeserializeObject<List<PlayFab.ProfilesModels.EntityPermissionStatement>>(parsedFile);
+            var request = new PlayFab.ProfilesModels.SetGlobalPolicyRequest
+            {
+                Permissions = permissionList
+            };
+
+            var setPermissionTask = PlayFab.PlayFabProfilesAPI.SetGlobalPolicyAsync(request);
+            setPermissionTask.Wait();
+ 
+            if (setPermissionTask.Result.Error != null)
+                OutputPlayFabError("\t\tSet Permissions: ", setPermissionTask.Result.Error);
+            else
+                LogToFile("\t\tPermissions uploaded... ", ConsoleColor.Green);
+
             return true;
         }
 
