@@ -6,7 +6,7 @@ using PlayFab.SharedModels;
 namespace PlayFab.MultiplayerModels
 {
     [Serializable]
-    public class AssetReference
+    public class AssetReference : PlayFabBaseModel
     {
         /// <summary>
         /// The asset's file name. This is a filename with the .zip, .tar, or .tar.gz extension.
@@ -19,7 +19,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class AssetReferenceParams
+    public class AssetReferenceParams : PlayFabBaseModel
     {
         /// <summary>
         /// The asset's file name.
@@ -32,7 +32,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class AssetSummary
+    public class AssetSummary : PlayFabBaseModel
     {
         /// <summary>
         /// The asset's file name. This is a filename with the .zip, .tar, or .tar.gz extension.
@@ -65,6 +65,15 @@ namespace PlayFab.MultiplayerModels
         ChinaNorth2
     }
 
+    public enum AzureVmFamily
+    {
+        A,
+        Av2,
+        Dv2,
+        F,
+        Fsv2
+    }
+
     public enum AzureVmSize
     {
         Standard_D1_v2,
@@ -92,7 +101,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class BuildRegion
+    public class BuildRegion : PlayFabBaseModel
     {
         /// <summary>
         /// The current multiplayer server stats for the region.
@@ -118,7 +127,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class BuildRegionParams
+    public class BuildRegionParams : PlayFabBaseModel
     {
         /// <summary>
         /// The maximum number of multiplayer servers for the region.
@@ -135,7 +144,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class BuildSummary
+    public class BuildSummary : PlayFabBaseModel
     {
         /// <summary>
         /// The guid string build ID of the build.
@@ -153,10 +162,74 @@ namespace PlayFab.MultiplayerModels
         /// The metadata of the build.
         /// </summary>
         public Dictionary<string,string> Metadata;
+        /// <summary>
+        /// The configuration and status for each region in the build.
+        /// </summary>
+        public List<BuildRegion> RegionConfigurations;
+    }
+
+    /// <summary>
+    /// Cancels all tickets of which the player is a member in a given queue that are not cancelled or matched. This API is
+    /// useful if you lose track of what tickets the player is a member of (if the title crashes for instance) and want to
+    /// "reset". The Entity field is optional if the caller is a player and defaults to that player. Players may not cancel
+    /// tickets for other people. The Entity field is required if the caller is a server (authenticated as the title).
+    /// </summary>
+    [Serializable]
+    public class CancelAllMatchmakingTicketsForPlayerRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The entity key of the player whose tickets should be canceled.
+        /// </summary>
+        public EntityKey Entity;
+        /// <summary>
+        /// The name of the queue from which a player's tickets should be canceled.
+        /// </summary>
+        public string QueueName;
     }
 
     [Serializable]
-    public class Certificate
+    public class CancelAllMatchmakingTicketsForPlayerResult : PlayFabResultCommon
+    {
+    }
+
+    public enum CancellationReason
+    {
+        Requested,
+        Internal,
+        Timeout
+    }
+
+    /// <summary>
+    /// Only servers and ticket members can cancel a ticket. The ticket can be in five different states when it is cancelled. 1:
+    /// the ticket is waiting for members to join it, and it has not started matching. If the ticket is cancelled at this stage,
+    /// it will never match. 2: the ticket is matching. If the ticket is cancelled, it will stop matching. 3: the ticket is
+    /// matched. A matched ticket cannot be cancelled. 4: the ticket is already cancelled and nothing happens. 5: the ticket is
+    /// waiting for a server. If the ticket is cancelled, server allocation will be stopped. A server may still be allocated due
+    /// to a race condition, but that will not be reflected in the ticket. There may be race conditions between the ticket
+    /// getting matched and the client making a cancellation request. The client must handle the possibility that the cancel
+    /// request fails if a match is found before the cancellation request is processed. We do not allow resubmitting a cancelled
+    /// ticket because players must consent to enter matchmaking again. Create a new ticket instead.
+    /// </summary>
+    [Serializable]
+    public class CancelMatchmakingTicketRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The name of the queue the ticket is in.
+        /// </summary>
+        public string QueueName;
+        /// <summary>
+        /// The Id of the ticket to find a match for.
+        /// </summary>
+        public string TicketId;
+    }
+
+    [Serializable]
+    public class CancelMatchmakingTicketResult : PlayFabResultCommon
+    {
+    }
+
+    [Serializable]
+    public class Certificate : PlayFabBaseModel
     {
         /// <summary>
         /// Base64 encoded string contents of the certificate.
@@ -174,7 +247,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class CertificateSummary
+    public class CertificateSummary : PlayFabBaseModel
     {
         /// <summary>
         /// The name of the certificate.
@@ -187,7 +260,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class ConnectedPlayer
+    public class ConnectedPlayer : PlayFabBaseModel
     {
         /// <summary>
         /// The player ID of the player connected to the multiplayer server.
@@ -203,7 +276,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class ContainerImageReference
+    public class ContainerImageReference : PlayFabBaseModel
     {
         /// <summary>
         /// The container image name.
@@ -213,6 +286,27 @@ namespace PlayFab.MultiplayerModels
         /// The container tag.
         /// </summary>
         public string Tag;
+    }
+
+    [Serializable]
+    public class CoreCapacity : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The available core capacity for the (Region, VmFamily)
+        /// </summary>
+        public int Available;
+        /// <summary>
+        /// The AzureRegion
+        /// </summary>
+        public AzureRegion? Region;
+        /// <summary>
+        /// The total core capacity for the (Region, VmFamily)
+        /// </summary>
+        public int Total;
+        /// <summary>
+        /// The AzureVmFamily
+        /// </summary>
+        public AzureVmFamily? VmFamily;
     }
 
     /// <summary>
@@ -230,8 +324,13 @@ namespace PlayFab.MultiplayerModels
         /// </summary>
         public ContainerFlavor? ContainerFlavor;
         /// <summary>
+        /// The container reference, consisting of the image name and tag.
+        /// </summary>
+        public ContainerImageReference ContainerImageReference;
+        /// <summary>
         /// The name of the container repository.
         /// </summary>
+        [Obsolete("Use 'ContainerImageReference' instead", false)]
         public string ContainerRepositoryName;
         /// <summary>
         /// The container command to run when the multiplayer server has been allocated, including any arguments.
@@ -240,6 +339,7 @@ namespace PlayFab.MultiplayerModels
         /// <summary>
         /// The tag for the container.
         /// </summary>
+        [Obsolete("Use 'ContainerImageReference' instead", false)]
         public string ContainerTag;
         /// <summary>
         /// The list of game assets related to the build.
@@ -432,6 +532,39 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// The client specifies the creator's attributes and optionally a list of other users to match with.
+    /// </summary>
+    [Serializable]
+    public class CreateMatchmakingTicketRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The User who created this ticket.
+        /// </summary>
+        public MatchmakingPlayer Creator;
+        /// <summary>
+        /// How long to attempt matching this ticket in seconds.
+        /// </summary>
+        public int GiveUpAfterSeconds;
+        /// <summary>
+        /// A list of Entity Keys of other users to match with.
+        /// </summary>
+        public List<EntityKey> MembersToMatchWith;
+        /// <summary>
+        /// The Id of a match queue.
+        /// </summary>
+        public string QueueName;
+    }
+
+    [Serializable]
+    public class CreateMatchmakingTicketResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The Id of the ticket to find a match for.
+        /// </summary>
+        public string TicketId;
+    }
+
+    /// <summary>
     /// Creates a remote user to log on to a VM for a multiplayer server build in a specific region. Returns user credential
     /// information necessary to log on.
     /// </summary>
@@ -477,8 +610,28 @@ namespace PlayFab.MultiplayerModels
         public string Username;
     }
 
+    /// <summary>
+    /// The server specifies all the members and their attributes.
+    /// </summary>
     [Serializable]
-    public class CurrentServerStats
+    public class CreateServerMatchmakingTicketRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// How long to attempt matching this ticket in seconds.
+        /// </summary>
+        public int GiveUpAfterSeconds;
+        /// <summary>
+        /// The users who will be part of this ticket.
+        /// </summary>
+        public List<MatchmakingPlayer> Members;
+        /// <summary>
+        /// The Id of a match queue.
+        /// </summary>
+        public string QueueName;
+    }
+
+    [Serializable]
+    public class CurrentServerStats : PlayFabBaseModel
     {
         /// <summary>
         /// The number of active multiplayer servers.
@@ -583,8 +736,24 @@ namespace PlayFab.MultiplayerModels
         public TitleMultiplayerServerEnabledStatus? Status;
     }
 
+    /// <summary>
+    /// Combined entity type and ID structure which uniquely identifies a single entity.
+    /// </summary>
     [Serializable]
-    public class GameCertificateReference
+    public class EntityKey : PlayFabBaseModel
+    {
+        /// <summary>
+        /// Unique ID of the entity.
+        /// </summary>
+        public string Id;
+        /// <summary>
+        /// Entity type. See https://api.playfab.com/docs/tutorials/entities/entitytypes
+        /// </summary>
+        public string Type;
+    }
+
+    [Serializable]
+    public class GameCertificateReference : PlayFabBaseModel
     {
         /// <summary>
         /// An alias for the game certificate. The game server will reference this alias via GSDK config to retrieve the game
@@ -600,7 +769,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class GameCertificateReferenceParams
+    public class GameCertificateReferenceParams : PlayFabBaseModel
     {
         /// <summary>
         /// An alias for the game certificate. The game server will reference this alias via GSDK config to retrieve the game
@@ -747,6 +916,123 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// The ticket includes the invited players, their attributes if they have joined, the ticket status, the match Id when
+    /// applicable, etc. Only servers, the ticket creator and the invited players can get the ticket.
+    /// </summary>
+    [Serializable]
+    public class GetMatchmakingTicketRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Determines whether the matchmaking attributes will be returned as an escaped JSON string or as an un-escaped JSON
+        /// object.
+        /// </summary>
+        public bool EscapeObject;
+        /// <summary>
+        /// The name of the queue to find a match for.
+        /// </summary>
+        public string QueueName;
+        /// <summary>
+        /// The Id of the ticket to find a match for.
+        /// </summary>
+        public string TicketId;
+    }
+
+    [Serializable]
+    public class GetMatchmakingTicketResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The reason why the current ticket was canceled. This field is only set if the ticket is in canceled state.
+        /// </summary>
+        public CancellationReason? CancellationReason;
+        /// <summary>
+        /// The server date and time at which ticket was created.
+        /// </summary>
+        public DateTime Created;
+        /// <summary>
+        /// The Creator's entity key.
+        /// </summary>
+        public EntityKey Creator;
+        /// <summary>
+        /// How long to attempt matching this ticket in seconds.
+        /// </summary>
+        public int GiveUpAfterSeconds;
+        /// <summary>
+        /// The Id of a match.
+        /// </summary>
+        public string MatchId;
+        /// <summary>
+        /// A list of Users that have joined this ticket.
+        /// </summary>
+        public List<MatchmakingPlayer> Members;
+        /// <summary>
+        /// A list of PlayFab Ids of Users to match with.
+        /// </summary>
+        public List<EntityKey> MembersToMatchWith;
+        /// <summary>
+        /// The Id of a match queue.
+        /// </summary>
+        public string QueueName;
+        /// <summary>
+        /// The current ticket status. Possible values are: WaitingForPlayers, WaitingForMatch, WaitingForServer, Canceled and
+        /// Matched.
+        /// </summary>
+        public string Status;
+        /// <summary>
+        /// The Id of the ticket to find a match for.
+        /// </summary>
+        public string TicketId;
+    }
+
+    /// <summary>
+    /// When matchmaking has successfully matched together a collection of tickets, it produces a 'match' with an Id. The match
+    /// contains all of the players that were matched together, and their team assigments. Only servers and ticket members can
+    /// get the match.
+    /// </summary>
+    [Serializable]
+    public class GetMatchRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// Determines whether the matchmaking attributes will be returned as an escaped JSON string or as an un-escaped JSON
+        /// object.
+        /// </summary>
+        public bool EscapeObject;
+        /// <summary>
+        /// The Id of a match.
+        /// </summary>
+        public string MatchId;
+        /// <summary>
+        /// The name of the queue to join.
+        /// </summary>
+        public string QueueName;
+        /// <summary>
+        /// Determines whether the matchmaking attributes for each user should be returned in the response for match request.
+        /// </summary>
+        public bool ReturnMemberAttributes;
+    }
+
+    [Serializable]
+    public class GetMatchResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The Id of a match.
+        /// </summary>
+        public string MatchId;
+        /// <summary>
+        /// A list of Users that are matched together, along with their team assignments.
+        /// </summary>
+        public List<MatchmakingPlayerWithTeamAssignment> Members;
+        /// <summary>
+        /// A list of regions that the match could be played in sorted by preference. This value is only set if the queue has a
+        /// region selection rule.
+        /// </summary>
+        public List<string> RegionPreferences;
+        /// <summary>
+        /// The details of the server that the match has been allocated to.
+        /// </summary>
+        public ServerDetails ServerDetails;
+    }
+
+    /// <summary>
     /// Gets multiplayer server session details for a build in a specific region.
     /// </summary>
     [Serializable]
@@ -813,6 +1099,35 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// Returns the matchmaking statistics for a queue. These include the number of players matching and the statistics related
+    /// to the time to match statistics in seconds (average and percentiles). Statistics are refreshed once every 5 minutes.
+    /// Servers can access all statistics no matter what the ClientStatisticsVisibility is configured to. Clients can access
+    /// statistics according to the ClientStatisticsVisibility. Client requests are forbidden if all visibility fields are
+    /// false.
+    /// </summary>
+    [Serializable]
+    public class GetQueueStatisticsRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The name of the queue.
+        /// </summary>
+        public string QueueName;
+    }
+
+    [Serializable]
+    public class GetQueueStatisticsResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The current number of players in the matchmaking queue, who are waiting to be matched.
+        /// </summary>
+        public uint? NumberOfPlayersMatching;
+        /// <summary>
+        /// Statistics representing the time (in seconds) it takes for tickets to find a match.
+        /// </summary>
+        public Statistics TimeToMatchStatisticsInSeconds;
+    }
+
+    /// <summary>
     /// Gets a remote login endpoint to a VM that is hosting a multiplayer server build in a specific region.
     /// </summary>
     [Serializable]
@@ -861,6 +1176,51 @@ namespace PlayFab.MultiplayerModels
         /// The enabled status for the multiplayer server features for the title.
         /// </summary>
         public TitleMultiplayerServerEnabledStatus? Status;
+    }
+
+    /// <summary>
+    /// Gets the quotas for a title in relation to multiplayer servers.
+    /// </summary>
+    [Serializable]
+    public class GetTitleMultiplayerServersQuotasRequest : PlayFabRequestCommon
+    {
+    }
+
+    [Serializable]
+    public class GetTitleMultiplayerServersQuotasResponse : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The various quotas for multiplayer servers for the title.
+        /// </summary>
+        public TitleMultiplayerServersQuotas Quotas;
+    }
+
+    /// <summary>
+    /// Add the player to a matchmaking ticket and specify all of its matchmaking attributes. Players can join a ticket if and
+    /// only if their EntityKeys are already listed in the ticket's Members list. The matchmaking service automatically starts
+    /// matching the ticket against other matchmaking tickets once all players have joined the ticket. It is not possible to
+    /// join a ticket once it has started matching.
+    /// </summary>
+    [Serializable]
+    public class JoinMatchmakingTicketRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The User who wants to join the ticket. Their Id must be listed in PlayFabIdsToMatchWith.
+        /// </summary>
+        public MatchmakingPlayer Member;
+        /// <summary>
+        /// The name of the queue to join.
+        /// </summary>
+        public string QueueName;
+        /// <summary>
+        /// The Id of the ticket to find a match for.
+        /// </summary>
+        public string TicketId;
+    }
+
+    [Serializable]
+    public class JoinMatchmakingTicketResult : PlayFabResultCommon
+    {
     }
 
     /// <summary>
@@ -1017,6 +1377,32 @@ namespace PlayFab.MultiplayerModels
     }
 
     /// <summary>
+    /// If the caller is a title, the EntityKey in the request is required. If the caller is a player, then it is optional. If
+    /// it is provided it must match the caller's entity.
+    /// </summary>
+    [Serializable]
+    public class ListMatchmakingTicketsForPlayerRequest : PlayFabRequestCommon
+    {
+        /// <summary>
+        /// The entity key for which to find the ticket Ids.
+        /// </summary>
+        public EntityKey Entity;
+        /// <summary>
+        /// The name of the queue to find a match for.
+        /// </summary>
+        public string QueueName;
+    }
+
+    [Serializable]
+    public class ListMatchmakingTicketsForPlayerResult : PlayFabResultCommon
+    {
+        /// <summary>
+        /// The list of ticket Ids the user is a member of.
+        /// </summary>
+        public List<string> TicketIds;
+    }
+
+    /// <summary>
     /// Returns a list of multiplayer servers for a build in a specific region.
     /// </summary>
     [Serializable]
@@ -1123,8 +1509,61 @@ namespace PlayFab.MultiplayerModels
         public List<VirtualMachineSummary> VirtualMachines;
     }
 
+    /// <summary>
+    /// A user in a matchmaking ticket.
+    /// </summary>
     [Serializable]
-    public class MultiplayerServerSummary
+    public class MatchmakingPlayer : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The user's attributes custom to the title.
+        /// </summary>
+        public MatchmakingPlayerAttributes Attributes;
+        /// <summary>
+        /// The entity key of the matchmaking user.
+        /// </summary>
+        public EntityKey Entity;
+    }
+
+    /// <summary>
+    /// The matchmaking attributes for a user.
+    /// </summary>
+    [Serializable]
+    public class MatchmakingPlayerAttributes : PlayFabBaseModel
+    {
+        /// <summary>
+        /// A data object representing a user's attributes.
+        /// </summary>
+        public object DataObject;
+        /// <summary>
+        /// An escaped data object representing a user's attributes.
+        /// </summary>
+        public string EscapedDataObject;
+    }
+
+    /// <summary>
+    /// A player in a created matchmaking match with a team assignment.
+    /// </summary>
+    [Serializable]
+    public class MatchmakingPlayerWithTeamAssignment : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The user's attributes custom to the title. These attributes will be null unless the request has ReturnMemberAttributes
+        /// flag set to true.
+        /// </summary>
+        public MatchmakingPlayerAttributes Attributes;
+        /// <summary>
+        /// The entity key of the matchmaking user.
+        /// </summary>
+        public EntityKey Entity;
+        /// <summary>
+        /// The Id of the team the User is assigned to.
+        /// </summary>
+        public string TeamId;
+    }
+
+    [Serializable]
+    public class MultiplayerServerSummary : PlayFabBaseModel
     {
         /// <summary>
         /// The connected players in the multiplayer server.
@@ -1157,7 +1596,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class Port
+    public class Port : PlayFabBaseModel
     {
         /// <summary>
         /// The name for the port.
@@ -1180,7 +1619,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class QosServer
+    public class QosServer : PlayFabBaseModel
     {
         /// <summary>
         /// The region the QoS server is located in.
@@ -1294,6 +1733,23 @@ namespace PlayFab.MultiplayerModels
         public string Username;
     }
 
+    [Serializable]
+    public class ServerDetails : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The IPv4 address of the virtual machine that is hosting this multiplayer server.
+        /// </summary>
+        public string IPV4Address;
+        /// <summary>
+        /// The ports the multiplayer server uses.
+        /// </summary>
+        public List<Port> Ports;
+        /// <summary>
+        /// The server's region.
+        /// </summary>
+        public string Region;
+    }
+
     /// <summary>
     /// Executes the shutdown callback from the GSDK and terminates the multiplayer server session. The callback in the GSDK
     /// will allow for graceful shutdown with a 15 minute timeoutIf graceful shutdown has not been completed before 15 minutes
@@ -1316,11 +1772,41 @@ namespace PlayFab.MultiplayerModels
         public string SessionId;
     }
 
+    [Serializable]
+    public class Statistics : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The average.
+        /// </summary>
+        public double Average;
+        /// <summary>
+        /// The 50th percentile.
+        /// </summary>
+        public double Percentile50;
+        /// <summary>
+        /// The 90th percentile.
+        /// </summary>
+        public double Percentile90;
+        /// <summary>
+        /// The 99th percentile.
+        /// </summary>
+        public double Percentile99;
+    }
+
     public enum TitleMultiplayerServerEnabledStatus
     {
         Initializing,
         Enabled,
         Disabled
+    }
+
+    [Serializable]
+    public class TitleMultiplayerServersQuotas : PlayFabBaseModel
+    {
+        /// <summary>
+        /// The core capacity for the various regions and VM Family
+        /// </summary>
+        public List<CoreCapacity> CoreCapacities;
     }
 
     /// <summary>
@@ -1352,7 +1838,7 @@ namespace PlayFab.MultiplayerModels
     }
 
     [Serializable]
-    public class VirtualMachineSummary
+    public class VirtualMachineSummary : PlayFabBaseModel
     {
         /// <summary>
         /// The virtual machine health status.

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using PlayFab.PfEditor.Json;
 using PlayFab.PfEditor.EditorModels;
+using UnityEngine.Networking;
 
 namespace PlayFab.PfEditor
 {
@@ -12,9 +13,15 @@ namespace PlayFab.PfEditor
     {
         internal static void MakeDownloadCall(string url, Action<string> resultCallback)
         {
+#if UNITY_2018_2_OR_NEWER
+            UnityWebRequest www = UnityWebRequest.Get(url);
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnHttpReq, url, PlayFabEditorHelper.MSG_SPIN_BLOCK);
+            EditorCoroutine.Start(PostDownload(www, (response) => { WriteResultFile(url, resultCallback, response); }, PlayFabEditorHelper.SharedErrorCallback), www);
+#else
             var www = new WWW(url);
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnHttpReq, url, PlayFabEditorHelper.MSG_SPIN_BLOCK);
             EditorCoroutine.Start(PostDownload(www, (response) => { WriteResultFile(url, resultCallback, response); }, PlayFabEditorHelper.SharedErrorCallback), www);
+#endif
         }
 
         private static void WriteResultFile(string url, Action<string> resultCallback, byte[] response)
@@ -63,10 +70,34 @@ namespace PlayFab.PfEditor
 
             //Encode Payload
             var payload = System.Text.Encoding.UTF8.GetBytes(req.Trim());
+#if UNITY_2018_2_OR_NEWER
+            var www = new UnityWebRequest(url)
+            {
+                uploadHandler = new UploadHandlerRaw(payload),
+                downloadHandler = new DownloadHandlerBuffer(),
+                method = "POST"
+            };
+
+            foreach (var header in headers)
+            {
+                if (!string.IsNullOrEmpty(header.Key) && !string.IsNullOrEmpty(header.Value))
+                {
+                    www.SetRequestHeader(header.Key, header.Value);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Null header");
+                }
+            }
+
+
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnHttpReq, api, PlayFabEditorHelper.MSG_SPIN_BLOCK);
+            EditorCoroutine.Start(Post(www, (response) => { OnWwwSuccess(api, resultCallback, errorCallback, response); }, (error) => { OnWwwError(errorCallback, error); }), www);
+#else
             var www = new WWW(url, payload, headers);
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnHttpReq, api, PlayFabEditorHelper.MSG_SPIN_BLOCK);
-
             EditorCoroutine.Start(Post(www, (response) => { OnWwwSuccess(api, resultCallback, errorCallback, response); }, (error) => { OnWwwError(errorCallback, error); }), www);
+#endif
         }
 
         private static void OnWwwSuccess<TResultType>(string api, Action<TResultType> resultCallback, Action<PlayFab.PfEditor.EditorModels.PlayFabError> errorCallback, string response) where TResultType : class
@@ -103,8 +134,13 @@ namespace PlayFab.PfEditor
 
         internal static void MakeGitHubApiCall(string url, Action<string> resultCallback)
         {
+#if UNITY_2018_2_OR_NEWER
+            UnityWebRequest webReq = UnityWebRequest.Get(url);
+            EditorCoroutine.Start(Post(webReq, (response) => { OnGitHubSuccess(resultCallback, response); }, PlayFabEditorHelper.SharedErrorCallback), webReq);
+#else
             var www = new WWW(url);
             EditorCoroutine.Start(Post(www, (response) => { OnGitHubSuccess(resultCallback, response); }, PlayFabEditorHelper.SharedErrorCallback), www);
+#endif
         }
 
         private static void OnGitHubSuccess(Action<string> resultCallback, string response)
@@ -130,7 +166,43 @@ namespace PlayFab.PfEditor
                 resultCallback(null);
             }
         }
+#if UNITY_2018_2_OR_NEWER
+        private static IEnumerator Post(UnityWebRequest www, Action<string> callBack, Action<string> errorCallback)
+        {
+            if (www != null)
+            {
+                yield return www.SendWebRequest();
 
+                if (!string.IsNullOrEmpty(www.error))
+                    errorCallback(www.error);
+                else
+                    callBack(www.downloadHandler.text);
+            }
+            else
+            {
+                UnityEngine.Debug.Log("UnityWebRequest was null");
+                errorCallback("UnityWebRequest Object was null");
+            }
+        }
+
+        private static IEnumerator PostDownload(UnityWebRequest www, Action<byte[]> callBack, Action<string> errorCallback)
+        {
+            if (www != null)
+            {
+                yield return www.SendWebRequest();
+
+                if (!string.IsNullOrEmpty(www.error) || www.isHttpError)
+                    errorCallback(www.error);
+                else
+                    callBack(www.downloadHandler.data);
+            }
+            else
+            {
+                UnityEngine.Debug.Log("UnityWebRequest was null");
+                errorCallback("UnityWebRequest Object was null");
+            }
+        }
+#else 
         private static IEnumerator Post(WWW www, Action<string> callBack, Action<string> errorCallback)
         {
             yield return www;
@@ -150,5 +222,6 @@ namespace PlayFab.PfEditor
             else
                 callBack(www.bytes);
         }
+#endif
     }
 }

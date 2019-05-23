@@ -246,6 +246,8 @@ public static class PF_PlayerData
     #region Character APIs
     public static void GetCharacterData()
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         playerCharacterData.Clear();
         characterAchievements.Clear();
 
@@ -274,12 +276,12 @@ public static class PF_PlayerData
             PlayFabClientAPI.GetCharacterReadOnlyData(request, (result) =>
             {
                 if (result.Data.ContainsKey("Achievements"))
-                    characterAchievements.Add(result.CharacterId, JsonWrapper.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
+                    characterAchievements.Add(result.CharacterId, JsonUtil.DeserializeObject<List<string>>(result.Data["Achievements"].Value));
 
                 if (!result.Data.ContainsKey("CharacterData"))
                     return;
 
-                playerCharacterData.Add(result.CharacterId, JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
+                playerCharacterData.Add(result.CharacterId, JsonUtil.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value));
                 remainingCallbacks--;
                 if (remainingCallbacks == 0)
                     PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
@@ -289,6 +291,8 @@ public static class PF_PlayerData
 
     public static void GetCharacterDataById(string characterId)
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCharacterReadOnlyData);
 
         var request = new GetCharacterDataRequest
@@ -302,7 +306,7 @@ public static class PF_PlayerData
         {
             if (result.Data.ContainsKey("CharacterData"))
             {
-                playerCharacterData[result.CharacterId] = JsonWrapper.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
+                playerCharacterData[result.CharacterId] = JsonUtil.DeserializeObject<UB_CharacterData>(result.Data["CharacterData"].Value);
                 PF_Bridge.RaiseCallbackSuccess("", PlayFabAPIMethods.GetCharacterReadOnlyData, MessageDisplayStyle.none);
             }
         }, PF_Bridge.PlayFabErrorCallback);

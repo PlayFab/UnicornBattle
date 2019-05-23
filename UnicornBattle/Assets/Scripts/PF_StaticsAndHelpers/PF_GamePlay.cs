@@ -143,10 +143,12 @@ public static class PF_GamePlay
     /// <param name="result">Result.</param>
     private static void OnRetrieveQuestItemsSuccess(ExecuteCloudScriptResult result)
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         if (!PF_Bridge.VerifyErrorFreeCloudScriptResult(result))
             return;
 
-        QuestProgress.ItemsGranted = JsonWrapper.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
+        QuestProgress.ItemsGranted = JsonUtil.DeserializeObject<List<ItemGrantResult>>(result.FunctionResult.ToString());
         QuestProgress.areItemsAwarded = true;
         PF_PlayerData.GetUserInventory();
 

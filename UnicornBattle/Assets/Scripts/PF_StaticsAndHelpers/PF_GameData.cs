@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
-using PlayFab.Json;
 
 public static class PF_GameData
 {
@@ -67,12 +66,14 @@ public static class PF_GameData
 
     private static void ExtractJsonTitleData<T>(Dictionary<string, string> resultData, string titleKey, ref T output)
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         string json;
         if (!resultData.TryGetValue(titleKey, out json))
             Debug.LogError("Failed to load titleData: " + titleKey);
         try
         {
-            output = JsonWrapper.DeserializeObject<T>(resultData[titleKey]);
+            output = JsonUtil.DeserializeObject<T>(resultData[titleKey]);
         }
         catch (Exception e)
         {
@@ -211,6 +212,7 @@ public static class PF_GameData
     public static void GetEncounterLists(List<string> encounters)
     {
         var request = new GetTitleDataRequest { Keys = encounters };
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData_Specific);
         PlayFabClientAPI.GetTitleData(request, result =>
@@ -221,7 +223,7 @@ public static class PF_GameData
 
             foreach (var item in encounters)
                 if (result.Data.ContainsKey(item))
-                    Encounters.Add(item, JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
+                    Encounters.Add(item, JsonUtil.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
 
             PF_Bridge.RaiseCallbackSuccess("Encounters Loaded!", PlayFabAPIMethods.GetTitleData_Specific, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
@@ -349,6 +351,8 @@ public static class PF_GameData
 
     public static string GetIconByItemById(string catalogItemId, string iconDefault = "Default")
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         var catalogItem = GetCatalogItemById(catalogItemId);
         if (catalogItem == null)
             return null;
@@ -356,7 +360,7 @@ public static class PF_GameData
         try
         {
             string temp;
-            var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
+            var kvps = JsonUtil.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
             if (kvps != null && kvps.TryGetValue("icon", out temp))
                 iconName = temp;
         }

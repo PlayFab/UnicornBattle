@@ -220,6 +220,9 @@ namespace PlayFab.PfEditor
                 Debug.Log("PlayFab SDK Install: Complete");
                 AssetDatabase.ImportPackage(fileName, false);
 
+                // attempts to re-import any changed assets (which ImportPackage doesn't implicitly do)
+                AssetDatabase.Refresh();
+
                 PlayFabEditorPrefsSO.Instance.SdkPath = PlayFabEditorHelper.DEFAULT_SDK_LOCATION;
                 PlayFabEditorDataService.SaveEnvDetails();
 
@@ -236,9 +239,23 @@ namespace PlayFab.PfEditor
             playFabSettingsType = typeof(object); // Sentinel value to indicate that PlayFabSettings doesn't exist
             var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in allAssemblies)
-                foreach (var eachType in assembly.GetTypes())
-                    if (eachType.Name == PlayFabEditorHelper.PLAYFAB_SETTINGS_TYPENAME)
-                        playFabSettingsType = eachType;
+            {
+                Type[] assemblyTypes;
+                try
+                {
+                    assemblyTypes = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException e)
+                {
+                    assemblyTypes = e.Types;
+                }
+
+                foreach (var eachType in assemblyTypes)
+                    if (eachType != null)
+                        if (eachType.Name == PlayFabEditorHelper.PLAYFAB_SETTINGS_TYPENAME)
+                            playFabSettingsType = eachType;
+            }
+	    
             //if (playFabSettingsType == typeof(object))
             //    Debug.LogWarning("Should not have gotten here: "  + allAssemblies.Length);
             //else
@@ -300,7 +317,7 @@ namespace PlayFab.PfEditor
             if (fileList.Length == 0)
                 return null;
 
-            var relPath = fileList[0].Substring(fileList[0].LastIndexOf("Assets/"));
+            var relPath = fileList[0].Substring(fileList[0].LastIndexOf("Assets"));
             return AssetDatabase.LoadAssetAtPath(relPath, typeof(UnityEngine.Object));
         }
 
