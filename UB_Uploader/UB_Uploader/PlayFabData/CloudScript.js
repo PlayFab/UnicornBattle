@@ -2,6 +2,9 @@ var defaultCatalog = "CharacterClasses";
 var GEM_CURRENCY_CODE = "GM";
 var GOLD_CURRENCY_CODE = "AU";
 var HEART_CURRENCY_CODE = "HT";
+
+// this is a simple change
+
 ///////////////////////// Cloud Script Handler Functions /////////////////////////
 function CreateCharacter(args) {
     var grantItemsRequest = {
@@ -102,6 +105,36 @@ function SubtractLife() {
     };
     return server.SubtractUserVirtualCurrency(subtractVcRequest);
 }
+function SetEventStatus(args) {
+    SetEventActive(args.eventName, args.status)
+}
+
+// use this for setting player stats; better than opening up direct client access
+// also this gives the opportunity to set bounds checking or other fraud detection
+function SetPlayerStats(args) {
+    // TBD add some limit checking or inspection
+    args.statistics = !args.statistics ? {} : args.statistics;
+
+    var updateStatRequest = {
+        PlayFabId: currentPlayerId,
+        Statistics: args.statistics
+    };
+    return server.UpdatePlayerStatistics(updateStatRequest);
+}
+
+function SetCharacterStats(args) {
+    // TBD add some limit checking or inspection
+    args.statistics = !args.statistics ? {} : args.statistics;
+    args.characterId = !args.characterId ? {} : args.characterId;
+
+    var updateStatRequest = {
+        PlayFabId: currentPlayerId,
+        CharacterId: args.characterId,
+        CharacterStatistics: args.statistics
+    };
+    return server.UpdateCharacterStatistics(updateStatRequest);
+}
+
 function EnableValentinesEvent() {
     SetEventActive("evalentine", true);
 }
@@ -114,6 +147,59 @@ function EnablePresEvent() {
 function DisablePresEvent() {
     SetEventActive("epresident", false);
 }
+
+//// Functions to be called by rules/actions to drive real time messaging to the client
+function SendMessageToPlayer (args, context) {
+    var entityEvent = {};
+    entityEvent.EventNamespace = "custom.UnicornBattle";
+    entityEvent.Name = "MessageToPlayer";
+    entityEvent.Payload =
+        {
+            "title": args.title,
+            "message": args.message,
+            "showStore": args.showStore,
+            "refreshEvents": args.refreshEvents
+        };
+
+
+    if (context.currentEntity == null) {
+        //do accountInfo to look up title_player_account        
+        entityEvent.Entity = server.GetUserAccountInfo({ PlayFabId: currentPlayerId }).UserInfo.TitleInfo.TitlePlayerAccount
+    }
+    else {
+        entityEvent.Entity = context.currentEntity.Entity;
+    }
+
+
+    var eventResult = entity.WriteEvents({ Events: [entityEvent] });
+    log.info("Write Events Result", eventResult);
+}
+
+// not working yet; also has title ID fixed
+function BroadcastMessageToAllPlayers (args, context) {
+    var entityEvent = {};
+    entityEvent.EventNamespace = "custom.UnicornBattle";
+    entityEvent.Name = "MessageToAllPlayers";
+
+    entityEvent.Entity =
+        {
+            "type": "title",
+            "Id": "A5F3"
+        };
+    entityEvent.Payload =
+    {
+        "title": args.title,
+        "message": args.message,
+        "showStore": args.showStore,
+        "refreshEvents": args.refreshEvents
+    };
+
+    var eventResult = entity.WriteEvents({ Events: [entityEvent] });
+    log.info("Write Events Result", eventResult);
+
+}
+
+
 ///////////////////////// HELPER FUNCTIONS (NOT DIRECTLY CALLABLE FROM THE CLIENT) /////////////////////////
 function InitializeNewCharacterData(characterId, catalogItemId) {
     var cDetails = GetBaseClassForType({ cCode: catalogItemId });
@@ -246,6 +332,7 @@ function SetEventActive(eventKey, isActive) {
     };
     server.SetTitleData(setRequest);
 }
+
 ///////////////////////// Define the handlers /////////////////////////
 handlers.GetBaseClassForType = GetBaseClassForType;
 handlers.CreateCharacter = CreateCharacter;
@@ -253,4 +340,10 @@ handlers.DeleteCharacter = DeleteCharacter;
 handlers.SaveProgress = SaveProgress;
 handlers.RetriveQuestItems = RetriveQuestItems;
 handlers.SubtractLife = SubtractLife;
+handlers.SetEventStatus = SetEventStatus;
+handlers.SendMessageToPlayer = SendMessageToPlayer;
+handlers.SetPlayerStats = SetPlayerStats;
+handlers.SetCharacterStats = SetCharacterStats;
+
 //# sourceMappingURL=UnicornBattle.js.map
+

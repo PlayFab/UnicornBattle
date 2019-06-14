@@ -61,7 +61,7 @@ public static class GlobalStrings
 
     // Programatic strings
     public const string PrimaryCatalogName = "CharacterClasses";
-    public static readonly List<string> InitTitleKeys = new List<string> { "Achievements", "ActiveEventKeys", "AndroidPushSenderId", "CharacterLevelRamp", "Classes", "CommunityWebsite", "Events", "Levels", "MinimumInterstitialWait", "Spells", "StandardStores", "StartingCharacterSlots" };
+    public static readonly List<string> InitTitleKeys = new List<string> { "Achievements", "ActiveEventKeys", "AndroidPushSenderId", "CharacterLevelRamp", "Classes", "CommunityWebsite", "Events", "Levels", "MinimumInterstitialWait", "Spells", "StandardStores", "StartingCharacterSlots", "UseCDN" };
     public const string DEFAULT_UB_TITLE_ID = "A5F3";
 	public const string DEFAULT_ANDROID_PUSH_SENDER_ID = "494923569376";
     public const string FB_PREF_KEY = "LinkedFacebook";

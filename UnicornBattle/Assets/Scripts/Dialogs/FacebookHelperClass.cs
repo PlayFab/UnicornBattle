@@ -25,7 +25,7 @@ public class FacebookHelperClass
 
     public static string DeserializePictureURLString(string response)
     {
-        Dictionary<string, FB_PhotoResponse> result = JsonWrapper.DeserializeObject<Dictionary<string, FB_PhotoResponse>>(response);
+        Dictionary<string, FB_PhotoResponse> result = JsonUtility.FromJson<Dictionary<string, FB_PhotoResponse>>(response);
         FB_PhotoResponse urlH;
         result.TryGetValue("data", out urlH);
         return urlH == null ? null : urlH.url;

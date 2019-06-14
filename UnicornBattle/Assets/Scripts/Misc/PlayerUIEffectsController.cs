@@ -1,4 +1,4 @@
-using PlayFab.Json;
+using PlayFab;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -258,13 +258,15 @@ public class PlayerUIEffectsController : MonoBehaviour
 
     private void UseCombatItem(string item)
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         Debug.Log("Using " + item);
 
         InventoryCategory obj;
         if (!PF_PlayerData.inventoryByCategory.TryGetValue(item, out obj) || obj.count == 0)
             return;
 
-        var attributes = JsonWrapper.DeserializeObject<Dictionary<string, string>>(obj.catalogRef.CustomData);
+        var attributes = JsonUtil.DeserializeObject<Dictionary<string, string>>(obj.catalogRef.CustomData);
         if (!attributes.ContainsKey("modifies")
             || !attributes.ContainsKey("modifyPercent")
             || !attributes.ContainsKey("target")

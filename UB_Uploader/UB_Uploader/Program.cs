@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using PlayFab;
+using PlayFab.AuthenticationModels;
 using PlayFab.AdminModels;
 using PlayFab.Json;
-// using PlayFab.ServerModels;
-
 namespace UB_Uploader
 {
     public static class Program
@@ -20,12 +20,18 @@ namespace UB_Uploader
         private const string titleSettingsPath = "./PlayFabData/TitleSettings.json";
         private const string titleDataPath = "./PlayFabData/TitleData.json";
         private const string catalogPath = "./PlayFabData/Catalog.json";
+        private const string catalogPathEvents = "./PlayFabData/CatalogEvents.json";
         private const string dropTablesPath = "./PlayFabData/DropTables.json";
         private const string cloudScriptPath = "./PlayFabData/CloudScript.js";
         private const string titleNewsPath = "./PlayFabData/TitleNews.json";
         private const string statsDefPath = "./PlayFabData/StatisticsDefinitions.json";
         private const string storesPath = "./PlayFabData/Stores.json";
+        private const string storesPathEvents = "./PlayFabData/StoresEvents.json";
         private const string cdnAssetsPath = "./PlayFabData/CdnData.json";
+        private const string permissionPath = "./PlayFabData/Permissions.json";
+
+        // authentication tokens
+        private static string authToken;
 
         // log file details
         private static FileInfo logFile;
@@ -56,11 +62,16 @@ namespace UB_Uploader
                 if (!GetTitleSettings())
                     throw new Exception("\tFailed to load Title Settings");
 
+                if (!GetAuthToken())
+                    throw new Exception("\tFailed to retrieve Auth Token");
+
                 // start uploading
                 if (!UploadTitleData())
                     throw new Exception("\tFailed to upload TitleData.");
                 if (!UploadEconomyData())
                     throw new Exception("\tFailed to upload Economy Data.");
+                if (!UploadEventData())
+                    throw new Exception("\tFailed to upload Event Data.");
                 if (!UploadCloudScript())
                     throw new Exception("\tFailed to upload CloudScript.");
                 if (!UploadTitleNews())
@@ -69,6 +80,8 @@ namespace UB_Uploader
                     throw new Exception("\tFailed to upload Statistics Definitions.");
                 if (!UploadCdnAssets())
                     throw new Exception("\tFailed to upload CDN Assets.");
+                if (!UploadPolicy(permissionPath))
+                    throw new Exception("\tFailed to upload permissions policy.");
             }
             catch (Exception ex)
             {
@@ -94,12 +107,12 @@ namespace UB_Uploader
             var titleSettings = JsonWrapper.DeserializeObject<Dictionary<string, string>>(parsedFile);
 
             if (titleSettings != null &&
-                titleSettings.TryGetValue("TitleId", out PlayFabSettings.TitleId) && !string.IsNullOrEmpty(PlayFabSettings.TitleId) &&
-                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.DeveloperSecretKey) && !string.IsNullOrEmpty(PlayFabSettings.DeveloperSecretKey) &&
+                titleSettings.TryGetValue("TitleId", out PlayFabSettings.staticSettings.TitleId) && !string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId) &&
+                titleSettings.TryGetValue("DeveloperSecretKey", out PlayFabSettings.staticSettings.DeveloperSecretKey) && !string.IsNullOrEmpty(PlayFabSettings.staticSettings.DeveloperSecretKey) &&
                 titleSettings.TryGetValue("CatalogName", out defaultCatalog))
             {
-                LogToFile("Setting Destination TitleId to: " + PlayFabSettings.TitleId);
-                LogToFile("Setting DeveloperSecretKey to: " + PlayFabSettings.DeveloperSecretKey);
+                LogToFile("Setting Destination TitleId to: " + PlayFabSettings.staticSettings.TitleId);
+                LogToFile("Setting DeveloperSecretKey to: " + PlayFabSettings.staticSettings.DeveloperSecretKey);
                 LogToFile("Setting defaultCatalog name to: " + defaultCatalog);
                 return true;
             }
@@ -111,26 +124,79 @@ namespace UB_Uploader
         #region Uploading Functions -- these are straightforward calls that push the data to the backend
         private static bool UploadEconomyData()
         {
-            ////MUST upload these in this order so that the economy data is properly imported: VC -> Catalogs -> DropTables -> Stores
+            ////MUST upload these in this order so that the economy data is properly imported: VC -> Catalogs -> DropTables -> Catalogs part 2 -> Stores
             if (!UploadVc())
                 return false;
 
+            if (string.IsNullOrEmpty(catalogPath))
+                return false;
+
+            LogToFile("Uploading CatalogItems...");
+
+            // now go through the catalog; split into two parts. 
             var reUploadList = new List<CatalogItem>();
-            if (!UploadCatalog(ref reUploadList))
+            var parsedFile = ParseFile(catalogPath);
+
+            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
+            if (catalogWrapper == null)
+            {
+                LogToFile("\tAn error occurred deserializing the Catalog.json file.", ConsoleColor.Red);
+                return false;
+            }
+            for (var z = 0; z < catalogWrapper.Catalog.Count; z++)
+            {
+                if (catalogWrapper.Catalog[z].Bundle != null || catalogWrapper.Catalog[z].Container != null)
+                {
+                    var original = catalogWrapper.Catalog[z];
+                    var strippedClone = CloneCatalogItemAndStripTables(original);
+
+                    reUploadList.Add(original);
+                    catalogWrapper.Catalog.Remove(original);
+                    catalogWrapper.Catalog.Add(strippedClone);
+                }
+            }
+
+            if (!UpdateCatalog(catalogWrapper.Catalog, defaultCatalog, true))
                 return false;
 
             if (!UploadDropTables())
                 return false;
 
-            if (!UploadStores())
+            if (!UploadStores(storesPath, defaultCatalog))
                 return false;
 
             // workaround for the DropTable conflict
             if (reUploadList.Count > 0)
             {
                 LogToFile("Re-uploading [" + reUploadList.Count + "] CatalogItems due to DropTable conflicts...");
-                UpdateCatalog(reUploadList);
+                if (!UpdateCatalog(reUploadList, defaultCatalog, true))
+                    return false;
             }
+            return true;
+        }
+
+        private static bool UploadEventData()
+        {
+            if (string.IsNullOrEmpty(catalogPathEvents))
+                return false;
+
+            LogToFile("Uploading Event Items...");
+            var parsedFile = ParseFile(catalogPathEvents);
+            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
+            if (catalogWrapper == null)
+            {
+                LogToFile("\tAn error occurred deserializing the CatalogEvents.json file.", ConsoleColor.Red);
+                return false;
+            }
+
+            if (!UpdateCatalog(catalogWrapper.Catalog, "Events", false))
+                return false;
+
+            LogToFile("\tUploaded Event Catalog!", ConsoleColor.Green);
+
+            if (!UploadStores(storesPathEvents, "Events"))
+                return false;
+
             return true;
         }
 
@@ -219,6 +285,26 @@ namespace UB_Uploader
                     LogToFile("\t\t" + item.Title + " Uploaded.", ConsoleColor.Green);
             }
 
+            return true;
+        }
+
+        // retrieves and stores an auth token
+        // returns false if it fails
+        private static bool GetAuthToken()
+        {
+            var entityTokenRequest = new GetEntityTokenRequest();
+            var authTask = PlayFabAuthenticationAPI.GetEntityTokenAsync(entityTokenRequest);
+            authTask.Wait();
+            if (authTask.Result.Error != null)
+            {
+                OutputPlayFabError("\t\tError retrieving auth token: ", authTask.Result.Error);
+                return false;
+            }
+            else
+            {
+                authToken = authTask.Result.Result.EntityToken;
+                LogToFile("\t\tAuth token retrieved.", ConsoleColor.Green);
+            }
             return true;
         }
 
@@ -316,36 +402,6 @@ namespace UB_Uploader
             return true;
         }
 
-        private static bool UploadCatalog(ref List<CatalogItem> reUploadList)
-        {
-            if (string.IsNullOrEmpty(catalogPath))
-                return false;
-
-            LogToFile("Uploading CatalogItems...");
-            var parsedFile = ParseFile(catalogPath);
-
-            var catalogWrapper = JsonWrapper.DeserializeObject<CatalogWrapper>(parsedFile);
-            if (catalogWrapper == null)
-            {
-                LogToFile("\tAn error occurred deserializing the Catalog.json file.", ConsoleColor.Red);
-                return false;
-            }
-            for (var z = 0; z < catalogWrapper.Catalog.Count; z++)
-            {
-                if (catalogWrapper.Catalog[z].Bundle != null || catalogWrapper.Catalog[z].Container != null)
-                {
-                    var original = catalogWrapper.Catalog[z];
-                    var strippedClone = CloneCatalogItemAndStripTables(original);
-
-                    reUploadList.Add(original);
-                    catalogWrapper.Catalog.Remove(original);
-                    catalogWrapper.Catalog.Add(strippedClone);
-                }
-            }
-
-            return UpdateCatalog(catalogWrapper.Catalog);
-        }
-
         private static bool UploadDropTables()
         {
             if (string.IsNullOrEmpty(dropTablesPath))
@@ -390,13 +446,13 @@ namespace UB_Uploader
             return true;
         }
 
-        private static bool UploadStores()
+        private static bool UploadStores(string filePath, string catalogName)
         {
-            if (string.IsNullOrEmpty(storesPath))
+            if (string.IsNullOrEmpty(filePath))
                 return false;
 
             LogToFile("Uploading Stores...");
-            var parsedFile = ParseFile(storesPath);
+            var parsedFile = ParseFile(filePath);
 
             var storesList = JsonWrapper.DeserializeObject<List<StoreWrapper>>(parsedFile);
 
@@ -406,7 +462,7 @@ namespace UB_Uploader
 
                 var request = new UpdateStoreItemsRequest
                 {
-                    CatalogVersion = defaultCatalog,
+                    CatalogVersion = catalogName,
                     StoreId = eachStore.StoreId,
                     Store = eachStore.Store,
                     MarketingData = eachStore.MarketingData
@@ -423,8 +479,43 @@ namespace UB_Uploader
             return true;
         }
 
+        private static bool UploadPolicy(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return false;
+
+            LogToFile("Uploading Policy...");
+            var parsedFile = ParseFile(filePath);
+
+            var permissionList = JsonWrapper.DeserializeObject<List<PlayFab.ProfilesModels.EntityPermissionStatement>>(parsedFile);
+            var request = new PlayFab.ProfilesModels.SetGlobalPolicyRequest
+            {
+                Permissions = permissionList
+            };
+
+            var setPermissionTask = PlayFab.PlayFabProfilesAPI.SetGlobalPolicyAsync(request);
+            setPermissionTask.Wait();
+ 
+            if (setPermissionTask.Result.Error != null)
+                OutputPlayFabError("\t\tSet Permissions: ", setPermissionTask.Result.Error);
+            else
+                LogToFile("\t\tPermissions uploaded... ", ConsoleColor.Green);
+
+            return true;
+        }
+
         private static bool UploadCdnAssets()
         {
+            var tdParsedFile = ParseFile(titleDataPath);
+            var titleDataDict = JsonWrapper.DeserializeObject<Dictionary<string, string>>(tdParsedFile);
+            var useCDN = titleDataDict.ContainsKey("UseCDN") && int.Parse(titleDataDict["UseCDN"]) == 1;
+
+            if (!useCDN)
+            {
+                LogToFile("\tSkipping CDN Upload, because UseCDN is set to 0");
+                return true;
+            }
+            
             if (string.IsNullOrEmpty(cdnAssetsPath))
                 return false;
 
@@ -517,12 +608,13 @@ namespace UB_Uploader
             };
         }
 
-        private static bool UpdateCatalog(List<CatalogItem> catalog)
+        private static bool UpdateCatalog(List<CatalogItem> catalog, string catalogName, bool isDefault)
         {
             var request = new UpdateCatalogItemsRequest
             {
-                CatalogVersion = defaultCatalog,
-                Catalog = catalog
+                CatalogVersion = catalogName,
+                Catalog = catalog,
+                SetAsDefaultCatalog = isDefault
             };
 
             var updateCatalogItemsTask = PlayFabAdminAPI.UpdateCatalogItemsAsync(request);

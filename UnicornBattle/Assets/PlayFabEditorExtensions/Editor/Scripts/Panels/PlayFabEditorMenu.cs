@@ -12,7 +12,8 @@ namespace PlayFab.PfEditor
             Data = 2,
             Help = 3,
             Tools = 4,
-            Logout = 5
+            Packages = 5,
+            Logout = 6
         }
 
         internal static MenuStates _menuState = MenuStates.Sdks;
@@ -29,6 +30,7 @@ namespace PlayFab.PfEditor
             var helpButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             var logoutButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
             var toolsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
+            var packagesButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton");
 
             if (_menuState == MenuStates.Sdks)
                 sdksButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
@@ -40,6 +42,8 @@ namespace PlayFab.PfEditor
                 dataButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
             if (_menuState == MenuStates.Help)
                 helpButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
+            if (_menuState == MenuStates.Packages)
+                packagesButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
             if (_menuState == MenuStates.Tools)
                 toolsButtonStyle = PlayFabEditorHelper.uiStyle.GetStyle("textButton_selected");
 
@@ -60,6 +64,8 @@ namespace PlayFab.PfEditor
                         OnDataClicked();
                     if (GUILayout.Button("TOOLS", toolsButtonStyle, GUILayout.MaxWidth(45)))
                         OnToolsClicked();
+                    if(GUILayout.Button("PACKAGES", packagesButtonStyle, GUILayout.MaxWidth(72)))
+                        OnPackagesClicked();
                 }
 
                 if (GUILayout.Button("HELP", helpButtonStyle, GUILayout.MaxWidth(45)))
@@ -103,6 +109,13 @@ namespace PlayFab.PfEditor
         {
             _menuState = MenuStates.Settings;
             PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Settings.ToString());
+            PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
+        }
+
+        public static void OnPackagesClicked()
+        {
+            _menuState = MenuStates.Packages;
+            PlayFabEditor.RaiseStateUpdate(PlayFabEditor.EdExStates.OnMenuItemClicked, MenuStates.Packages.ToString());
             PlayFabEditorPrefsSO.Instance.curMainMenuIdx = (int)_menuState;
         }
 

@@ -6,22 +6,28 @@ using PlayFab.SharedModels;
 public class PF_Advertising
 {
 
-    public static void GetAdPlacements(GetAdPlacementsRequest request, Action<GetAdPlacementsResult> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null)
+    public static void GetAdPlacements(GetAdPlacementsRequest request, Action<GetAdPlacementsResult> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
     {
-        if (!PlayFabHttp.IsClientLoggedIn()) throw new Exception("Must be logged in to call this method");
-        PlayFabHttp.MakeApiCall("/Client/GetAdPlacements", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
+        // var context = (request == null ? null : request.AuthenticationContext) ?? PlayFab.PlayFabSettings.staticPlayer;
+        if (!PlayFab.PlayFabClientAPI.IsClientLoggedIn()) throw new PlayFab.PlayFabException(PlayFab.PlayFabExceptionCode.NotLoggedIn, "Must be logged in to call this method");
+
+        PlayFabHttp.MakeApiCall("/Client/GetAdPlacements", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders);
     }
 
-    public static void ReportAdActivity(ReportAdActivityRequest request, Action<ReportAdActivityResponse> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null)
+    public static void ReportAdActivity(ReportAdActivityRequest request, Action<ReportAdActivityResponse> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
     {
-        if (!PlayFabHttp.IsClientLoggedIn()) throw new Exception("Must be logged in to call this method");
-        PlayFabHttp.MakeApiCall("/Client/ReportAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
+        // var context = (request == null ? null : request.AuthenticationContext) ?? PlayFab.PlayFabSettings.staticPlayer;
+        if (!PlayFab.PlayFabClientAPI.IsClientLoggedIn()) throw new PlayFab.PlayFabException(PlayFab.PlayFabExceptionCode.NotLoggedIn, "Must be logged in to call this method");
+
+        PlayFabHttp.MakeApiCall("/Client/ReportAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders);
     }
 
-    public static void RewardAdActivity(RewardAdActivityRequest request, Action<RewardAdActivityResponse> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null)
+    public static void RewardAdActivity(RewardAdActivityRequest request, Action<RewardAdActivityResponse> resultCallback, Action<PlayFab.PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
     {
-        if (!PlayFabHttp.IsClientLoggedIn()) throw new Exception("Must be logged in to call this method");
-        PlayFabHttp.MakeApiCall("/Client/RewardAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData);
+        // var context = (request == null ? null : request.AuthenticationContext) ?? PlayFab.PlayFabSettings.staticPlayer;
+        if (!PlayFab.PlayFabClientAPI.IsClientLoggedIn()) throw new PlayFab.PlayFabException(PlayFab.PlayFabExceptionCode.NotLoggedIn, "Must be logged in to call this method");
+
+        PlayFabHttp.MakeApiCall("/Client/RewardAdActivity", request, AuthType.LoginSession, resultCallback, errorCallback, customData, extraHeaders);
     }
 }
 

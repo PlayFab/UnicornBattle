@@ -3,10 +3,8 @@ using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using UnityEngine.Events;
-using PlayFab.Json;
 
 public static class PF_GameData
 {
@@ -25,6 +23,8 @@ public static class PF_GameData
     public static float MinimumInterstitialWait;
     public static string CommunityWebsite = string.Empty;
     public static string AndroidPushSenderId = null;
+    public static int UseCDN;
+    
 
     // all the items in our "Offers" catalog
     public static List<CatalogItem> offersCataogItems = new List<CatalogItem>();
@@ -40,8 +40,25 @@ public static class PF_GameData
     public static List<PlayerLeaderboardEntry> currentTop10LB = new List<PlayerLeaderboardEntry>();
     public static List<PlayerLeaderboardEntry> friendsLB = new List<PlayerLeaderboardEntry>();
 
+    public static void GetEventData()
+    {
+        // first get list of events --- these are stored in a special catalog
+        var request = new GetCatalogItemsRequest { CatalogVersion = "Events" };
+        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetEvents);
+        PlayFabClientAPI.GetCatalogItems(request, OnGetEventsSuccess, PF_Bridge.PlayFabErrorCallback);
+    }
+
+    public static void GetActiveEventData()
+    {
+        // get active events via a special store
+        var request = new GetStoreItemsRequest { CatalogVersion = "Events", StoreId = "events" };
+        // DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetActiveEvents); // not needed because called inside GetEventData
+        PlayFabClientAPI.GetStoreItems(request, OnGetActiveEventsSuccess, PF_Bridge.PlayFabErrorCallback);
+    }
+
     public static void GetTitleData()
     {
+        // now get the rest of the title data -- these are stored in traditional title data
         var request = new GetTitleDataRequest { Keys = GlobalStrings.InitTitleKeys };
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData_General);
         PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccess, PF_Bridge.PlayFabErrorCallback);
@@ -49,12 +66,14 @@ public static class PF_GameData
 
     private static void ExtractJsonTitleData<T>(Dictionary<string, string> resultData, string titleKey, ref T output)
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         string json;
         if (!resultData.TryGetValue(titleKey, out json))
             Debug.LogError("Failed to load titleData: " + titleKey);
         try
         {
-            output = JsonWrapper.DeserializeObject<T>(resultData[titleKey]);
+            output = JsonUtil.DeserializeObject<T>(resultData[titleKey]);
         }
         catch (Exception e)
         {
@@ -63,20 +82,60 @@ public static class PF_GameData
         }
     }
 
+    private static void OnGetEventsSuccess(GetCatalogItemsResult result)
+    {
+        // process the catalog items returned; put these into the "events" object
+        // then go and get the rest of the title data
+
+        Events.Clear();
+        foreach (var eachItem in result.Catalog)
+        {
+            var newEvent = new UB_EventData
+            {
+                EventName = eachItem.DisplayName,
+                EventDescription = eachItem.Description,
+                StoreToUse = eachItem.ItemClass,
+                BundleId = eachItem.ItemImageUrl,
+                EventKey = eachItem.ItemId
+            };
+
+            Events[eachItem.ItemId] = newEvent;
+            Debug.Log("Loaded event: " + eachItem.ItemId);
+
+        }
+        GetActiveEventData();
+    }
+
+    private static void OnGetActiveEventsSuccess(GetStoreItemsResult result)
+    {
+        // now process the results of the store to determine what events are active
+        ActiveEventKeys.Clear();
+        foreach (var eachItem in result.Store)
+        {
+            ActiveEventKeys.Add(eachItem.ItemId);
+        }
+        Debug.Log("Active events: " + String.Join(", ", ActiveEventKeys.ToArray()));
+
+        //Use pre-cached Assets or Load from CDN decided by title data.
+        GameController.Instance.cdnController.useCDN = UseCDN != 0;
+        BuildCDNRequests();
+        PF_Bridge.RaiseCallbackSuccess("Events Loaded", PlayFabAPIMethods.GetEvents, MessageDisplayStyle.none);
+    }
+
     private static void OnGetTitleDataSuccess(GetTitleDataResult result)
     {
         ExtractJsonTitleData(result.Data, "Achievements", ref Achievements);
-        ExtractJsonTitleData(result.Data, "ActiveEventKeys", ref ActiveEventKeys);
+//        ExtractJsonTitleData(result.Data, "ActiveEventKeys", ref ActiveEventKeys);
         ExtractJsonTitleData(result.Data, "CharacterLevelRamp", ref CharacterLevelRamp);
         ExtractJsonTitleData(result.Data, "Classes", ref Classes);
-        ExtractJsonTitleData(result.Data, "Events", ref Events);
+//        ExtractJsonTitleData(result.Data, "Events", ref Events);
         ExtractJsonTitleData(result.Data, "Levels", ref Levels);
         ExtractJsonTitleData(result.Data, "MinimumInterstitialWait", ref MinimumInterstitialWait);
         ExtractJsonTitleData(result.Data, "Spells", ref Spells);
         ExtractJsonTitleData(result.Data, "StandardStores", ref StandardStores);
         ExtractJsonTitleData(result.Data, "StartingCharacterSlots", ref StartingCharacterSlots);
-
-        DoExtraEventProcessing();
+        ExtractJsonTitleData(result.Data, "UseCDN", ref UseCDN);
+//        DoExtraEventProcessing();
 
         AndroidPushSenderId = GlobalStrings.DEFAULT_ANDROID_PUSH_SENDER_ID;
         if (result.Data.ContainsKey("AndroidPushSenderId"))
@@ -85,7 +144,6 @@ public static class PF_GameData
         if (result.Data.ContainsKey("CommunityWebsite"))
             CommunityWebsite = result.Data["CommunityWebsite"];
 
-        BuildCDNRequests();
         PF_Bridge.RaiseCallbackSuccess("Title Data Loaded", PlayFabAPIMethods.GetTitleData_General, MessageDisplayStyle.none);
     }
 
@@ -95,7 +153,7 @@ public static class PF_GameData
         foreach (var eachEvent in Events)
             eachEvent.Value.EventKey = eachEvent.Key;
     }
-
+    
     public static void BuildCDNRequests()
     {
         List<AssetBundleHelperObject> requests = new List<AssetBundleHelperObject>();
@@ -134,20 +192,27 @@ public static class PF_GameData
             PromoAssets.Clear();
             foreach (var obj in requests)
                 if (obj.IsUnpacked)
+                {
                     PromoAssets.Add(obj.Unpacked);
+                }
             GameController.Instance.cdnController.isInitalContentUnpacked = true;
         };
-
+        
         if (GameController.Instance.cdnController.isInitalContentUnpacked == false && GameController.Instance.cdnController.useCDN)
         {
             DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetCDNConent);
             GameController.Instance.cdnController.KickOffCDNGet(requests, afterCdnRequest);
+        }
+        else
+        {
+            GameController.Instance.cdnController.KickOffStreamingAssetsGet(requests, afterCdnRequest);
         }
     }
 
     public static void GetEncounterLists(List<string> encounters)
     {
         var request = new GetTitleDataRequest { Keys = encounters };
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
 
         DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetTitleData_Specific);
         PlayFabClientAPI.GetTitleData(request, result =>
@@ -158,7 +223,7 @@ public static class PF_GameData
 
             foreach (var item in encounters)
                 if (result.Data.ContainsKey(item))
-                    Encounters.Add(item, JsonWrapper.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
+                    Encounters.Add(item, JsonUtil.DeserializeObject<Dictionary<string, UB_EncounterData>>(result.Data[item]));
 
             PF_Bridge.RaiseCallbackSuccess("Encounters Loaded!", PlayFabAPIMethods.GetTitleData_Specific, MessageDisplayStyle.none);
         }, PF_Bridge.PlayFabErrorCallback);
@@ -286,6 +351,8 @@ public static class PF_GameData
 
     public static string GetIconByItemById(string catalogItemId, string iconDefault = "Default")
     {
+        var JsonUtil = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
+
         var catalogItem = GetCatalogItemById(catalogItemId);
         if (catalogItem == null)
             return null;
@@ -293,7 +360,7 @@ public static class PF_GameData
         try
         {
             string temp;
-            var kvps = JsonWrapper.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
+            var kvps = JsonUtil.DeserializeObject<Dictionary<string, string>>(catalogItem.CustomData);
             if (kvps != null && kvps.TryGetValue("icon", out temp))
                 iconName = temp;
         }

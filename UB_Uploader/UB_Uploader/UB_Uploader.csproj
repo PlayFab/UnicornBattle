@@ -33,8 +33,25 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PlayFabAllSDK, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PlayFabAllSDK.1.51.190520\lib\net45\PlayFabAllSDK.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections" />
+    <Reference Include="System.ComponentModel" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.Tools" />
+    <Reference Include="System.Globalization" />
+    <Reference Include="System.Linq" />
+    <Reference Include="System.Net.Primitives" />
+    <Reference Include="System.Reflection" />
+    <Reference Include="System.Reflection.Extensions" />
+    <Reference Include="System.Resources.ResourceManager" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Extensions" />
+    <Reference Include="System.Text.Encoding" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,38 +60,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PlayFabSDK\Json\ISerializer.cs" />
-    <Compile Include="PlayFabSDK\Json\NewtonsoftWrapper.cs" />
-    <Compile Include="PlayFabSDK\Json\SimpleJson.cs" />
-    <Compile Include="PlayFabSDK\PlayFabAdminAPI.cs" />
-    <Compile Include="PlayFabSDK\PlayFabAdminModels.cs" />
-    <Compile Include="PlayFabSDK\PlayFabClientAPI.cs" />
-    <Compile Include="PlayFabSDK\PlayFabClientModels.cs" />
-    <Compile Include="PlayFabSDK\PlayFabErrors.cs" />
-    <Compile Include="PlayFabSDK\PlayFabFileUtil.cs" />
-    <Compile Include="PlayFabSDK\PlayFabHttp\IPlayFabHttp.cs" />
-    <Compile Include="PlayFabSDK\PlayFabHttp\PlayFabHttp.cs" />
-    <Compile Include="PlayFabSDK\PlayFabHttp\PlayFabSysHttp.cs" />
-    <Compile Include="PlayFabSDK\PlayFabHttp\PlayFabWinHttp.cs" />
-    <Compile Include="PlayFabSDK\PlayFabMatchmakerAPI.cs" />
-    <Compile Include="PlayFabSDK\PlayFabMatchmakerModels.cs" />
-    <Compile Include="PlayFabSDK\PlayFabServerAPI.cs" />
-    <Compile Include="PlayFabSDK\PlayFabServerModels.cs" />
-    <Compile Include="PlayFabSDK\PlayFabSettings.cs" />
-    <Compile Include="PlayFabSDK\PlayFabUtil.cs" />
-    <Compile Include="PlayFabSDK\Uunit\PlayFabApiTest.cs" />
-    <Compile Include="PlayFabSDK\Uunit\UUnitAssertException.cs" />
-    <Compile Include="PlayFabSDK\Uunit\UUnitIncrementalTestRunner.cs" />
-    <Compile Include="PlayFabSDK\Uunit\UUnitTestCase.cs" />
-    <Compile Include="PlayFabSDK\Uunit\UUnitTestContext.cs" />
-    <Compile Include="PlayFabSDK\Uunit\UUnitTestReport.cs" />
-    <Compile Include="PlayFabSDK\Uunit\UUnitTestSuite.cs" />
-    <Compile Include="PlayFabSDK\WsaReflectionExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

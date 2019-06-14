@@ -83,8 +83,8 @@ public class GameplayController : MonoBehaviour
         foreach (var encounter in PF_GamePlay.encounters)
         {
             tracker.ItemsFound.AddRange(encounter.Data.Rewards.ItemsDropped);
-            tracker.XpCollected += encounter.Data.Rewards.XpMin;
-            tracker.GoldCollected += encounter.Data.Rewards.GoldMin;
+            tracker.XpCollected += Random.Range(encounter.Data.Rewards.XpMin, encounter.Data.Rewards.XpMax);
+            tracker.GoldCollected += Random.Range(encounter.Data.Rewards.GoldMin, encounter.Data.Rewards.GoldMax);
 
             if (encounter.Data.EncounterType == EncounterTypes.Hero)
                 tracker.HeroRescues++;

@@ -1,0 +1,14 @@
+    auto launchArgs = std::wstring(e->Arguments->Data());
+    if (launchArgs.find(L"{\"appcenter\":{") == 0)
+    {
+        GUID guid;
+        CoCreateGuid(&guid);
+        std::wstring guidString = std::to_wstring(guid.Data1) + std::to_wstring(guid.Data2) + std::to_wstring(guid.Data3);
+        for (int i = 0; i < 8; ++i)
+        {
+            guidString += std::to_wstring(guid.Data4[i]);
+        }
+        launchArgs = launchArgs.substr(0, launchArgs.length() - 1) + L", \"appcenterunity\":\"" + guidString + L"\"}";
+    }
+    Platform::String ^launchArgsPlatformString = ref new Platform::String(launchArgs.data());
+    InitializeUnity(launchArgsPlatformString);

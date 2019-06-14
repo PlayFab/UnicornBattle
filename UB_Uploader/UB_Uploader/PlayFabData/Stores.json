@@ -81,7 +81,7 @@
     ],
     "MarketingData": {
       "DisplayName": "Gem Store",
-      "Description": "Valentines Day special store.",
+      "Description": "Basic gem shop.",
     }
   },
   {
@@ -113,8 +113,8 @@
       }
     ],
     "MarketingData": {
-      "DisplayName": "Gem Store",
-      "Description": "Valentines Day special store.",
+      "DisplayName": "Expert Gem Store",
+      "Description": "Gem store for expert players.",
     }
   },
   {
@@ -152,8 +152,8 @@
       }
     ],
     "MarketingData": {
-      "DisplayName": "Gem Store",
-      "Description": "Valentines Day special store.",
+      "DisplayName": "VIP Gem Store",
+      "Description": "Elite level gem store.",
     }
   },
   {

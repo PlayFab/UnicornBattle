@@ -107,6 +107,28 @@ public class UploadToPlayFabContentService : MonoBehaviour
         StartCoroutine(GetDownloadEndpoints(assets, callback));
     }
 
+    public void KickOffStreamingAssetsGet(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
+    {
+        var path = Application.streamingAssetsPath;
+        var keyPrefix = string.Empty;
+        foreach (var asset in assets)
+        {
+            switch (asset.BundlePlatform)
+            {
+                case AssetBundleHelperObject.BundleTypes.Android:
+                    keyPrefix = "Android/";
+                    break;
+                case AssetBundleHelperObject.BundleTypes.iOS:
+                    keyPrefix = "iOS/";
+                    break;
+            }
+            asset.GetUrl = string.Format("file://{0}/{1}{2}", path, keyPrefix, asset.ContentKey);
+            Debug.LogWarningFormat("Get At: {0}",asset.GetUrl);
+        }
+        StartCoroutine(GetAssetPackages(assets, callback));
+    }
+
+    
     public IEnumerator GetDownloadEndpoints(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
     {
         var endTime = Time.time + 30.0f;

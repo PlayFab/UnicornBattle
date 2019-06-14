@@ -1,0 +1,100 @@
+[
+  {
+    "StoreId": "events",
+    "Store": [
+      {
+        "ItemId": "gemStore",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      },
+      {
+        "ItemId": "egdc",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      }
+    ],
+    "SegmentOverrides": [
+      {
+        "StoreId": "special_events",
+        "SegmentId": "CDEE8ED3816DEB56"
+      },
+      {
+        "StoreId": "lvl10_events",
+        "SegmentId": "F9DA30BC639CF4F3"
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": null,
+      "Description": null,
+      "Metadata": ""
+    }
+  },
+  {
+    "StoreId": "lvl10_events",
+    "Store": [
+      {
+        "ItemId": "egdc",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      },
+      {
+        "ItemId": "epresident",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      },
+      {
+        "ItemId": "gemStore",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      }
+    ],
+    "SegmentOverrides": [],
+    "MarketingData": {
+      "DisplayName": null,
+      "Description": null,
+      "Metadata": ""
+    }
+  },
+  {
+    "StoreId": "special_events",
+    "Store": [
+      {
+        "ItemId": "evalentine",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      },
+      {
+        "ItemId": "gemStore",
+        "VirtualCurrencyPrices": {
+          "AU": 1
+        },
+        "CustomData": "",
+        "DisplayPosition": null
+      }
+    ],
+    "SegmentOverrides": [],
+    "MarketingData": {
+      "DisplayName": null,
+      "Description": null,
+      "Metadata": ""
+    }
+  }
+]
