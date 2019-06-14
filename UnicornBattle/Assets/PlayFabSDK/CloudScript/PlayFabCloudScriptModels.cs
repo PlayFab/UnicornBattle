@@ -16,7 +16,7 @@ namespace PlayFab.CloudScriptModels
     /// Combined entity type and ID structure which uniquely identifies a single entity.
     /// </summary>
     [Serializable]
-    public class EntityKey : PlayFabBaseModel
+    public class EntityKey
     {
         /// <summary>
         /// Unique ID of the entity.
@@ -115,7 +115,7 @@ namespace PlayFab.CloudScriptModels
     }
 
     [Serializable]
-    public class LogStatement : PlayFabBaseModel
+    public class LogStatement
     {
         /// <summary>
         /// Optional object accompanying the message as contextual information
@@ -129,7 +129,7 @@ namespace PlayFab.CloudScriptModels
     }
 
     [Serializable]
-    public class ScriptExecutionError : PlayFabBaseModel
+    public class ScriptExecutionError
     {
         /// <summary>
         /// Error code, such as CloudScriptNotFound, JavascriptException, CloudScriptFunctionArgumentSizeExceeded,

@@ -1,4 +1,3 @@
-#if !UNITY_2018_2_OR_NEWER // Unity has deprecated Www
 using System;
 using System.Collections;
 using System.IO;
@@ -16,10 +15,12 @@ using Ionic.Zlib;
 
 namespace PlayFab.Internal
 {
-    public class PlayFabWww : ITransportPlugin
+    public class PlayFabWww : IPlayFabTransportPlugin
     {
         private bool _isInitialized = false;
         private int _pendingWwwMessages = 0;
+        public string AuthKey { get; set; }
+        public string EntityToken { get; set; }
 
         public bool IsInitialized { get { return _isInitialized; } }
 
@@ -78,7 +79,7 @@ namespace PlayFab.Internal
 #endif
 
 #if !UNITY_WEBGL
-                while (request.uploadProgress < 1 || request.downloadProgress < 1)
+                while (request.uploadProgress < 1 && request.downloadProgress < 1)
                 {
                     yield return 1;
                 }
@@ -144,9 +145,9 @@ namespace PlayFab.Internal
                         reqContainer.ApiResult.Request = reqContainer.ApiRequest;
                         reqContainer.ApiResult.CustomData = reqContainer.CustomData;
 
-                        PlayFabHttp.instance.OnPlayFabApiResult(reqContainer);
+                        PlayFabHttp.instance.OnPlayFabApiResult(reqContainer.ApiResult);
 #if !DISABLE_PLAYFABCLIENT_API
-                        PlayFabDeviceUtil.OnPlayFabLogin(reqContainer.ApiResult, reqContainer.settings, reqContainer.instanceApi);
+                        PlayFabDeviceUtil.OnPlayFabLogin(reqContainer.ApiResult);
 #endif
 
                         try
@@ -263,4 +264,3 @@ namespace PlayFab.Internal
         }
     }
 }
-#endif

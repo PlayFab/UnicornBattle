@@ -1,5 +1,3 @@
-using PlayFab.Internal;
-
 namespace PlayFab.SharedModels
 {
     public class HttpResponseObject
@@ -9,36 +7,19 @@ namespace PlayFab.SharedModels
         public object data;
     }
 
-    public class PlayFabBaseModel
-    {
-        public string ToJson()
-        {
-            var json = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
-            return json.SerializeObject(this);
-        }
-    }
-
-    public interface IPlayFabInstanceApi { }
-
-    public class PlayFabRequestCommon : PlayFabBaseModel
+    public class PlayFabRequestCommon
     {
         public PlayFabAuthenticationContext AuthenticationContext;
     }
 
-    public class PlayFabResultCommon : PlayFabBaseModel
+    public class PlayFabResultCommon
     {
         public PlayFabRequestCommon Request;
         public object CustomData;
     }
-
+    
     public class PlayFabLoginResultCommon : PlayFabResultCommon
     {
         public PlayFabAuthenticationContext AuthenticationContext;
-    }
-
-    public class PlayFabResult<TResult> where TResult : PlayFabResultCommon
-    {
-        public TResult Result;
-        public object CustomData;
     }
 }

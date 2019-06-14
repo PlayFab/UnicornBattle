@@ -11,45 +11,36 @@ namespace PlayFab.Internal
         private static bool _needsAttribution, _gatherDeviceInfo, _gatherScreenTime;
 
         #region Make Attribution API call
-        private static void DoAttributeInstall(PlayFabApiSettings settings, IPlayFabInstanceApi instanceApi)
+        private static void DoAttributeInstall()
         {
-            if (!_needsAttribution || settings.DisableAdvertising)
+            if (!_needsAttribution || PlayFabSettings.DisableAdvertising)
                 return; // Don't send this value to PlayFab if it's not required
             var attribRequest = new ClientModels.AttributeInstallRequest();
-            switch (settings.AdvertisingIdType)
+            switch (PlayFabSettings.AdvertisingIdType)
             {
-                case PlayFabSettings.AD_TYPE_ANDROID_ID: attribRequest.Adid = settings.AdvertisingIdValue; break;
-                case PlayFabSettings.AD_TYPE_IDFA: attribRequest.Idfa = settings.AdvertisingIdValue; break;
+                case PlayFabSettings.AD_TYPE_ANDROID_ID: attribRequest.Adid = PlayFabSettings.AdvertisingIdValue; break;
+                case PlayFabSettings.AD_TYPE_IDFA: attribRequest.Idfa = PlayFabSettings.AdvertisingIdValue; break;
             }
-            var clientInstanceApi = instanceApi as PlayFabClientInstanceAPI;
-            if (clientInstanceApi != null)
-                clientInstanceApi.AttributeInstall(attribRequest, OnAttributeInstall, null, settings);
-            else
-                PlayFabClientAPI.AttributeInstall(attribRequest, OnAttributeInstall, null, settings);
+            PlayFabClientAPI.AttributeInstall(attribRequest, OnAttributeInstall, null);
         }
         private static void OnAttributeInstall(ClientModels.AttributeInstallResult result)
         {
-            var settings = (PlayFabApiSettings)result.CustomData;
             // This is for internal testing.
-            settings.AdvertisingIdType += "_Successful";
+            PlayFabSettings.AdvertisingIdType += "_Successful";
         }
         #endregion Make Attribution API call
 
         #region Scrape Device Info
-        private static void SendDeviceInfoToPlayFab(PlayFabApiSettings settings, IPlayFabInstanceApi instanceApi)
+        private static void SendDeviceInfoToPlayFab()
         {
-            if (settings.DisableDeviceInfo || !_gatherDeviceInfo) return;
+            if (PlayFabSettings.DisableDeviceInfo || !_gatherDeviceInfo) return;
 
             var serializer = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
             var request = new ClientModels.DeviceInfoRequest
             {
                 Info = serializer.DeserializeObject<Dictionary<string, object>>(serializer.SerializeObject(new PlayFabDataGatherer()))
             };
-            var clientInstanceApi = instanceApi as PlayFabClientInstanceAPI;
-            if (clientInstanceApi != null)
-                clientInstanceApi.ReportDeviceInfo(request, null, OnGatherFail, settings);
-            else
-                PlayFabClientAPI.ReportDeviceInfo(request, null, OnGatherFail, settings);
+            PlayFabClientAPI.ReportDeviceInfo(request, null, OnGatherFail);
         }
         private static void OnGatherFail(PlayFabError error)
         {
@@ -62,7 +53,7 @@ namespace PlayFab.Internal
         ///   relay it to _OnPlayFabLogin where the information is used
         /// </summary>
         /// <param name="result"></param>
-        public static void OnPlayFabLogin(PlayFabResultCommon result, PlayFabApiSettings settings, IPlayFabInstanceApi instanceApi)
+        public static void OnPlayFabLogin(PlayFabResultCommon result)
         {
             var loginResult = result as ClientModels.LoginResult;
             var registerResult = result as ClientModels.RegisterPlayFabUserResult;
@@ -96,7 +87,7 @@ namespace PlayFab.Internal
                 }
             }
 
-            _OnPlayFabLogin(settingsForUser, playFabId, entityId, entityType, settings, instanceApi);
+            _OnPlayFabLogin(settingsForUser, playFabId, entityId, entityType);
         }
 
         /// <summary>
@@ -104,7 +95,7 @@ namespace PlayFab.Internal
         ///   only one will be defined, but both usually have all the information we REALLY need here.
         /// But the result signatures are different and clunky, so do the separation above, and processing here
         /// </summary>
-        private static void _OnPlayFabLogin(ClientModels.UserSettings settingsForUser, string playFabId, string entityId, string entityType, PlayFabApiSettings settings, IPlayFabInstanceApi instanceApi)
+        private static void _OnPlayFabLogin(ClientModels.UserSettings settingsForUser, string playFabId, string entityId, string entityType)
         {
             _needsAttribution = _gatherDeviceInfo = _gatherScreenTime = false;
             if (settingsForUser != null)
@@ -115,13 +106,13 @@ namespace PlayFab.Internal
             }
 
             // Device attribution (adid or idfa)
-            if (settings.AdvertisingIdType != null && settings.AdvertisingIdValue != null)
-                DoAttributeInstall(settings, instanceApi);
+            if (PlayFabSettings.AdvertisingIdType != null && PlayFabSettings.AdvertisingIdValue != null)
+                DoAttributeInstall();
             else
-                GetAdvertIdFromUnity(settings, instanceApi);
+                GetAdvertIdFromUnity();
 
             // Device information gathering
-            SendDeviceInfoToPlayFab(settings, instanceApi);
+            SendDeviceInfoToPlayFab();
 
 #if !DISABLE_PLAYFABENTITY_API
             if (!string.IsNullOrEmpty(entityId) && !string.IsNullOrEmpty(entityType) && _gatherScreenTime)
@@ -130,27 +121,27 @@ namespace PlayFab.Internal
             }
             else
             {
-                settings.DisableFocusTimeCollection = true;
+                PlayFabSettings.DisableFocusTimeCollection = true;
             }
 #endif
         }
 
-        private static void GetAdvertIdFromUnity(PlayFabApiSettings settings, IPlayFabInstanceApi instanceApi)
+        private static void GetAdvertIdFromUnity()
         {
 #if UNITY_5_3_OR_NEWER && (UNITY_ANDROID || UNITY_IOS) && (!UNITY_EDITOR || TESTING)
             Application.RequestAdvertisingIdentifierAsync(
                 (advertisingId, trackingEnabled, error) =>
                 {
-                    settings.DisableAdvertising = !trackingEnabled;
+                    PlayFabSettings.DisableAdvertising = !trackingEnabled;
                     if (!trackingEnabled)
                         return;
 #if UNITY_ANDROID
-                    settings.AdvertisingIdType = PlayFabSettings.AD_TYPE_ANDROID_ID;
+                    PlayFabSettings.AdvertisingIdType = PlayFabSettings.AD_TYPE_ANDROID_ID;
 #elif UNITY_IOS
-                    settings.AdvertisingIdType = PlayFabSettings.AD_TYPE_IDFA;
+                    PlayFabSettings.AdvertisingIdType = PlayFabSettings.AD_TYPE_IDFA;
 #endif
-                    settings.AdvertisingIdValue = advertisingId;
-                    DoAttributeInstall(settings, instanceApi);
+                    PlayFabSettings.AdvertisingIdValue = advertisingId;
+                    DoAttributeInstall();
                 }
             );
 #endif

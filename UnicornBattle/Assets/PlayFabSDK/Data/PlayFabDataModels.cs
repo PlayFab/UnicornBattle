@@ -77,7 +77,7 @@ namespace PlayFab.DataModels
     /// Combined entity type and ID structure which uniquely identifies a single entity.
     /// </summary>
     [Serializable]
-    public class EntityKey : PlayFabBaseModel
+    public class EntityKey
     {
         /// <summary>
         /// Unique ID of the entity.
@@ -124,7 +124,7 @@ namespace PlayFab.DataModels
     }
 
     [Serializable]
-    public class GetFileMetadata : PlayFabBaseModel
+    public class GetFileMetadata
     {
         /// <summary>
         /// Checksum value for the file
@@ -214,7 +214,7 @@ namespace PlayFab.DataModels
     }
 
     [Serializable]
-    public class InitiateFileUploadMetadata : PlayFabBaseModel
+    public class InitiateFileUploadMetadata
     {
         /// <summary>
         /// Name of the file.
@@ -266,7 +266,7 @@ namespace PlayFab.DataModels
     }
 
     [Serializable]
-    public class ObjectResult : PlayFabBaseModel
+    public class ObjectResult : PlayFabResultCommon
     {
         /// <summary>
         /// Un-escaped JSON object, if EscapeObject false or default.
@@ -291,7 +291,7 @@ namespace PlayFab.DataModels
     }
 
     [Serializable]
-    public class SetObject : PlayFabBaseModel
+    public class SetObject
     {
         /// <summary>
         /// Body of the object to be saved. If empty and DeleteObject is true object will be deleted if it exists, or no operation
@@ -314,7 +314,7 @@ namespace PlayFab.DataModels
     }
 
     [Serializable]
-    public class SetObjectInfo : PlayFabBaseModel
+    public class SetObjectInfo
     {
         /// <summary>
         /// Name of the object

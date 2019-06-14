@@ -15,7 +15,7 @@ namespace PlayFab.ProfilesModels
     /// An entity object and its associated meta data.
     /// </summary>
     [Serializable]
-    public class EntityDataObject : PlayFabBaseModel
+    public class EntityDataObject
     {
         /// <summary>
         /// Un-escaped JSON object, if DataAsObject is true.
@@ -35,7 +35,7 @@ namespace PlayFab.ProfilesModels
     /// Combined entity type and ID structure which uniquely identifies a single entity.
     /// </summary>
     [Serializable]
-    public class EntityKey : PlayFabBaseModel
+    public class EntityKey
     {
         /// <summary>
         /// Unique ID of the entity.
@@ -48,7 +48,7 @@ namespace PlayFab.ProfilesModels
     }
 
     [Serializable]
-    public class EntityLineage : PlayFabBaseModel
+    public class EntityLineage
     {
         /// <summary>
         /// The Character Id of the associated entity.
@@ -77,7 +77,7 @@ namespace PlayFab.ProfilesModels
     }
 
     [Serializable]
-    public class EntityPermissionStatement : PlayFabBaseModel
+    public class EntityPermissionStatement
     {
         /// <summary>
         /// The action this statement effects. May be 'Read', 'Write' or '*' for both read and write.
@@ -106,12 +106,8 @@ namespace PlayFab.ProfilesModels
     }
 
     [Serializable]
-    public class EntityProfileBody : PlayFabBaseModel
+    public class EntityProfileBody
     {
-        /// <summary>
-        /// Avatar URL for the entity.
-        /// </summary>
-        public string AvatarUrl;
         /// <summary>
         /// The creation time of this profile in UTC.
         /// </summary>
@@ -151,10 +147,6 @@ namespace PlayFab.ProfilesModels
         /// </summary>
         public List<EntityPermissionStatement> Permissions;
         /// <summary>
-        /// The statistics on this profile.
-        /// </summary>
-        public Dictionary<string,EntityStatisticValue> Statistics;
-        /// <summary>
         /// The version number of the profile in persistent storage at the time of the read. Used for optional optimistic
         /// concurrency during update.
         /// </summary>
@@ -165,7 +157,7 @@ namespace PlayFab.ProfilesModels
     /// An entity file's meta data. To get a download URL call File/GetFiles API.
     /// </summary>
     [Serializable]
-    public class EntityProfileFileMetadata : PlayFabBaseModel
+    public class EntityProfileFileMetadata
     {
         /// <summary>
         /// Checksum value for the file
@@ -183,48 +175,6 @@ namespace PlayFab.ProfilesModels
         /// Storage service's reported byte count
         /// </summary>
         public int Size;
-    }
-
-    [Serializable]
-    public class EntityStatisticChildValue : PlayFabBaseModel
-    {
-        /// <summary>
-        /// Child name value, if child statistic
-        /// </summary>
-        public string ChildName;
-        /// <summary>
-        /// Child statistic metadata
-        /// </summary>
-        public string Metadata;
-        /// <summary>
-        /// Child statistic value
-        /// </summary>
-        public int Value;
-    }
-
-    [Serializable]
-    public class EntityStatisticValue : PlayFabBaseModel
-    {
-        /// <summary>
-        /// Child statistic values
-        /// </summary>
-        public Dictionary<string,EntityStatisticChildValue> ChildStatistics;
-        /// <summary>
-        /// Statistic metadata
-        /// </summary>
-        public string Metadata;
-        /// <summary>
-        /// Statistic name
-        /// </summary>
-        public string Name;
-        /// <summary>
-        /// Statistic value
-        /// </summary>
-        public int? Value;
-        /// <summary>
-        /// Statistic version
-        /// </summary>
-        public int Version;
     }
 
     /// <summary>
@@ -356,7 +306,7 @@ namespace PlayFab.ProfilesModels
     }
 
     /// <summary>
-    /// Given an entity profile, will update its language to the one passed in if the profile's version is equal to the one
+    /// Given an entity profile, will update its language to the one passed in if the profile's version is at least the one
     /// passed in.
     /// </summary>
     [Serializable]
