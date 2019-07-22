@@ -1,0 +1,141 @@
+{
+  "CatalogVersion": "Events",
+  "Catalog": [
+    {
+      "ItemId": "e100",
+      "ItemClass": "LaunchParty",
+      "CatalogVersion": "Events",
+      "DisplayName": "The Launch Party",
+      "Description": "Play exclusive quests that are only available during the first two weeks after launch plus enjoy access to The Developer's Store.",
+      "VirtualCurrencyPrices": {
+        "AU": 1
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": "s100",
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "egdc",
+      "ItemClass": null,
+      "CatalogVersion": "Events",
+      "DisplayName": "GDC 2019",
+      "Description": "Special stores and levels only available during GDC 2019.",
+      "VirtualCurrencyPrices": {
+        "AU": 1
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": "egdc",
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "epresident",
+      "ItemClass": "Presidents Day Store",
+      "CatalogVersion": "Events",
+      "DisplayName": "President's Day",
+      "Description": "Special deals celebrating our best leaders!",
+      "VirtualCurrencyPrices": {
+        "AU": 1
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": "epresident",
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "evalentine",
+      "ItemClass": "",
+      "CatalogVersion": "Events",
+      "DisplayName": "Valentine's Day",
+      "Description": "Special quests to enjoy with a loved one.",
+      "VirtualCurrencyPrices": {
+        "AU": 1
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": "evalentine",
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "gemStore",
+      "ItemClass": "Gem Store",
+      "CatalogVersion": "Events",
+      "DisplayName": "Gem Store",
+      "Description": "Buy gems to spend in game!",
+      "VirtualCurrencyPrices": {
+        "AU": 1
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": "gm100",
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    }
+  ],
+  "DropTables": []
+}
