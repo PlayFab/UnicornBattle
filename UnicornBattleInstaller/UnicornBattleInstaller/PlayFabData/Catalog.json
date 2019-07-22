@@ -1,0 +1,799 @@
+{
+  "CatalogVersion": "CharacterClasses",
+  "Catalog": [
+    {
+      "ItemId": "Bucephelous",
+      "ItemClass": "CharacterToken",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Bucephelous Class Token",
+      "Description": null,
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 3600,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": null,
+        "ResultTableContents": null,
+        "VirtualCurrencyContents": null
+      },
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "Nightmare",
+      "ItemClass": "CharacterToken",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Nightmare Class Token",
+      "Description": null,
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": "null",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 3600,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": true,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "ExtraCharacterSlot",
+      "ItemClass": "CharacterSlot",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Extra Character Slot",
+      "Description": "Adds the ability to save one extra character slot to your account. ",
+      "VirtualCurrencyPrices": {
+        "GM": 5
+      },
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": "{\"icon\":\"DarkStone_Lock\"}",
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "PegaZeus",
+      "ItemClass": "ClassToken",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "PegaZeus Class Token",
+      "Description": null,
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": "null",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 3600,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": true,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "CrystalContainer",
+      "ItemClass": "Container",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Crystal Container",
+      "Description": "The crystallized, ectoplasmic remains from vanquished shadow enemies. Container is consumed when opened.",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"usableInBattle\":\"false\",\"icon\":\"WhiteChest\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": "CrystalKey",
+        "ItemContents": [],
+        "ResultTableContents": [
+          "DT_CrystalContainer"
+        ],
+        "VirtualCurrencyContents": {
+          "AU": 200
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": true,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "CrystalKey",
+      "ItemClass": "Key",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Crystal Key",
+      "Description": "Opens Crystal Containers. Key is consumed when used.",
+      "VirtualCurrencyPrices": {
+        "AU": 200
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"usableInCombat\":\"false\",\"icon\":\"WhiteKey\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": true,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "NilLoot",
+      "ItemClass": "EmptyContainer",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Empty Wallet",
+      "Description": "An empty wallet....Probably should just get rid of this.",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"usableInCombat\":\"false\",\"icon\":\"RedJack\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 90,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "AU": 1
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": true,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "SmallPileOGold",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Small Pile O' Gold",
+      "Description": "A small pile of gold (2500g).",
+      "VirtualCurrencyPrices": {
+        "GM": 5
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"CoinStackSmall\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "AU": 2500
+        }
+      },
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "ExtraHearts3",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Three Extra Hearts",
+      "Description": "Gives a character three (3) extra lives. ",
+      "VirtualCurrencyPrices": {
+        "GM": 1
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"usableInCombat\":\"false\",\"icon\":\"DarkStone_Heart\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "HT": 3
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "UnicornRescueBundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Unicorn Rescue Bundle",
+      "Description": "Given to you by a freed unicorn.",
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"usableInCombat\":\"false\",\"icon\":\"WhiteChest\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "GM": 1
+        }
+      },
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "MediumHealthPotion",
+      "ItemClass": "UsableInCombat",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Medium Health Potion",
+      "Description": "Restores a medium portion of life.\nThree (3) uses.",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"SingleRedPotion\",\"\":\"\"}",
+      "Consumable": {
+        "UsageCount": 3,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": true,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "ExtraHearts5",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Five Extra Hearts",
+      "Description": "Gives a character five (5) extra lives. ",
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"DarkStone_Heart\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "HT": 5
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "MediumPileOGold",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Medium Pile O' Gold",
+      "Description": "A small pile of gold (5000g).",
+      "VirtualCurrencyPrices": {
+        "GM": 10
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"CoinStackMed\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "AU": 5000
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "small_gem_bundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Small Gem Bundle (5 gems)",
+      "Description": "A small sack, containing several (5) gems.",
+      "VirtualCurrencyPrices": {
+        "RM": 99
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"YellowGem\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 5,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "GM": 5
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "large_gem_bundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Large Gem Bundle (30 gems)",
+      "Description": "A large sack, containing several (30) gems.",
+      "VirtualCurrencyPrices": {
+        "RM": 499
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"PurpleGem\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 5,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "GM": 30
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "medium_gem_bundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Medium Gem Bundle (17 gems)",
+      "Description": "A medium sack, containing several (17) gems",
+      "VirtualCurrencyPrices": {
+        "RM": 299
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"GreenGem\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 5,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "GM": 17
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "LargeHealthPotion",
+      "ItemClass": "UsableInCombat",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Large Health Potion",
+      "Description": "Open Wide!",
+      "VirtualCurrencyPrices": {
+        "AU": 1500
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"SingleRainbowPotion\",\"HealthBonus\":\"200\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": true,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "LargePileOGold",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Large Pile O' Gold",
+      "Description": "A chest of 10,000 gold coins.",
+      "VirtualCurrencyPrices": {
+        "GM": 18
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"CoinStackLarge\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "AU": 10000
+        }
+      },
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "SmallHealthPotion",
+      "ItemClass": "UsableInCombat",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Alfalfa Juice",
+      "Description": "Tried and true, Alfalfa Juice! Never leave the stable without some.\n\nRestores a small portion of health to the target.",
+      "VirtualCurrencyPrices": {
+        "AU": 400
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"SingleGreenPotion\",\"minLevel\":\"1\",\"usableInBattle\":\"true\",\"modifies\":\"HP\",\"modifyPercent\":\".25\",\"target\":\"self\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": true,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "CAMPAIGN_ID",
+      "ItemClass": "OfferContainer",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Promotional Rewards",
+      "Description": "Congratulations on trying out Unicorn Battle",
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": null,
+      "Tags": [
+        "SingleUse"
+      ],
+      "CustomData": "{\"icon\":\"RoyalChest\",\"appliesTo\":\"player\",\"itemAwarded\":\"small_gem_bundle\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "TestingContainer_001",
+      "ItemClass": null,
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "BrokenContainer",
+      "Description": "BrokenContainer for testing purposes only. ",
+      "VirtualCurrencyPrices": null,
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "null",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 1,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [
+          "CAMPAIGN_ID"
+        ],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": null
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "extralarge_gem_bundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Extra Large Gem Bundle (65 gems)",
+      "Description": "A case, containing several (65) gems.",
+      "VirtualCurrencyPrices": {
+        "RM": 999
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"BlueGem\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 5,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "GM": 65
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "mega_gem_bundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Mega Gem Bundle (350 gems)",
+      "Description": "A bucket, containing several (350) gems.",
+      "VirtualCurrencyPrices": {
+        "RM": 4999
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"RedGem\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 5,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "GM": 350
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "epic_gem_bundle",
+      "ItemClass": "CurrencyBundle",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Epic Gem Bundle (750 gems)",
+      "Description": "A chest, containing several (750) gems.",
+      "VirtualCurrencyPrices": {
+        "RM": 9999
+      },
+      "RealCurrencyPrices": null,
+      "Tags": [],
+      "CustomData": "{\"icon\":\"WhiteGem\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": 5,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "GM": 750
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "adContainer_01",
+      "ItemClass": "Offer",
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Special Bonus!",
+      "Description": "Granted after watching an in-game ad. What's inside? Open to find out!",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": null,
+      "Tags": [
+        "ad_reward"
+      ],
+      "CustomData": "{\"icon\":\"RoyalChest\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "GM": 3
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    },
+    {
+      "ItemId": "KeyReward",
+      "ItemClass": null,
+      "CatalogVersion": "CharacterClasses",
+      "DisplayName": "Gift of Keys",
+      "Description": "The chest rattles when you shake it...",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": null,
+      "Tags": [
+        "ad_reward"
+      ],
+      "CustomData": "{\"icon\":\"BlackChest\"}",
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [
+          "CrystalKey"
+        ],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": null
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0
+    }
+  ]
+}

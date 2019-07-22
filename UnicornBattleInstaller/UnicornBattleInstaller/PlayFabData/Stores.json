@@ -1,0 +1,321 @@
+[
+  {
+    "StoreId": "Character Slot Store",
+    "Store": [
+      {
+        "ItemId": "ExtraCharacterSlot",
+        "VirtualCurrencyPrices": {
+          "GM": 5,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Character Slot Store",
+      "Description": "Buy additional character slots!",
+    }
+  },
+  {
+    "StoreId": "ExtraHeartsStore",
+    "Store": [
+      {
+        "ItemId": "ExtraHearts3",
+        "VirtualCurrencyPrices": {
+          "GM": 1,
+        },
+      },
+      {
+        "ItemId": "small_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 99
+        },
+      },
+      {
+        "ItemId": "SmallHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 400,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Extra Heart Store",
+      "Description": "Hearts and Gems available!",
+    }
+  },
+  {
+    "StoreId": "Gem Store",
+    "Store": [
+      {
+        "ItemId": "small_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 99
+        },
+      },
+      {
+        "ItemId": "medium_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 299
+        },
+      },
+      {
+        "ItemId": "large_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 499
+        },
+      },
+      {
+        "ItemId": "extralarge_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 999
+        },
+      }
+    ],
+    "SegmentOverrides": [
+      {
+        "StoreId": "Gem Store MN",
+        "SegmentId": "24627944E6C1C3E"
+      },
+      {
+        "StoreId": "Gem Store WH",
+        "SegmentId": "5B781614CB760A19"
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Gem Store",
+      "Description": "Basic gem shop.",
+    }
+  },
+  {
+    "StoreId": "Gem Store MN",
+    "Store": [
+      {
+        "ItemId": "medium_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 299
+        },
+      },
+      {
+        "ItemId": "large_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 499
+        },
+      },
+      {
+        "ItemId": "extralarge_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 999
+        },
+      },
+      {
+        "ItemId": "mega_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 4999
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Expert Gem Store",
+      "Description": "Gem store for expert players.",
+    }
+  },
+  {
+    "StoreId": "Gem Store WH",
+    "Store": [
+      {
+        "ItemId": "mega_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "AU": 0,
+          "GM": 0,
+          "HT": 0,
+          "RM": 4999
+        },
+      },
+      {
+        "ItemId": "epic_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "AU": 0,
+          "GM": 0,
+          "HT": 0,
+          "RM": 9999
+        },
+      },
+      {
+        "ItemId": "medium_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 299
+        },
+      },
+      {
+        "ItemId": "extralarge_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 999
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "VIP Gem Store",
+      "Description": "Elite level gem store.",
+    }
+  },
+  {
+    "StoreId": "Gold Store",
+    "Store": [
+      {
+        "ItemId": "SmallHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 400,
+        },
+      },
+      {
+        "ItemId": "CrystalKey",
+        "VirtualCurrencyPrices": {
+          "AU": 100,
+        },
+      },
+      {
+        "ItemId": "MediumHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 800,
+        },
+      },
+      {
+        "ItemId": "ExtraHearts3",
+        "VirtualCurrencyPrices": {
+          "AU": 10000,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Gold Store",
+      "Description": "Buy items with gold instead of gems.",
+    }
+  },
+  {
+    "StoreId": "Happy Hour",
+    "Store": [
+      {
+        "ItemId": "MediumHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 500,
+        },
+      },
+      {
+        "ItemId": "LargeHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 750,
+        },
+      },
+      {
+        "ItemId": "ExtraHearts3",
+        "VirtualCurrencyPrices": {
+          "GM": 3,
+        },
+      },
+      {
+        "ItemId": "SmallHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 200,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Happy Hour",
+      "Description": "Ish Poshion Time~!",
+    }
+  },
+  {
+    "StoreId": "LaunchParty",
+    "Store": [
+      {
+        "ItemId": "LargePileOGold",
+        "VirtualCurrencyPrices": {
+          "GM": 10,
+        },
+      },
+      {
+        "ItemId": "MediumPileOGold",
+        "VirtualCurrencyPrices": {
+          "GM": 5,
+        },
+      },
+      {
+        "ItemId": "CrystalKey",
+        "VirtualCurrencyPrices": {
+          "AU": 100,
+        },
+      },
+      {
+        "ItemId": "small_gem_bundle",
+        "VirtualCurrencyPrices": {
+          "RM": 49
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Launch Party",
+      "Description": "Launch Party event store.",
+    }
+  },
+  {
+    "StoreId": "Presidents Day Store",
+    "Store": [
+      {
+        "ItemId": "ExtraCharacterSlot",
+        "VirtualCurrencyPrices": {
+          "GM": 4,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Presidents Day Store",
+      "Description": "New character slots available on discount during Presidents day!",
+    }
+  },
+  {
+    "StoreId": "Profile Store",
+    "Store": [
+      {
+        "ItemId": "LargeHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 1000,
+        },
+      },
+      {
+        "ItemId": "CrystalKey",
+        "VirtualCurrencyPrices": {
+          "AU": 200,
+        },
+      },
+      {
+        "ItemId": "LargePileOGold",
+        "VirtualCurrencyPrices": {
+          "GM": 18,
+        },
+      },
+      {
+        "ItemId": "SmallHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 400,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Profile Store",
+      "Description": "A small store with some basic items",
+    }
+  },
+  {
+    "StoreId": "Traveling Merchant",
+    "Store": [
+      {
+        "ItemId": "SmallHealthPotion",
+        "VirtualCurrencyPrices": {
+          "AU": 400,
+        },
+      }
+    ],
+    "MarketingData": {
+      "DisplayName": "Traveling Merchant",
+      "Description": "Beggars can't be choosers...",
+    }
+  }
+]
