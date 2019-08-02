@@ -51,7 +51,9 @@ namespace PlayFab.Internal
         {
             if (payload == null)
             {
+                #pragma warning disable 0618
                 var www = new WWW(fullUrl);
+                #pragma warning restore 0618
                 yield return www;
                 if (!string.IsNullOrEmpty(www.error))
                     errorCallback(www.error);
@@ -120,7 +122,9 @@ namespace PlayFab.Internal
 #endif
 
             //Debug.LogFormat("Posting {0} to Url: {1}", req.Trim(), url);
+            #pragma warning disable 0618
             var www = new WWW(reqContainer.FullUrl, reqContainer.Payload, reqContainer.RequestHeaders);
+            #pragma warning restore 0618
 
 #if PLAYFAB_REQUEST_TIMING
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -208,6 +212,7 @@ namespace PlayFab.Internal
             PlayFabHttp.instance.StartCoroutine(PostPlayFabApiCall(www, wwwSuccessCallback, wwwErrorCallback));
         }
 
+        #pragma warning disable 0618
         private IEnumerator PostPlayFabApiCall(WWW www, Action<string> wwwSuccessCallback, Action<string> wwwErrorCallback)
         {
             yield return www;
@@ -257,7 +262,7 @@ namespace PlayFab.Internal
             }
             www.Dispose();
         }
-
+        #pragma warning restore 0618
         public int GetPendingMessages()
         {
             return _pendingWwwMessages;

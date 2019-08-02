@@ -8,13 +8,14 @@ using PlayFab.Sockets.Models;
 
 public class PF_PubSub
 {
+    #pragma warning disable 0067
     public delegate void PubSubMessageHandler(MessageFromServer msg);
     public static event PubSubMessageHandler OnMessageToPlayer;
     public static event PubSubMessageHandler OnMessageToAllPlayers;
-
     public static EntityKey currentEntity;
-
     private static bool isInitialized = false;
+
+    #pragma warning restore 0067
 
     public static void InitializePubSub()
     {

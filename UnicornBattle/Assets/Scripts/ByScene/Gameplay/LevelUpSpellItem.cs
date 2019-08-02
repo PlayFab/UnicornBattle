@@ -1,3 +1,5 @@
+using UnicornBattle.Controllers;
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,13 +18,13 @@ public class LevelUpSpellItem : MonoBehaviour
     public Button UpgradeButton;
 
     //public ChoseButton
-    private UB_SpellDetail baseSpell = null;
-    private UB_Spell spell = null;
+    private UBSpellDetail baseSpell = null;
+    private UBSpell spell = null;
 
-    public void LoadSpell(string sName, UB_SpellDetail sp, int lvl)
+    public void LoadSpell(string sName, UBSpellDetail sp, int lvl)
     {
         baseSpell = sp;
-        spell = new UB_Spell()
+        spell = new UBSpell()
         {
             SpellName = sName,
             Description = sp.Description,
@@ -42,7 +44,7 @@ public class LevelUpSpellItem : MonoBehaviour
             UpgradeSpell(lvl);
         spellUpgradeBar.LoadBar(lvl, sp.UpgradeLevels);
 
-        if (PF_PlayerData.activeCharacter.characterData.CharacterLevel < spell.LevelReq)
+        if (GameController.Instance.ActiveCharacter.characterData.CharacterLevel < spell.LevelReq)
         {
             unlockedLevel.text = "Unlocked at level: " + spell.LevelReq;
             lockedIcon.gameObject.SetActive(true);
@@ -58,14 +60,14 @@ public class LevelUpSpellItem : MonoBehaviour
 
         SpellName.text = spell.SpellName;
         Damage.text = "" + spell.Dmg;
-        UpgradeDamage.text = "" + Mathf.CeilToInt((1f + baseSpell.UpgradePower) * (float)spell.Dmg);
+        UpgradeDamage.text = "" + Mathf.CeilToInt((1f + baseSpell.UpgradePower) * (float) spell.Dmg);
     }
 
     void UpgradeSpell(int level)
     {
         for (int z = 0; z < level; z++)
         {
-            spell.Dmg = Mathf.CeilToInt((1f + baseSpell.UpgradePower) * (float)spell.Dmg);
+            spell.Dmg = Mathf.CeilToInt((1f + baseSpell.UpgradePower) * (float) spell.Dmg);
 
             if (spell.ApplyStatus != null)
             {

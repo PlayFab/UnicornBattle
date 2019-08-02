@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 using Microsoft.AppCenter.Unity.Crashes.Internal;
@@ -21,7 +20,7 @@ namespace Microsoft.AppCenter.Unity.Crashes
     public class Crashes
     {
         // Used by App Center Unity Editor Extensions: https://github.com/Microsoft/AppCenter-SDK-Unity-Extension
-        public const string CrashesSDKVersion = "1.4.0";
+        public const string CrashesSDKVersion = "2.2.0";
         private static bool _reportUnhandledExceptions = false;
         private static readonly object _objectLock = new object();
 

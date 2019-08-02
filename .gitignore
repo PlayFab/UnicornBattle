@@ -248,4 +248,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+# MISC
 UnicornPush/BuildPushLog.txt
+UnicornBattle/SwitchIL2CPPCache/
+UnicornBattle/SwitchIL2CPPStats/

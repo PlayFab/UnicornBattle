@@ -1,40 +1,50 @@
 using System.Collections.Generic;
+using UnicornBattle.Managers;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class StoreCurrencyBarController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public List<CurrencyDisplayItem> items = new List<CurrencyDisplayItem>();
-    public Transform CurrencyDisplayItemPrefab;
-    public Transform DisplayContainer;
-    public FloatingStoreController controller;
-
-    public void Init()
+    public class StoreCurrencyBarController : MonoBehaviour
     {
-        for (var i = 0; i < DisplayContainer.transform.childCount; i++)
+        public List<CurrencyDisplayItem> items = new List<CurrencyDisplayItem>();
+        public Transform CurrencyDisplayItemPrefab;
+        public Transform DisplayContainer;
+        public FloatingStoreController controller;
+
+        public void Init()
         {
-            var go = DisplayContainer.transform.GetChild(i);
-            Destroy(go.gameObject);
+            for (int i = 0; i < DisplayContainer.transform.childCount; i++)
+            {
+                var go = DisplayContainer.transform.GetChild(i);
+                Destroy(go.gameObject);
+            }
+
+            var l_inventoryMgr = MainManager.Instance.getInventoryManager();
+            if (null == l_inventoryMgr) return;
+
+            items.Clear();
+
+            for (int j = 0; j < controller.currenciesInUse.Count; j++)
+            {
+                string l_currencyName = controller.currenciesInUse[j];
+                displayVirtualCurrency(l_currencyName, l_inventoryMgr.GetCurrencyAmount(l_currencyName));
+            }
         }
 
-        items.Clear();
-        if (PF_PlayerData.virtualCurrency != null && PF_PlayerData.virtualCurrency.Count > 0)
-            for (var z = 0; z < controller.currenciesInUse.Count; z++)
-                DisplayVc(z, PF_PlayerData.virtualCurrency);
-    }
+        private void displayVirtualCurrency(string p_currencyName, int p_currencyAmount)
+        {
+            var l_cdiTransform = Instantiate(CurrencyDisplayItemPrefab);
+            l_cdiTransform.SetParent(DisplayContainer, false);
 
-    private void DisplayVc(int z, Dictionary<string, int> vcBalances)
-    {
-        var key = controller.currenciesInUse[z];
-        if (key == GlobalStrings.REAL_MONEY_CURRENCY)
-            return;
+            var l_cdi = l_cdiTransform.GetComponent<CurrencyDisplayItem>();
+            l_cdi.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(p_currencyName, IconManager.IconTypes.Misc);
 
-        var go = Instantiate(CurrencyDisplayItemPrefab);
-        go.SetParent(DisplayContainer, false);
-        var comp = go.GetComponent<CurrencyDisplayItem>();
-        comp.icon.overrideSprite = GameController.Instance.iconManager.GetIconById(key, IconManager.IconTypes.Misc);
-        int playerBalance;
-        vcBalances.TryGetValue(key, out playerBalance);
-        comp.value.text = string.Format("{0:n0}", playerBalance);
-        items.Add(comp);
+            l_cdi.value.text = string.Format("{0:n0}", p_currencyAmount);
+
+            l_cdiTransform.GetComponent<LayoutElement>().minWidth = 200f;
+
+            items.Add(l_cdi);
+        }
     }
 }

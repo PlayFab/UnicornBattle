@@ -1,261 +1,336 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AppCenter.Unity.Crashes;
+using UnicornBattle.Managers;
+using UnicornBattle.Managers.Auth;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Microsoft.AppCenter.Unity.Crashes;
 
-public class SettingsCanvasController : Singleton<SettingsCanvasController>
+namespace UnicornBattle.Controllers
 {
-    protected SettingsCanvasController() { } // guarantee this will be always a singleton only - can't use the constructor!
-
-    public Button openSettingsButton;
-    public Button closeSettingsButton;
-
-    public Transform menuOverlayPanel;
-    public bool showOpenCloseButton = true;
-
-    public string UBVersion = "v1.10.10";
-    public Text displayVersion;
-    public Text activeTitleId;
-
-    public enum SettingButtonTypes { none = 0, returnToCharacterSelect, leaveBattle, logout, accountSettings, setTitleId, communityPortal, redeemCoupon, triggerCrash }
-
-    public List<SettingsButtonDetails> settingsButtons = new List<SettingsButtonDetails>();
-    public List<SceneToSettingsMapping> settingsByScene = new List<SceneToSettingsMapping>();
-
-    void OnLevelLoad(Scene scene, LoadSceneMode mode)
-    {
-        UpdateSettingsMenuButtons();
-    }
-
-    public override void Awake()
-    {
-        base.Awake();
-        UpdateSettingsMenuButtons();
-    }
-
-    // Use this for initialization
-    void Start()
-    {
-        //CloseSettingsMenu();
-        this.displayVersion.text = this.UBVersion;
-        SettingsButtonDisplay(showOpenCloseButton);
-    }
-
-    void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnLevelLoad;
-    }
-
-    void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnLevelLoad;
-    }
-
-    public void OpenCommunityPortal()
-    {
-        if (string.IsNullOrEmpty(PF_GameData.CommunityWebsite))
+    public class SettingsCanvasController : Singleton<SettingsCanvasController>
         {
-            PF_Bridge.RaiseCallbackError("No URL was found for the Community Portal. Check TitleData.", PlayFabAPIMethods.Generic, MessageDisplayStyle.error);
-            return;
-        }
+            protected SettingsCanvasController() { } // guarantee this will be always a singleton only - can't use the constructor!
 
-        Application.OpenURL(PF_GameData.CommunityWebsite);
-    }
+            public RectTransform settingsButtonContainer;
+            public Button openSettingsButton;
+            public Button closeSettingsButton;
 
+            public GameObject menuOverlayPanel;
+            public bool showOpenCloseButton = true;
 
-    void UpdateSettingsMenuButtons()
-    {
-        var levelName = SceneManager.GetActiveScene().name;
-        var activeSettings = this.settingsByScene.Find((zz) => { return zz.sceneName.Contains(levelName); });
-        if (activeSettings != null)
-        {
-            foreach (var button in settingsButtons)
+            //public string UBVersion = "v1.10.10";
+            public Text displayVersion;
+            public Text activeTitleId;
+
+            public enum SettingButtonTypes { none = 0, returnToCharacterSelect, leaveBattle, logout, accountSettings, setTitleId, communityPortal, redeemCoupon, triggerCrash, returnToMainMenu }
+
+            public List<SettingsButtonDetails> settingsButtons = new List<SettingsButtonDetails>();
+            public List<SceneToSettingsMapping> settingsByScene = new List<SceneToSettingsMapping>();
+
+            public AuthenticationManager Authentication
             {
-                var sceneObject = activeSettings.buttons.Find((zz) => { return button.buttonType == zz; });
-                //Debug.Log(sceneObject.ToString());
-                if (sceneObject != SettingButtonTypes.none)
+                get { return MainManager.Instance.getAuthManager(); }
+            }
+
+            void OnLevelLoad(Scene scene, LoadSceneMode mode)
+            {
+                UpdateSettingsMenuButtons();
+            }
+
+            public override void Awake()
+            {
+                base.Awake();
+                UpdateSettingsMenuButtons();
+            }
+
+            // Use this for initialization
+            void Start()
+            {
+                //CloseSettingsMenu();
+                this.activeTitleId.text = PlayFab.PlayFabSettings.TitleId;
+                this.displayVersion.text = GlobalStrings.UB_VERSION;
+                SettingsButtonDisplay(showOpenCloseButton);
+            }
+
+            void OnEnable()
+            {
+                SceneManager.sceneLoaded += OnLevelLoad;
+            }
+
+            void OnDisable()
+            {
+                SceneManager.sceneLoaded -= OnLevelLoad;
+            }
+
+            public void OpenCommunityPortal()
+            {
+                var l_gameDataMgr = MainManager.Instance.getGameDataManager();
+                if (null == l_gameDataMgr) return;
+
+                if (string.IsNullOrEmpty(l_gameDataMgr.CommunityWebsite))
                 {
-                    button.prefab.gameObject.SetActive(true);
+                    PF_Bridge.RaiseCallbackError("No URL was found for the Community Portal. Check TitleData.", PlayFabAPIMethods.Generic);
+                    return;
+                }
+
+                Application.OpenURL(l_gameDataMgr.CommunityWebsite);
+            }
+
+            void UpdateSettingsMenuButtons()
+            {
+                var levelName = SceneManager.GetActiveScene().name;
+                var activeSettings = this.settingsByScene.Find((zz) => { return zz.sceneName.Contains(levelName); });
+                if (activeSettings != null)
+                {
+                    SettingsButtonDisplay(activeSettings.showOpenCloseButtons);
+                    foreach (var button in settingsButtons)
+                    {
+                        var sceneObject = activeSettings.buttons.Find((zz) => { return button.buttonType == zz; });
+                        //Debug.Log(sceneObject.ToString());
+                        if (sceneObject != SettingButtonTypes.none)
+                        {
+                            button.prefab.gameObject.SetActive(true);
+                        }
+                        else
+                        {
+                            button.prefab.gameObject.SetActive(false);
+                        }
+                    }
                 }
                 else
                 {
-                    button.prefab.gameObject.SetActive(false);
+                    Debug.LogWarning("Something went wrong, check the scene names mappings");
                 }
             }
-        }
-        else
-        {
-            Debug.LogWarning("Something went wrong, check the scene names mappings");
-        }
-    }
 
+            private bool isSettingsMenuAnimating;
+            private const float SETTINGS_MENU_DURATION = 0.5f;
 
-
-    public void OpenSettingsMenu()
-    {
-        // THIS BREAKS IF THE GO IS DISABLED!!!
-
-        //Tween.Tween(this.menuOverlayPanel.gameObject, .001f, Quaternion.Euler(0,0,0) , Quaternion.Euler(0,0,15f), TweenMain.Style.PingPong, TweenMain.Method.EaseIn, null);
-
-
-        //new Vector3(Screen.width/2, Screen.height/2, 0)
-        menuOverlayPanel.gameObject.SetActive(true);
-        TweenPos.Tween(this.menuOverlayPanel.gameObject, .001f, this.menuOverlayPanel.transform.position, new Vector3(0, Screen.height, 0), TweenMain.Style.Once, TweenMain.Method.Linear, null, Space.World);
-        TweenScale.Tween(this.menuOverlayPanel.gameObject, .001f, new Vector3(1, 1, 1), new Vector3(0, 0, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-
-        TweenPos.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(0, 0, 0), new Vector3(Screen.width / 2, Screen.height / 2, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null, Space.World);
-        TweenScale.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(0, 0, 0), new Vector3(1, 1, 1), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-
-        this.activeTitleId.text = PlayFab.PlayFabSettings.TitleId;
-
-        ToggleOpenCloseButtons();
-    }
-
-    // NEED TO MAKE THIS A COROUTINE
-    public void CloseSettingsMenu()
-    {
-        TweenPos.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(Screen.width / 2, Screen.height / 2, 0), new Vector3(0, 0, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null, Space.World);
-        TweenScale.Tween(this.menuOverlayPanel.gameObject, .5f, new Vector3(1, 1, 1), new Vector3(0, 0, 0), TweenMain.Style.Once, TweenMain.Method.EaseIn, null);
-
-        StartCoroutine(PF_GamePlay.Wait(.75f, () =>
-        {
-            menuOverlayPanel.gameObject.SetActive(false);
-            ToggleOpenCloseButtons();
-        }));
-    }
-
-    public void ToggleOpenCloseButtons()
-    {
-        if (this.showOpenCloseButton)
-        {
-            if (this.openSettingsButton.gameObject.activeSelf)
+            public void StartSettingsMenuAnimation(bool mode)
             {
-                this.openSettingsButton.gameObject.SetActive(false);
-                this.closeSettingsButton.gameObject.SetActive(true);
-            }
-            else
-            {
-                this.openSettingsButton.gameObject.SetActive(true);
-                this.closeSettingsButton.gameObject.SetActive(false);
-            }
-        }
-    }
+                if (isSettingsMenuAnimating) return;
 
-    void SettingsButtonDisplay(bool mode)
-    {
-        if (this.showOpenCloseButton && mode)
-        {
-            this.openSettingsButton.gameObject.SetActive(true);
-            this.closeSettingsButton.gameObject.SetActive(false);
-        }
-        else if (this.showOpenCloseButton)
-        {
-            this.openSettingsButton.gameObject.SetActive(true);
-            this.closeSettingsButton.gameObject.SetActive(false);
-        }
-    }
+                isSettingsMenuAnimating = true;
+                openSettingsButton.interactable = false;
+                closeSettingsButton.interactable = false;
 
-    public void ReturnToCharacterSelect()
-    {
-        PF_PlayerData.activeCharacter = null;
-        SceneController.Instance.ReturnToCharacterSelect();
-        CloseSettingsMenu();
-    }
+                var target = menuOverlayPanel;
+                var duration = SETTINGS_MENU_DURATION;
+                var topRight = new Vector3(Screen.width, Screen.height, 0);
+                var center = topRight / 2.0f;
+                var style = TweenMain.Style.Once;
+                var method = TweenMain.Method.EaseIn;
 
-    public void LeaveBattle()
-    {
-        Action<bool> processResponse = (bool response) =>
-        {
-            if (response)
-            {
-                Dictionary<string, object> eventData = new Dictionary<string, object>()
+                void Done()
                 {
-                    { "Current_Quest", PF_GamePlay.ActiveQuest.levelName },
-                    { "Character_ID", PF_PlayerData.activeCharacter.characterDetails.CharacterId }
+                    isSettingsMenuAnimating = false;
+                    openSettingsButton.interactable = true;
+                    closeSettingsButton.interactable = true;
+                    ToggleOpenCloseButtons();
+                    target.SetActive(mode);
+                }
+
+                if (mode)
+                {
+                    target.SetActive(true);
+                    TweenPos.Tween(target, duration, topRight, center, style, method);
+                    TweenScale.Tween(target, duration, Vector3.zero, Vector3.one, style, method, Done);
+                    TelemetryManager.RecordScreenViewed(TelemetryScreenId.Settings);
+                }
+                else
+                {
+                    TweenPos.Tween(target, duration, center, topRight, style, method);
+                    TweenScale.Tween(target, duration, Vector3.one, Vector3.zero, style, method, Done);
+                }
+            }
+
+            public void ToggleOpenCloseButtons()
+            {
+                if (this.showOpenCloseButton)
+                {
+                    if (this.openSettingsButton.gameObject.activeSelf)
+                    {
+                        this.openSettingsButton.gameObject.SetActive(false);
+                        this.closeSettingsButton.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        this.openSettingsButton.gameObject.SetActive(true);
+                        this.closeSettingsButton.gameObject.SetActive(false);
+                    }
+                }
+            }
+
+            void SettingsButtonDisplay(bool mode)
+            {
+                showOpenCloseButton = mode;
+                settingsButtonContainer.gameObject.SetActive(mode);
+                this.openSettingsButton.gameObject.SetActive(mode);
+            }
+
+            public void ReturnToCharacterSelect()
+            {
+                GameController.Instance.ClearActiveCharacter();
+                SceneController.Instance.ReturnToCharacterSelect();
+                StartSettingsMenuAnimation(false);
+            }
+
+            public void ReturnToMainMenu()
+            {
+                SceneController.Instance.ReturnToMainMenu();
+                StartSettingsMenuAnimation(false);
+            }
+
+            public void LeaveBattle()
+            {
+                Action<bool> processResponse = (bool response) =>
+                {
+                    if (response)
+                    {
+                    Dictionary<string, object> eventData = new Dictionary<string, object>()
+                    { { "Current_Quest", GameController.Instance.ActiveLevel.levelName }, { "Character_ID", GameController.Instance.ActiveCharacter.CharacterId }
+                        };
+                        TelemetryManager.RecordPlayerEvent(TelemetryEvent.Client_BattleAborted, eventData);
+
+                        StartSettingsMenuAnimation(false);
+                        SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Profile, .333f);
+                    }
                 };
-                PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_BattleAborted, eventData);
 
-                CloseSettingsMenu();
-                SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Profile, .333f);
+                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.QUIT_LEVEL_PROMPT, GlobalStrings.QUIT_LEVEL_MSG, processResponse);
             }
-        };
 
-        DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.QUIT_LEVEL_PROMPT, GlobalStrings.QUIT_LEVEL_MSG, processResponse);
-    }
-
-
-    public void ShowAccountSettings()
-    {
-        DialogCanvasController.RequestAccountSettings();
-    }
-
-
-    public void RedeemCoupon()
-    {
-        UnityAction<string> afterPrompt = (string response) =>
-        {
-            if (!string.IsNullOrEmpty(response))
+            public void ShowAccountSettings()
             {
-                PF_GamePlay.RedeemCoupon(response);
+                DialogCanvasController.RequestAccountSettings();
             }
-        };
 
-        DialogCanvasController.RequestTextInputPrompt("Redeem a Coupon Code", "Enter a valid code to redeem rewards.", (string response) => { afterPrompt(response); }, "XXX-XXXX-XXX");
-    }
-
-    public void ForceCrash()
-    {
-        Crashes.GenerateTestCrash();
-        // Application.ForceCrash(2);
-        // Crashes.GenerateTestCrash();
-    }
-
-    public void SetTitleId()
-    {
-        UnityAction<string> afterPrompt = (string response) =>
-        {
-            if (!string.IsNullOrEmpty(response))
+            public void RedeemCoupon()
             {
-                this.activeTitleId.text = response;
-                PlayFab.PlayFabSettings.TitleId = response;
-                PlayerPrefs.SetString("TitleId", response);
+                UnityAction<string> afterPrompt = (string response) =>
+                {
+                    if (!string.IsNullOrEmpty(response))
+                    {
+
+                        var l_storeMgr = MainManager.Instance.getStoreManager();
+                        if (null != l_storeMgr)
+                        {
+                            l_storeMgr.RedeemCoupon(
+                                response,
+                                (s) => { PF_Bridge.RaiseCallbackSuccess(s, PlayFabAPIMethods.RedeemCoupon); },
+                                (f) => { PF_Bridge.RaiseCallbackError(f, PlayFabAPIMethods.RedeemCoupon); }
+                            );
+                        }
+                    }
+                };
+
+                DialogCanvasController.RequestTextInputPrompt("Redeem a Coupon Code", "Enter a valid code to redeem rewards.",
+                    (string response) => { afterPrompt(response); }, "XXX-XXXX-XXX");
             }
-        };
 
-        DialogCanvasController.RequestTextInputPrompt("Set Title Id", "This will update which PlayFab title this client connects to.", (string response) => { afterPrompt(response); }, PlayFab.PlayFabSettings.TitleId);
-    }
-
-    public void Logout()
-    {
-        Action<bool> processResponse = (bool response) =>
-        {
-            if (response)
+            public void ForceCrash()
             {
-                PF_PlayerData.activeCharacter = null;
-                CloseSettingsMenu();
-                PF_Authentication.Logout();
+                Crashes.GenerateTestCrash();
+                // Application.ForceCrash(2);
+                // Crashes.GenerateTestCrash();
             }
-        };
-        DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.LOGOUT_PROMPT, GlobalStrings.LOGOUT_MSG, processResponse);
+
+            public void SetTitleId()
+            {
+                string oldTitleID = PlayFab.PlayFabSettings.TitleId;
+
+                DialogCanvasController.RequestTextInputPrompt(
+                    "Set Title Id",
+                    "Change the Title ID that this client connects to a different PlayFab Title.",
+                    (string newTitleID) =>
+                    {
+                        // if not empty & not the same as the oldID
+                        if (!string.IsNullOrEmpty(newTitleID) && oldTitleID != newTitleID)
+                        {
+                            PlayFabAuthManager pfAuth = (PlayFabAuthManager) Authentication;
+                            if (null == pfAuth)
+                            {
+                                PF_Bridge.RaiseCallbackError("PlayFab Auth Manager has encountered an error.", PlayFabAPIMethods.Generic);
+                                return;
+                            }
+                            PlayFab.PlayFabSettings.TitleId = newTitleID;
+
+                            pfAuth.VerifyNewTitleId(
+                                newTitleID,
+                                (string result) =>
+                                {
+                                    // successful, show the new ID & save it to playerPrefs.
+                                    this.activeTitleId.text = PlayFab.PlayFabSettings.TitleId;
+                                    PlayerPrefs.SetString("TitleId", newTitleID);
+                                    PlayerPrefs.Save();
+                                    Logout();
+                                },
+                                (string error) =>
+                                {
+                                    // failed, reset back to the old ID.
+                                    PlayFab.PlayFabSettings.TitleId = oldTitleID;
+
+                                    PF_Bridge.RaiseCallbackError(
+                                        "The Title ID entered is either (1) not valid -- " + error,
+                                        PlayFabAPIMethods.Generic
+                                    );
+                                }
+                            );
+                        }
+                    },
+                    oldTitleID
+                );
+            }
+
+            public void Logout()
+            {
+                Action<bool> processResponse = (bool response) =>
+                {
+                    if (response)
+                    {
+                        GameController.Instance.ClearActiveCharacter();
+
+                        StartSettingsMenuAnimation(false);
+                        //CloseSettingsMenu();
+                        Authentication.Logout(
+                            (string s) =>
+                            {
+                                SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Authenticate, .333f);
+                            },
+                            (string e) =>
+                            {
+                                // OnLoginFail event
+                                DialogCanvasController.Instance.HandleOnLoginFail(e, MessageDisplayStyle.none);
+                                // moved from static class
+                                //SceneController.Instance.RequestSceneChange(SceneController.GameScenes.Authenticate, .333f);
+                            }
+                        );
+                    }
+                };
+                DialogCanvasController.RequestConfirmationPrompt(
+                    GlobalStrings.LOGOUT_PROMPT,
+                    GlobalStrings.LOGOUT_MSG,
+                    processResponse);
+            }
+        }
+
+    [Serializable]
+    public class SceneToSettingsMapping
+    {
+        public string sceneName;
+        public SceneController.GameScenes scene;
+        public bool showOpenCloseButtons = true;
+        public List<SettingsCanvasController.SettingButtonTypes> buttons = new List<SettingsCanvasController.SettingButtonTypes>();
     }
-}
 
-[Serializable]
-public class SceneToSettingsMapping
-{
-    public string sceneName;
-    public SceneController.GameScenes scene;
-    public bool showOpenCloseButtons = true;
-    public List<SettingsCanvasController.SettingButtonTypes> buttons = new List<SettingsCanvasController.SettingButtonTypes>();
-}
-
-[Serializable]
-public class SettingsButtonDetails
-{
-    public string buttonName;
-    public SettingsCanvasController.SettingButtonTypes buttonType;
-    public Transform prefab;
+    [Serializable]
+    public class SettingsButtonDetails
+    {
+        public string buttonName;
+        public SettingsCanvasController.SettingButtonTypes buttonType;
+        public Transform prefab;
+    }
 }

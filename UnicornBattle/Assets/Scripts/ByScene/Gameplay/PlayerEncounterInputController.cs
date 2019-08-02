@@ -1,71 +1,77 @@
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerEncounterInputController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public Button AttackButton;
-    public Button UseItemButton;
-    public Button EvadeButton;
-    public Button ViewStoreButton;
-    public Button RescueButton;
-    public Text encounterDescription;
 
-    public TweenPos tweener;
-    public PlayerUIEffectsController pUIController;
-
-    void Start()
+    public class PlayerEncounterInputController : MonoBehaviour
     {
-        AttackButton.onClick.AddListener(() => { pUIController.StartEncounterInput(PF_GamePlay.PlayerEncounterInputs.Attack); });
-        UseItemButton.onClick.AddListener(() => { pUIController.StartEncounterInput(PF_GamePlay.PlayerEncounterInputs.UseItem); });
-        EvadeButton.onClick.AddListener(() => { pUIController.StartEncounterInput(PF_GamePlay.PlayerEncounterInputs.Evade); });
-        ViewStoreButton.onClick.AddListener(() => { pUIController.StartEncounterInput(PF_GamePlay.PlayerEncounterInputs.ViewStore); });
-        RescueButton.onClick.AddListener(() => { pUIController.StartEncounterInput(PF_GamePlay.PlayerEncounterInputs.Rescue); });
-    }
+        public Button AttackButton;
+        public Button UseItemButton;
+        public Button EvadeButton;
+        public Button ViewStoreButton;
+        public Button RescueButton;
+        public Text encounterDescription;
 
-    public void EnableEncounterOptions(EncounterTypes type, string encounterName, bool wasAmbushed = false)
-    {
+        public TweenPos tweener;
+        public PlayerUIEffectsController pUIController;
 
-        if (type.ToString().Contains(GlobalStrings.ENCOUNTER_CREEP))
+        void Start()
         {
-            SetupCreepEncounter();
-            encounterDescription.text = wasAmbushed ? string.Format(GlobalStrings.ENCOUNTER_AMBUSH_MSG, encounterName) : string.Format(GlobalStrings.ENCOUNTER_ENEMY_MSG, encounterName);
+            AttackButton.onClick.AddListener(() => { pUIController.StartEncounterInput(UBGamePlay.PlayerEncounterInputs.Attack); });
+            UseItemButton.onClick.AddListener(() => { pUIController.StartEncounterInput(UBGamePlay.PlayerEncounterInputs.UseItem); });
+            EvadeButton.onClick.AddListener(() => { pUIController.StartEncounterInput(UBGamePlay.PlayerEncounterInputs.Evade); });
+            ViewStoreButton.onClick.AddListener(() => { pUIController.StartEncounterInput(UBGamePlay.PlayerEncounterInputs.ViewStore); });
+            RescueButton.onClick.AddListener(() => { pUIController.StartEncounterInput(UBGamePlay.PlayerEncounterInputs.Rescue); });
         }
-        else if (type == EncounterTypes.Hero)
+
+        public void EnableEncounterOptions(EncounterTypes type, string encounterName, bool wasAmbushed = false)
         {
-            SetupHeroEncounter();
-            encounterDescription.text = string.Format(GlobalStrings.ENCOUNTER_HERO_MSG, encounterName);
+
+            if (type.ToString().Contains(GlobalStrings.ENCOUNTER_CREEP))
+            {
+                SetupCreepEncounter();
+                encounterDescription.text = wasAmbushed ? string.Format(GlobalStrings.ENCOUNTER_AMBUSH_MSG, encounterName) : string.Format(GlobalStrings.ENCOUNTER_ENEMY_MSG, encounterName);
+            }
+            else if (type == EncounterTypes.Hero)
+            {
+                SetupHeroEncounter();
+                encounterDescription.text = string.Format(GlobalStrings.ENCOUNTER_HERO_MSG, encounterName);
+            }
+            else if (type == EncounterTypes.Store)
+            {
+                SetupStoreEncounter();
+                encounterDescription.text = string.Format(GlobalStrings.ENCOUNTER_VENDOR_MSG, encounterName);
+            }
         }
-        else if (type == EncounterTypes.Store)
+
+        void SetupCreepEncounter()
         {
-            SetupStoreEncounter();
-            encounterDescription.text = string.Format(GlobalStrings.ENCOUNTER_VENDOR_MSG, encounterName);
+            AttackButton.gameObject.SetActive(true);
+            UseItemButton.gameObject.SetActive(true);
+            EvadeButton.gameObject.SetActive(true);
+            ViewStoreButton.gameObject.SetActive(false);
+            RescueButton.gameObject.SetActive(false);
+        }
+
+        void SetupHeroEncounter()
+        {
+            AttackButton.gameObject.SetActive(false);
+            UseItemButton.gameObject.SetActive(false);
+            EvadeButton.gameObject.SetActive(false);
+            ViewStoreButton.gameObject.SetActive(false);
+            RescueButton.gameObject.SetActive(true);
+        }
+
+        void SetupStoreEncounter()
+        {
+            AttackButton.gameObject.SetActive(false);
+            UseItemButton.gameObject.SetActive(false);
+            EvadeButton.gameObject.SetActive(true);
+            ViewStoreButton.gameObject.SetActive(true);
+            RescueButton.gameObject.SetActive(false);
         }
     }
 
-    void SetupCreepEncounter()
-    {
-        AttackButton.gameObject.SetActive(true);
-        UseItemButton.gameObject.SetActive(true);
-        EvadeButton.gameObject.SetActive(true);
-        ViewStoreButton.gameObject.SetActive(false);
-        RescueButton.gameObject.SetActive(false);
-    }
-
-    void SetupHeroEncounter()
-    {
-        AttackButton.gameObject.SetActive(false);
-        UseItemButton.gameObject.SetActive(false);
-        EvadeButton.gameObject.SetActive(false);
-        ViewStoreButton.gameObject.SetActive(false);
-        RescueButton.gameObject.SetActive(true);
-    }
-
-    void SetupStoreEncounter()
-    {
-        AttackButton.gameObject.SetActive(false);
-        UseItemButton.gameObject.SetActive(false);
-        EvadeButton.gameObject.SetActive(true);
-        ViewStoreButton.gameObject.SetActive(true);
-        RescueButton.gameObject.SetActive(false);
-    }
 }

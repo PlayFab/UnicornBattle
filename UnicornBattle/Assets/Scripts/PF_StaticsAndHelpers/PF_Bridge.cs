@@ -6,7 +6,7 @@ using PlayFab;
 public static class PF_Bridge
 {
 
-    // signature & callback for rasing errors, the enum can be useful for tracking what API call threw the error. 
+    // signature & callback for raising errors, the enum can be useful for tracking what API call threw the error. 
     public delegate void PlayFabErrorHandler(string details, PlayFabAPIMethods method, MessageDisplayStyle displayStyle);
     public static event PlayFabErrorHandler OnPlayFabCallbackError;
 
@@ -23,10 +23,10 @@ public static class PF_Bridge
     /// <param name="details"> 	a string that can be used so send any additional custom information </param>
     /// <param name="method"> enum that maps to the call that just completed successfully </param>
     /// <param name="style"> error will throw the standard error box, none will eat the message and output to console </param>
-    public static void RaiseCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
+    public static void RaiseCallbackSuccess(string details, PlayFabAPIMethods method)
     {
         if (OnPlayfabCallbackSuccess != null)
-            OnPlayfabCallbackSuccess(details, method, style);
+            OnPlayfabCallbackSuccess(details, method, MessageDisplayStyle.success);
     }
 
     /// <summary>
@@ -35,102 +35,116 @@ public static class PF_Bridge
     /// <param name="details"> a string that can be used so send any additional custom information </param>
     /// <param name="method"> enum that maps to the call that just completed successfully </param>
     /// <param name="style"> error will throw the standard error box, none will eat the message and output to console </param>
-    public static void RaiseCallbackError(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
+    public static void RaiseCallbackError(string details, PlayFabAPIMethods method)
     {
+        Debug.LogError( "PF_Bridge:" + method.ToString() + " -> " + details);
+
         if (OnPlayFabCallbackError != null)
-            OnPlayFabCallbackError(details, method, style);
+            OnPlayFabCallbackError(details, method, MessageDisplayStyle.error);
     }
 
-    /// <summary>
-    /// Standard, reusable error callback
-    /// </summary>
-    /// <param name="error">Error.</param>
-    public static void PlayFabErrorCallback(PlayFab.PlayFabError error)
-    {
-        if (OnPlayFabCallbackError != null)
-            OnPlayFabCallbackError(error.ErrorMessage, PlayFabAPIMethods.Generic, MessageDisplayStyle.error);
-    }
+    // /// <summary>
+    // /// Standard, reusable error callback
+    // /// </summary>
+    // /// <param name="error">Error.</param>
+    // public static void PlayFabErrorCallback(PlayFab.PlayFabError error)
+    // {
+    //     if (OnPlayFabCallbackError != null)
+    //         OnPlayFabCallbackError(error.ErrorMessage, PlayFabAPIMethods.Generic, MessageDisplayStyle.error);
+    // }
 
 
-    public static bool VerifyErrorFreeCloudScriptResult(ExecuteCloudScriptResult result)
-    {
-        if (result.Error != null)
-            OnPlayFabCallbackError(string.Format("{0}: ERROR: [{1}] -- {2}", result.FunctionName, result.Error.Error, result.Error.Message), PlayFabAPIMethods.ExecuteCloudScript, MessageDisplayStyle.error);
-        return result.Error == null;
-    }
+    // public static bool VerifyErrorFreeCloudScriptResult(ExecuteCloudScriptResult result)
+    // {
+    //     if (result.Error != null) {
+    //         string e = string.Format("{0}: ERROR: [{1}] -- {2}", result.FunctionName, result.Error.Error, result.Error.Message);
+    //         Debug.LogError(e);
+    //         //OnPlayFabCallbackError(, PlayFabAPIMethods.ExecuteCloudScript, MessageDisplayStyle.error);
+    //     }
+    //     return result.Error == null;
+    // }
 
     /// <summary>
     /// Validates the android IAP completed through the GooglePlay store.
     /// </summary>
-    public static void ValidateAndroidPurcahse(string json, string sig)
-    {
-        var request = new ValidateGooglePlayPurchaseRequest
-        {
-            Signature = sig,
-            ReceiptJson = json
-        };
+    // public static void ValidateAndroidPurcahse( string p_receipt, 
+    //                                             string p_signature,
+    //                                             System.Action<string> p_onSuccessCallback,
+    //                                             System.Action<string> p_onFailureCallback)
+    // {
+    //     var request = new ValidateGooglePlayPurchaseRequest
+    //     {
+    //         Signature = p_signature,
+    //         ReceiptJson = p_receipt
+    //     };
 
-        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ValidateIAP);
-        PlayFabClientAPI.ValidateGooglePlayPurchase(request, result =>
-        {
-            RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP, MessageDisplayStyle.none);
-        }, PlayFabErrorCallback);
-    }
+    //     DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ValidateIAP);
+    //     PlayFabClientAPI.ValidateGooglePlayPurchase(
+    //         request, 
+    //         (ValidateGooglePlayPurchaseResult result) =>
+    //         {
 
-    public static void ValidateIosPurchase(string receipt)
-    {
-        var request = new ValidateIOSReceiptRequest
-        {
-            CurrencyCode = IAB_CurrencyCode,
-            PurchasePrice = IAB_Price,
-            ReceiptData = receipt
-        };
 
-        DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ValidateIAP);
-        PlayFabClientAPI.ValidateIOSReceipt(request, result =>
-        {
-            RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP, MessageDisplayStyle.none);
-        }, PlayFabErrorCallback);
-    }
+    //             RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP);
+    //         }, 
+    //         (PlayFabError e) => {
+    //             RaiseCallbackError( e.ErrorMessage, PlayFabAPIMethods.ValidateIAP);
+    //         });
+    // }
 
-    //	Used for sending analytics data back into PlayFab
-    public enum CustomEventTypes
-    {
-        none,
-        Client_LevelUp,
-        Client_LevelComplete,
-        Client_PlayerDied,
-        Client_BossKill,
-        Client_UnicornFreed,
-        Client_StoreVisit,
-        Client_SaleClicked,
-        Client_BattleAborted,
-        Client_RegisteredAccount,
-        Client_FriendAdded,
-        Client_AdWatched
-    }
+    // public static void ValidateIosPurchase(string receipt)
+    // {
+    //     var request = new ValidateIOSReceiptRequest
+    //     {
+    //         CurrencyCode = IAB_CurrencyCode,
+    //         PurchasePrice = IAB_Price,
+    //         ReceiptData = receipt
+    //     };
 
-    /// <summary>
-    /// Logs the custom event.
-    /// </summary>
-    /// <param name="eventName">Event name.</param>
-    /// <param name="eventData">Event data.</param>
-    public static void LogCustomEvent(CustomEventTypes eventName, Dictionary<string, object> eventData)
-    {
-        var request = new WriteClientPlayerEventRequest();
-        request.Body = eventData;
-        request.EventName = eventName.ToString();
-        PlayFabClientAPI.WritePlayerEvent(request, null, PlayFabErrorCallback);
+    //     DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ValidateIAP);
+    //     PlayFabClientAPI.ValidateIOSReceipt(request, result =>
+    //     {
+    //         RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.ValidateIAP);
+    //     }, PlayFabErrorCallback);
+    // }
 
-        /* EXAMPLE OF eventData
-            new Dictionary<string,object >() 
-            {
-                {"monsters_killed", obj.kills},
-                {"gold_won", obj.currency},
-                {"result", "win" }  
-            };
-        */
-    }
+    // //	Used for sending analytics data back into PlayFab
+    // public enum CustomEventTypes
+    // {
+    //     none,
+    //     Client_LevelUp,
+    //     Client_LevelComplete,
+    //     Client_PlayerDied,
+    //     Client_BossKill,
+    //     Client_UnicornFreed,
+    //     Client_StoreVisit,
+    //     Client_SaleClicked,
+    //     Client_BattleAborted,
+    //     Client_RegisteredAccount,
+    //     Client_FriendAdded,
+    //     Client_AdWatched
+    // }
+    // /// <summary>
+    // /// Logs the custom event.
+    // /// </summary>
+    // /// <param name="eventName">Event name.</param>
+    // /// <param name="eventData">Event data.</param>
+    // public static void LogCustomEvent(CustomEventTypes eventName, Dictionary<string, object> eventData)
+    // {
+    //     var request = new WriteClientPlayerEventRequest();
+    //     request.Body = eventData;
+    //     request.EventName = eventName.ToString();
+    //     PlayFabClientAPI.WritePlayerEvent(request, null, PlayFabErrorCallback);
+
+    //     /* EXAMPLE OF eventData
+    //         new Dictionary<string,object >() 
+    //         {
+    //             {"monsters_killed", obj.kills},
+    //             {"gold_won", obj.currency},
+    //             {"result", "win" }  
+    //         };
+    //     */
+    // }
 }
 
 public class UpdatedVCBalance
@@ -173,7 +187,7 @@ public enum PlayFabAPIMethods
     LoginWithDeviceId,
     LoginWithFacebook,
     GetAccountInfo,
-    GetCDNConent,
+    GetCDNContent,
     GetTitleData_General,
     GetTitleData_Specific,
     GetEvents,
@@ -199,7 +213,7 @@ public enum PlayFabAPIMethods
     UpdateDisplayName,
     SendAccountRecoveryEmail,
     SavePlayerInfo,
-    RetriveQuestItems,
+    RetrieveQuestItems,
     RegisterForPush,
     AddUsernamePassword,
     LinkDeviceID,

@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 using System;
@@ -13,7 +12,7 @@ namespace Microsoft.AppCenter.Unity
         private static bool _hasAttemptedToGetRuntimeVersion;
 
         public const string Name = "appcenter.unity";
-        public const string WrapperSdkVersion = "1.4.0";
+        public const string WrapperSdkVersion = "2.2.0";
 
         internal static string WrapperRuntimeVersion
         {

@@ -1,307 +1,460 @@
-using Facebook.Unity;
-using PlayFab.ClientModels;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using PlayFab.ClientModels;
+using UnicornBattle.Managers;
+using UnicornBattle.Managers.Auth;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 using UnityEngine.UI;
+#if UNITY_ANDROID || UNITY_IOS
+using Facebook.Unity;
+#endif
 
-public class AccountStatusController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public Text displayName;
-    public Text accountStatus;
-    public Image facebookPicture;
-    public Button setDisplayName;
-    public Button registerAccount;
-    public Button registerPush;
-    public Button showOnLogin;
-    public Button linkToFaceBook;
-    public Button continueBtn;
-    public Button resetPassword;
-    public Sprite checkedBox;
-    public Sprite uncheckedBox;
-    public RegistrationController rc;
 
-    private string pushToken = "";
-    private bool changedLoginState = false;
-    private bool isFbSet = false;
-
-    void Start()
+    public class AccountStatusController : MonoBehaviour
     {
-        Debug.Log("Start PlayFab Token Calls");
-        Firebase.Messaging.FirebaseMessaging.TokenReceived += OnTokenReceived;
-        Firebase.Messaging.FirebaseMessaging.MessageReceived += OnMessageReceived;
-        PF_Bridge.OnPlayfabCallbackSuccess += HandleCallbackSuccess;
-        CheckPushStatus();
-    }
+        public Text displayName;
+        public Text accountStatus;
+        public Image facebookPicture;
+        public Button setDisplayName;
+        public Button registerAccount;
+        public Button registerPush;
+        public Button showOnLogin;
+        public Button linkToFaceBook;
+        public Button continueBtn;
+        public Button resetPassword;
+        public Sprite checkedBox;
+        public Sprite uncheckedBox;
+        public RegistrationController rc;
 
-    void OnDestroy()
-    {
-        Debug.Log("OnDestroy PlayFab Token Calls");
-        Firebase.Messaging.FirebaseMessaging.TokenReceived -= OnTokenReceived;
-        Firebase.Messaging.FirebaseMessaging.MessageReceived -= OnMessageReceived;
-        PF_Bridge.OnPlayfabCallbackSuccess -= HandleCallbackSuccess;
-    }
+        private string pushToken = "";
+        private bool changedLoginState = false;
 
-    private void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
-    {
-        switch (method)
+#pragma warning disable 0414
+        private bool isFbSet = false;
+
+#pragma warning disable 0414
+
+        private PlayerManager m_PlayerManager;
+
+#if UNITY_ANDROID || UNITY_IOS
+        private FacebookAuthManager Authentication
         {
-            case PlayFabAPIMethods.GetTitleData_General: CheckPushStatus(); break;
+            get { return (FacebookAuthManager) MainManager.Instance.getAuthManager(); }
         }
-    }
-
-    void Update()
-    {
-        if (isFbSet != FB.IsLoggedIn) // FB.IsLoggedIn doesn't update immediately, so you can't check it immediately after logout
-            UpdateFacebookStatusButton();
-        isFbSet = FB.IsLoggedIn;
-        registerPush.interactable = !string.IsNullOrEmpty(pushToken);
-    }
-
-    private void OnTokenReceived(object sender, Firebase.Messaging.TokenReceivedEventArgs token)
-    {
-        Debug.Log("PlayFab: Received Registration Token: " + token.Token);
-        pushToken = token.Token;
-        CheckPushStatus();
-    }
-
-    private void OnMessageReceived(object sender, Firebase.Messaging.MessageReceivedEventArgs e)
-    {
-        if (e.Message.Data != null)
-            Debug.Log("PlayFab: Received a message with data");
-        if (e.Message.Notification != null)
-            Debug.Log("PlayFab: Received a notification");
-    }
-
-    private void CheckPushStatus()
-    {
-        if (string.IsNullOrEmpty(pushToken))
-            return;
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-        var androidRequest = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = pushToken };
-        PlayFab.PlayFabClientAPI.AndroidDevicePushNotificationRegistration(androidRequest, null, null);
-#elif UNITY_IPHONE && !UNITY_EDITOR
-        var iosRequest = new RegisterForIOSPushNotificationRequest { DeviceToken = pushToken };
-        PlayFab.PlayFabClientAPI.RegisterForIOSPushNotification(iosRequest, null, null);
-#endif
-    }
-
-    private void SetCheckBox(Image image, bool isChecked)
-    {
-        image.overrideSprite = isChecked ? checkedBox : uncheckedBox;
-    }
-
-    public void Init()
-    {
-        if (PF_PlayerData.accountInfo == null)
-            return;
-
-        changedLoginState = false;
-        displayName.text = PF_PlayerData.accountInfo.TitleInfo.DisplayName;
-        var isRegistered = PF_PlayerData.isPlayFabRegistered;
-        accountStatus.color = isRegistered ? Color.green : Color.red;
-        accountStatus.text = isRegistered ? GlobalStrings.ACT_STATUS_REG_MSG : GlobalStrings.ACT_STATUS_UNREG_MSG;
-        registerAccount.gameObject.SetActive(!isRegistered);
-        resetPassword.gameObject.SetActive(isRegistered);
-
-        SetCheckBox(showOnLogin.GetComponent<Image>(), PF_PlayerData.showAccountOptionsOnLogin);
-        UpdateFacebookStatusButton();
-
-#if UNITY_IPHONE
-		UnityEngine.iOS.NotificationServices.RegisterForNotifications(UnityEngine.iOS.NotificationType.Alert | UnityEngine.iOS.NotificationType.Badge | UnityEngine.iOS.NotificationType.Sound, true);
-        pushToken = UnityEngine.iOS.NotificationServices.deviceToken;
-#endif
-
-        SetCheckBox(registerPush.GetComponent<Image>(), PF_PlayerData.isRegisteredForPush);
-        CheckPushStatus();
-    }
-
-    public void FetchWebAsset(string url, UnityAction<Texture2D> callback = null)
-    {
-        StartCoroutine(WebSpinner(url, callback));
-    }
-
-    public IEnumerator WebSpinner(string url, UnityAction<Texture2D> callback = null)
-    {
-        var www = new WWW(url);
-        yield return www;
-
-        if (callback != null)
-            callback(www.texture);
-    }
-
-    public void SetDisplayName()
-    {
-        Action<string> processResponse = response =>
+#else
+        private PlayFabAuthManager Authentication
         {
-            if (response == null)
+            get { return (PlayFabAuthManager) MainManager.Instance.getAuthManager(); }
+        }
+#endif
+
+        private PlayerManager PlayerMgr
+        {
+            get
+            {
+                if (null == m_PlayerManager)
+                    m_PlayerManager = MainManager.Instance.getPlayerManager();
+                return m_PlayerManager;
+            }
+        }
+
+        void Start()
+        {
+            //Debug.Log("Start PlayFab Token Calls");
+#if UNITY_ANDROID || UNITY_IOS
+            Firebase.Messaging.FirebaseMessaging.TokenReceived += OnTokenReceived;
+            Firebase.Messaging.FirebaseMessaging.MessageReceived += OnMessageReceived;
+#endif
+            PF_Bridge.OnPlayfabCallbackSuccess += HandleCallbackSuccess;
+            CheckPushStatus();
+        }
+
+        void OnDestroy()
+        {
+            //Debug.Log("OnDestroy PlayFab Token Calls");
+#if UNITY_ANDROID || UNITY_IOS
+            Firebase.Messaging.FirebaseMessaging.TokenReceived -= OnTokenReceived;
+            Firebase.Messaging.FirebaseMessaging.MessageReceived -= OnMessageReceived;
+#endif
+            PF_Bridge.OnPlayfabCallbackSuccess -= HandleCallbackSuccess;
+        }
+
+        private void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
+        {
+            switch (method)
+            {
+                case PlayFabAPIMethods.GetTitleData_General:
+                    CheckPushStatus();
+                    break;
+            }
+        }
+
+        void Update()
+        {
+
+#if UNITY_ANDROID || UNITY_IOS
+            if (isFbSet != FB.IsLoggedIn) // FB.IsLoggedIn doesn't update immediately, so you can't check it immediately after logout
+                UpdateFacebookStatusButton();
+            isFbSet = FB.IsLoggedIn;
+#else
+            isFbSet = false;
+#endif
+
+            registerPush.interactable = !string.IsNullOrEmpty(pushToken);
+        }
+
+#if UNITY_ANDROID || UNITY_IOS
+        private void OnTokenReceived(object sender, Firebase.Messaging.TokenReceivedEventArgs token)
+        {
+            Debug.Log("PlayFab: Received Registration Token: " + token.Token);
+            pushToken = token.Token;
+            CheckPushStatus();
+        }
+
+        private void OnMessageReceived(object sender, Firebase.Messaging.MessageReceivedEventArgs e)
+        {
+            if (e.Message.Data != null)
+                Debug.Log("PlayFab: Received a message with data");
+            if (e.Message.Notification != null)
+                Debug.Log("PlayFab: Received a notification");
+        }
+#endif
+
+        private void CheckPushStatus()
+        {
+            if (string.IsNullOrEmpty(pushToken))
                 return;
 
-            PF_Authentication.UpdateDisplayName(response, result =>
-            {
-                displayName.text = result.DisplayName;
-                PF_PlayerData.accountInfo.TitleInfo.DisplayName = result.DisplayName;
-            });
-        };
-
-        if (FB.IsLoggedIn)
-        {
-            UnityAction<string> afterGetFbName = fbName =>
-            {
-                DialogCanvasController.RequestTextInputPrompt(GlobalStrings.DISPLAY_NAME_PROMPT, GlobalStrings.DISPLAY_NAME_MSG, processResponse, fbName);
-            };
-            FacebookHelperClass.GetFBUserName(afterGetFbName);
+#if UNITY_ANDROID && !UNITY_EDITOR
+            var androidRequest = new AndroidDevicePushNotificationRegistrationRequest { DeviceToken = pushToken };
+            PlayFab.PlayFabClientAPI.AndroidDevicePushNotificationRegistration(androidRequest, null, null);
+#elif UNITY_IOS && !UNITY_EDITOR
+            var iosRequest = new RegisterForIOSPushNotificationRequest { DeviceToken = pushToken };
+            PlayFab.PlayFabClientAPI.RegisterForIOSPushNotification(iosRequest, null, null);
+#endif
         }
-        else
+
+        private void SetCheckBox(Image image, bool isChecked)
         {
+            image.overrideSprite = isChecked ? checkedBox : uncheckedBox;
+        }
+
+        public void Init()
+        {
+            PlayerMgr.Refresh(false,
+                (s) =>
+                {
+                    changedLoginState = false;
+                    displayName.text = PlayerMgr.DisplayName;
+                    var isRegistered = PlayerMgr.isPlayFabRegistered;
+                    accountStatus.color = isRegistered ? Color.green : Color.red;
+                    accountStatus.text = isRegistered ? GlobalStrings.ACT_STATUS_REG_MSG : GlobalStrings.ACT_STATUS_UNREG_MSG;
+                    registerAccount.gameObject.SetActive(!isRegistered);
+                    resetPassword.gameObject.SetActive(isRegistered);
+
+                    SetCheckBox(showOnLogin.GetComponent<Image>(), PlayerMgr.showAccountOptionsOnLogin);
+                    UpdateFacebookStatusButton();
+
+#if UNITY_IOS
+                    UnityEngine.iOS.NotificationServices.RegisterForNotifications(UnityEngine.iOS.NotificationType.Alert | UnityEngine.iOS.NotificationType.Badge | UnityEngine.iOS.NotificationType.Sound, true);
+                    pushToken = System.Text.Encoding.UTF8.GetString(UnityEngine.iOS.NotificationServices.deviceToken);
+#endif
+
+                    SetCheckBox(registerPush.GetComponent<Image>(), PlayerMgr.isRegisteredForPush);
+                    CheckPushStatus();
+                },
+                (string error) =>
+                {
+                    return; // do not throw error message if failed
+                }
+            );
+        }
+
+        public void FetchWebAsset(string url, UnityAction<Texture2D> callback = null)
+        {
+            StartCoroutine(WebSpinner(url, callback));
+        }
+
+        public IEnumerator WebSpinner(string url, UnityAction<Texture2D> callback = null)
+        {
+            var uwr = new UnityWebRequest(url);
+            uwr.downloadHandler = new DownloadHandlerTexture();
+            yield return uwr.SendWebRequest();
+
+            if (callback != null)
+                callback(DownloadHandlerTexture.GetContent(uwr));
+        }
+
+        public void SetDisplayName()
+        {
+            Action<string> processResponse = displayNameStr =>
+            {
+                if (displayNameStr == null)
+                    return;
+
+                if (displayNameStr.Length < 3 || 20 < displayNameStr.Length)
+                    return;
+
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateDisplayName);
+
+                Authentication.UpdateDisplayName(displayNameStr,
+                    result =>
+                    {
+                        PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.UpdateDisplayName);
+                        this.displayName.text = result.DisplayName;
+                        PlayerMgr.DisplayName = result.DisplayName;
+                    },
+                    (error) =>
+                    {
+                        Debug.LogError(error);
+                    }
+                );
+            };
+
+#if UNITY_ANDROID || UNITY_IOS
+            if (FB.IsLoggedIn)
+            {
+                UnityAction<string> afterGetFbName = fbName =>
+                {
+                    DialogCanvasController.RequestTextInputPrompt(GlobalStrings.DISPLAY_NAME_PROMPT, GlobalStrings.DISPLAY_NAME_MSG, processResponse, fbName);
+                };
+                FacebookHelperClass.GetFBUserName(afterGetFbName);
+            }
+            else
+            {
+                DialogCanvasController.RequestTextInputPrompt(GlobalStrings.DISPLAY_NAME_PROMPT, GlobalStrings.DISPLAY_NAME_MSG, processResponse);
+            }
+#else
             DialogCanvasController.RequestTextInputPrompt(GlobalStrings.DISPLAY_NAME_PROMPT, GlobalStrings.DISPLAY_NAME_MSG, processResponse);
+#endif
         }
-    }
 
-    public void TogglePushNotification()
-    {
-        if (!PF_PlayerData.isRegisteredForPush)
+        public void TogglePushNotification()
         {
-            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.Generic);
-            UnityAction afterPush = () =>
-            {
-                changedLoginState = true;
-                PF_PlayerData.isRegisteredForPush = true;
-                SetCheckBox(registerPush.GetComponent<Image>(), true);
-                Debug.Log("AccountStatusController: PUSH ENABLED!");
-                PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.Generic, MessageDisplayStyle.none);
-            };
 
-            StartCoroutine(PF_GamePlay.Wait(1.5f, () =>
+            if (!PlayerMgr.isRegisteredForPush)
             {
-                PF_PlayerData.RegisterForPushNotification(pushToken, afterPush);
-            }));
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.Generic);
+                UnityAction afterPush = () =>
+                {
+                    changedLoginState = true;
+                    PlayerMgr.isRegisteredForPush = true;
+                    SetCheckBox(registerPush.GetComponent<Image>(), true);
+                    Debug.Log("AccountStatusController: PUSH ENABLED!");
+                    PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.Generic);
+                };
+
+                StartCoroutine(UBAnimator.Wait(1.5f, () =>
+                {
+                    DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RegisterForPush);
+                    PlayerMgr.RegisterForPushNotification(
+                        pushToken,
+                        (s) => { PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RegisterForPush); },
+                        (e) => { PF_Bridge.RaiseCallbackError(e, PlayFabAPIMethods.RegisterForPush); }
+                    );
+                }));
+            }
+            else
+            {
+                Action<bool> processResponse = response =>
+                {
+                    if (!response)
+                        return;
+
+                    changedLoginState = true;
+                    PlayerMgr.isRegisteredForPush = false;
+                    SetCheckBox(registerPush.GetComponent<Image>(), false);
+                    Debug.Log("AccountStatusController: PUSH DISABLED!");
+                };
+
+                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.PUSH_NOTIFY_PROMPT, GlobalStrings.PUSH_NOTIFY_MSG, processResponse);
+            }
         }
-        else
+
+        public void ToggleShowOnLogin()
         {
             Action<bool> processResponse = response =>
             {
                 if (!response)
                     return;
 
+                PlayerMgr.showAccountOptionsOnLogin = !PlayerMgr.showAccountOptionsOnLogin;
                 changedLoginState = true;
-                PF_PlayerData.isRegisteredForPush = false;
-                SetCheckBox(registerPush.GetComponent<Image>(), false);
-                Debug.Log("AccountStatusController: PUSH DISABLED!");
+                SetCheckBox(showOnLogin.GetComponent<Image>(), PlayerMgr.showAccountOptionsOnLogin);
             };
 
-            DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.PUSH_NOTIFY_PROMPT, GlobalStrings.PUSH_NOTIFY_MSG, processResponse);
-        }
-    }
-
-    public void ToggleShowOnLogin()
-    {
-        Action<bool> processResponse = response =>
-        {
-            if (!response)
-                return;
-
-            PF_PlayerData.showAccountOptionsOnLogin = !PF_PlayerData.showAccountOptionsOnLogin;
-            changedLoginState = true;
-            SetCheckBox(showOnLogin.GetComponent<Image>(), PF_PlayerData.showAccountOptionsOnLogin);
-        };
-
-        if (PF_PlayerData.showAccountOptionsOnLogin)
-            DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.TOGGLE_PROMPT, GlobalStrings.TOGGLE_MSG, processResponse);
-        else
-            processResponse.Invoke(true);
-    }
-
-    public void ToggleFacebookLink()
-    {
-        if (FB.IsLoggedIn)
-        {
-            Action<bool> afterCheck = response =>
-            {
-                if (response)
-                    PF_Authentication.UnlinkFbAccount();
-            };
-
-            if (!PF_PlayerData.isPlayFabRegistered)
-                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, GlobalStrings.CONFIRM_UNLINK_MSG, afterCheck);
+            if (PlayerMgr.showAccountOptionsOnLogin)
+                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.TOGGLE_PROMPT, GlobalStrings.TOGGLE_MSG, processResponse);
             else
-                DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, "Are you sure?", afterCheck);
+                processResponse.Invoke(true);
         }
-        else
-        {
-            PF_Authentication.StartFacebookLogin(); // This will do the linking automatically based on being logged in
-        }
-    }
 
-    private void UpdateFacebookStatusButton()
-    {
-        Debug.Log("UpdateFacebookStatusButton: " + FB.IsLoggedIn);
-        var txt = linkToFaceBook.GetComponentInChildren<Text>();
-        txt.text = FB.IsLoggedIn ? GlobalStrings.UNLINK_FB_BTN_MSG : GlobalStrings.LINK_FB_BTN_MSG;
-
-        facebookPicture.overrideSprite = null;
-        if (FB.IsLoggedIn)
+        public void ToggleFacebookLink()
         {
-            UnityAction<Texture2D> afterGetPhoto = tx =>
+#if UNITY_ANDROID || UNITY_IOS
+            if (FB.IsLoggedIn)
             {
-                facebookPicture.overrideSprite = Sprite.Create(tx, new Rect(0, 0, 128, 128), Vector2.zero);
-            };
-            StartCoroutine(FacebookHelperClass.GetPlayerProfilePhoto(FetchWebAsset, afterGetPhoto));
-        }
-    }
+                Action<bool> afterCheck = response =>
+                {
+                    if (response)
+                        Authentication.UnlinkFacebook(
+                            success =>
+                            {
+                                PF_Bridge.RaiseCallbackSuccess(success, PlayFabAPIMethods.UnlinkFacebookId);
+                            },
+                            failure =>
+                            {
+                                PF_Bridge.RaiseCallbackError(failure, PlayFabAPIMethods.UnlinkFacebookId);
+                            }
+                        );
+                };
 
-    public void ShowRegistration()
-    {
-        Action<AddUsernamePasswordResult> afterRegistration = result =>
-        {
-            PF_PlayerData.accountInfo.Username = result.Username;
-            PF_PlayerData.accountInfo.PrivateInfo.Email = "Pending Refresh";
-
-            Dictionary<string, object> eventData = new Dictionary<string, object>()
+                if (!PlayerMgr.isPlayFabRegistered)
+                    DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, GlobalStrings.CONFIRM_UNLINK_MSG, afterCheck);
+                else
+                    DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.CONFIRM_UNLINK_PROMPT, "Are you sure?", afterCheck);
+            }
+            else
             {
-				//pull emailf from RC due to it not being returned.
-				{ "Username", result.Username},
-                { "Email", rc.email.text}
-            };
-            PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_RegisteredAccount, eventData);
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
 
-            registerAccount.gameObject.SetActive(false);
-            accountStatus.text = GlobalStrings.ACT_STATUS_REG_MSG;
-            resetPassword.gameObject.SetActive(true);
-            accountStatus.color = Color.green;
-        };
+                Authentication.LinkFaceBookToPlayFab(false,
+                    (string success) =>
+                    {
+                        Debug.Log("Facebook Linked Account!");
+                        PF_Bridge.RaiseCallbackSuccess(success, PlayFabAPIMethods.LinkFacebookId);
+                    },
+                    (string failure) =>
+                    {
 
-        rc.gameObject.SetActive(true);
-        rc.Init(afterRegistration);
-    }
+                        if (!failure.Contains("already linked")) // ew, gotta get better error codes
+                        {
+                            PF_Bridge.RaiseCallbackError(failure, PlayFabAPIMethods.LinkFacebookId);
+                            return;
+                        }
 
-    public void SendRecoveryEmail()
-    {
-        Action<bool> afterCheck = response =>
-        {
-            if (!response)
-                return;
+                        // PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.LinkFacebookId, MessageDisplayStyle.none);
+                        System.Action<bool> afterConfirm = (bool response) =>
+                        {
+                            if (!response)
+                                return;
 
-            var email = string.IsNullOrEmpty(PF_PlayerData.accountInfo.PrivateInfo.Email) || PF_PlayerData.accountInfo.PrivateInfo.Email.Contains("Pending Refresh") ? rc.email.text : PF_PlayerData.accountInfo.PrivateInfo.Email;
-            PF_Authentication.SendAccountRecoveryEmail(email);
-        };
+                            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.LinkFacebookId);
+                            Authentication.LinkFaceBookToPlayFab(true,
+                                (string success2) =>
+                                {
+                                    PF_Bridge.RaiseCallbackSuccess(success2, PlayFabAPIMethods.LinkFacebookId);
+                                },
+                                (string failure2) =>
+                                {
+                                    PF_Bridge.RaiseCallbackError(failure2, PlayFabAPIMethods.LinkFacebookId);
+                                });
+                        };
 
-        DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.RECOVER_EMAIL_PROMPT, GlobalStrings.RECOVER_EMAIL_MSG, afterCheck);
-    }
-
-    public void Continue()
-    {
-        if (changedLoginState)
-        {
-            Dictionary<string, string> updates = new Dictionary<string, string> {
-                { "ShowAccountOptionsOnLogin", PF_PlayerData.showAccountOptionsOnLogin ? "1" : "0" },
-                { "IsRegisteredForPush", PF_PlayerData.isRegisteredForPush ? "1" : "0" },
-            };
-            PF_PlayerData.UpdateUserData(updates);
+                        DialogCanvasController.RequestConfirmationPrompt("Caution!", "Your current facebook account is already linked to another Unicorn Battle player. Do you want to force-bind your Facebook account to this player?", afterConfirm);
+                    }
+                );
+            }
+#endif
         }
-        gameObject.SetActive(false);
+
+        private void UpdateFacebookStatusButton()
+        {
+#if UNITY_ANDROID || UNITY_IOS
+            Debug.Log("UpdateFacebookStatusButton: " + FB.IsLoggedIn);
+            var txt = linkToFaceBook.GetComponentInChildren<Text>();
+            txt.text = FB.IsLoggedIn ? GlobalStrings.UNLINK_FB_BTN_MSG : GlobalStrings.LINK_FB_BTN_MSG;
+
+            facebookPicture.overrideSprite = null;
+            if (FB.IsLoggedIn)
+            {
+                UnityAction<Texture2D> afterGetPhoto = tx =>
+                {
+                    facebookPicture.overrideSprite = Sprite.Create(tx, new Rect(0, 0, 128, 128), Vector2.zero);
+                };
+                StartCoroutine(FacebookHelperClass.GetPlayerProfilePhoto(FetchWebAsset, afterGetPhoto));
+            }
+#endif
+        }
+
+        public void ShowRegistration()
+        {
+            Action<AddUsernamePasswordResult> afterRegistration = result =>
+            {
+                PlayerMgr.Username = result.Username;
+                PlayerMgr.UserEmail = "Pending Refresh";
+
+                Dictionary<string, object> eventData = new Dictionary<string, object>()
+                {
+                    //pull email from RC due to it not being returned.
+                    { "Username", result.Username }, { "Email", rc.email.text }
+                };
+                TelemetryManager.RecordPlayerEvent(TelemetryEvent.Client_RegisteredAccount, eventData);
+
+                registerAccount.gameObject.SetActive(false);
+                accountStatus.text = GlobalStrings.ACT_STATUS_REG_MSG;
+                resetPassword.gameObject.SetActive(true);
+                accountStatus.color = Color.green;
+            };
+
+            rc.gameObject.SetActive(true);
+            rc.Init(afterRegistration);
+        }
+
+        public void SendRecoveryEmail()
+        {
+            Action<bool> afterCheck = (response) =>
+            {
+                if (!response)
+                    return;
+
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.SendAccountRecoveryEmail);
+
+                string email = (string.IsNullOrEmpty(PlayerMgr.UserEmail) || PlayerMgr.UserEmail.Contains("Pending Refresh")) ? rc.email.text : PlayerMgr.UserEmail;
+
+                Authentication.SendAccountRecoveryEmail(
+                    email,
+                    (r) =>
+                    {
+                        PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.SendAccountRecoveryEmail);
+                    },
+                    (e) =>
+                    {
+                        PF_Bridge.RaiseCallbackError(string.Empty, PlayFabAPIMethods.SendAccountRecoveryEmail);
+                    }
+                );
+            };
+
+            DialogCanvasController.RequestConfirmationPrompt(GlobalStrings.RECOVER_EMAIL_PROMPT, GlobalStrings.RECOVER_EMAIL_MSG, afterCheck);
+        }
+
+        public void Continue()
+        {
+            if (changedLoginState)
+            {
+                var l_playerDataMgr = MainManager.Instance.getPlayerManager();
+                if (null == l_playerDataMgr) return;
+
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateUserData);
+
+                l_playerDataMgr.UpdatePublicUserData(onUpdateUserDataSuccess, onUpdateUserDataFailure);
+            }
+            gameObject.SetActive(false);
+        }
+
+        void onUpdateUserDataSuccess(string message)
+        {
+            PF_Bridge.RaiseCallbackSuccess(message, PlayFabAPIMethods.UpdateUserData);
+        }
+
+        void onUpdateUserDataFailure(string message)
+        {
+            PF_Bridge.RaiseCallbackError(message, PlayFabAPIMethods.UpdateUserData);
+        }
     }
 }

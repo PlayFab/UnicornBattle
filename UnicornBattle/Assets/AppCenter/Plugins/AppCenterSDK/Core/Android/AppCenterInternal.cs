@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 #if UNITY_ANDROID && !UNITY_EDITOR
+using Assets.AppCenter.Plugins.Android.Utility;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +12,6 @@ namespace Microsoft.AppCenter.Unity.Internal
     class AppCenterInternal
     {
         private static AndroidJavaClass _appCenter = new AndroidJavaClass("com.microsoft.appcenter.AppCenter");
-        private static AndroidJavaObject _context;
 
         public static void SetLogLevel(int logLevel)
         {
@@ -132,24 +131,12 @@ namespace Microsoft.AppCenter.Unity.Internal
             });
         }
 
-        private static AndroidJavaObject GetAndroidContext()
-        {
-            if (_context != null)
-            {
-                return _context;
-            }
-            var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            _context = activity.Call<AndroidJavaObject>("getApplicationContext");
-            return _context;
-        }
-
         public static void StartFromLibrary(IntPtr servicesArray)
         {
             var startMethod = AndroidJNI.GetStaticMethodID(_appCenter.GetRawClass(), "startFromLibrary", "(Landroid/content/Context;[Ljava/lang/Class;)V");
             AndroidJNI.CallStaticVoidMethod(_appCenter.GetRawClass(), startMethod, new jvalue[]
             {
-                new jvalue { l = GetAndroidContext().GetRawObject() },
+                new jvalue { l = AndroidUtility.GetAndroidContext().GetRawObject() },
                 new jvalue { l = servicesArray }
             });
         }

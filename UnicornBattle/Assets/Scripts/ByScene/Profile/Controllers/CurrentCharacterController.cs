@@ -1,59 +1,71 @@
+using UnicornBattle.Managers;
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CurrentCharacterController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public Text characterName;
-    public Text characterLevel;
-    public Image displayImage;
-    public FillBarController expBar;
-
-    public Text hp;
-    public Text dp;
-    public Text sp;
-
-    public SpellItem spell1;
-    public SpellItem spell2;
-    public SpellItem spell3;
-
-    public void Init()
+    public class CurrentCharacterController : MonoBehaviour
     {
-        // may want these things in an init function that can be called after certain calls complete
-        if (PF_PlayerData.activeCharacter == null)
-            return;
+        public Text characterName;
+        public Text characterLevel;
+        public Image displayImage;
+        public FillBarController expBar;
 
-        characterName.text = PF_PlayerData.activeCharacter.characterDetails.CharacterName;
-        characterLevel.text = "" + PF_PlayerData.activeCharacter.characterData.CharacterLevel;
-        hp.text = "" + PF_PlayerData.activeCharacter.PlayerVitals.MaxHealth;
-        dp.text = "" + PF_PlayerData.activeCharacter.PlayerVitals.MaxDefense;
-        sp.text = "" + PF_PlayerData.activeCharacter.PlayerVitals.MaxSpeed;
+        public Text hp;
+        public Text dp;
+        public Text sp;
 
-        var icon = PF_PlayerData.activeCharacter.characterData.CustomAvatar == null ? GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon, IconManager.IconTypes.Class) : GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.characterData.CustomAvatar, IconManager.IconTypes.Class);
-        displayImage.overrideSprite = icon;
+        public SpellItem spell1;
+        public SpellItem spell2;
+        public SpellItem spell3;
 
-        if (PF_GameData.CharacterLevelRamp.Count > 0)
+        public void Init()
         {
-            var key = (PF_PlayerData.activeCharacter.characterData.CharacterLevel + 1).ToString();
-            if (PF_GameData.CharacterLevelRamp.ContainsKey(key))
-                expBar.maxValue = PF_GameData.CharacterLevelRamp[key];
-            expBar.currentValue = PF_PlayerData.activeCharacter.characterData.ExpThisLevel;
+            var l_characterMgr = MainManager.Instance.getCharacterManager();
+            if (null == l_characterMgr)
+                return;
+
+            l_characterMgr.Refresh(false, (s) =>
+            {
+                var l_activeChar = GameController.Instance.ActiveCharacter;
+                if (l_activeChar == null)
+                    return;
+
+                characterName.text = l_activeChar.CharacterName;
+                characterLevel.text = "" + l_activeChar.characterData.CharacterLevel;
+                hp.text = "" + l_activeChar.PlayerVitals.MaxHealth;
+                dp.text = "" + l_activeChar.PlayerVitals.MaxDefense;
+                sp.text = "" + l_activeChar.PlayerVitals.MaxSpeed;
+
+                var icon = l_activeChar.characterData.CustomAvatar == null ? GameController.Instance.iconManager.GetIconById(l_activeChar.baseClass.Icon, IconManager.IconTypes.Class) : GameController.Instance.iconManager.GetIconById(l_activeChar.characterData.CustomAvatar, IconManager.IconTypes.Class);
+                displayImage.overrideSprite = icon;
+
+                var key = (l_activeChar.characterData.CharacterLevel + 1).ToString();
+                expBar.maxValue = l_characterMgr.GetLevelRamp(key);
+                expBar.currentValue = l_activeChar.characterData.ExpThisLevel;
+
+                SetSpellDetails(l_activeChar.baseClass.Spell1, spell1, l_activeChar.characterData.Spell1_Level, 1);
+                SetSpellDetails(l_activeChar.baseClass.Spell2, spell2, l_activeChar.characterData.Spell2_Level, 2);
+                SetSpellDetails(l_activeChar.baseClass.Spell3, spell3, l_activeChar.characterData.Spell3_Level, 3);
+            }, null);
         }
 
-        SetSpellDetails(PF_PlayerData.activeCharacter.baseClass.Spell1, spell1, PF_PlayerData.activeCharacter.characterData.Spell1_Level, 1);
-        SetSpellDetails(PF_PlayerData.activeCharacter.baseClass.Spell2, spell2, PF_PlayerData.activeCharacter.characterData.Spell2_Level, 2);
-        SetSpellDetails(PF_PlayerData.activeCharacter.baseClass.Spell3, spell3, PF_PlayerData.activeCharacter.characterData.Spell3_Level, 3);
-    }
+        private static void SetSpellDetails(string p_spellName, SpellItem p_spellItem, int p_spellLevel, int p_index)
+        {
+            var l_gameDataManager = MainManager.Instance.getGameDataManager();
+            if (null == l_gameDataManager)
+                return;
 
-    private static void SetSpellDetails(string spellName, SpellItem spellItem, int spellLevel, int index)
-    {
-        if (PF_GameData.Spells.ContainsKey(spellName))
-        {
-            var eachSpellDetail = PF_GameData.Spells[spellName];
-            spellItem.LoadSpell(spellName, eachSpellDetail, spellLevel);
-        }
-        else
-        {
-            Debug.Log("something went wrong, could not find spell " + index);
+            var l_spellDetails = l_gameDataManager.GetSpellDetail(p_spellName);
+            if (null != l_spellDetails)
+            {
+                p_spellItem.LoadSpell(p_spellName, l_spellDetails, p_spellLevel);
+            }
+            else
+            {
+                Debug.LogError("something went wrong, could not find spell " + p_index + " : " + p_spellName);
+            }
         }
     }
 }

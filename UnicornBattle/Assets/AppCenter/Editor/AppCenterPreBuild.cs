@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 using Microsoft.AppCenter.Unity;
 using UnityEditor;
 using UnityEditor.Build;
@@ -76,6 +79,10 @@ public class AppCenterPreBuild : IPreprocessBuild
             if (settings.CustomInstallUrl.UseCustomUrl)
             {
                 settingsMaker.SetInstallUrl(settings.CustomInstallUrl.Url);
+            }
+            if (settings.EnableDistributeForDebuggableBuild)
+            {
+                settingsMaker.SetShouldEnableDistributeForDebuggableBuild();
             }
             settingsMaker.StartDistributeClass();
         }

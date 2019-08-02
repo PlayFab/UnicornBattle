@@ -5,7 +5,7 @@ This repository is the home of Unicorn Battle (UB), PlayFab's open-source, end-t
 
 ## Key Features
   * **Unified Player Profile** - Accounts uses Device ID &/or Facebook Authentication
-  * **Cloud Saving** - Store data on up to 10 characters per account
+  * **Cloud Saving** - Store data on up to 6 characters per account
   * **Inventory Management** - Transfer items and currency between the player and its characters
   * **Dynamic Gameplay** - Drive client behaviors using TitleData
   * **Virtual Items, Currencies, and Stores** - Configured via PlayFab's Game Manager

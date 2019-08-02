@@ -1,205 +1,204 @@
 using System.Collections.Generic;
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class GameplayController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public GameplayEnemyController enemyController;
-    public PlayerUIEffectsController playerController;
-    public DirectionCanvasController directionController;
-
-    public delegate void GameplayEventHandler(string message, PF_GamePlay.GameplayEventTypes type);
-    public static event GameplayEventHandler OnGameplayEvent;
-
-    public TurnController turnController;
-    public FX_Placement fxController;
-
-    #region Setup & UI Actions
-    void OnEnable()
+    public class GameplayController : MonoBehaviour
     {
-        OnGameplayEvent += OnGameplayEventReceived;
-        Init();
-    }
+        public GameplayEnemyController enemyController;
+        public PlayerUIEffectsController playerController;
+        public DirectionCanvasController directionController;
 
-    void OnDisable()
-    {
-        OnGameplayEvent -= OnGameplayEventReceived;
-    }
+        public delegate void GameplayEventHandler(string message, UBGamePlay.GameplayEventTypes type);
+        public static event GameplayEventHandler OnGameplayEvent;
 
-    void OnGameplayEventReceived(string message, PF_GamePlay.GameplayEventTypes type)
-    {
-        switch (type)
-        {
-            case PF_GamePlay.GameplayEventTypes.IntroQuest:
-                RaiseGameplayEvent(GlobalStrings.QUEST_START_EVENT, PF_GamePlay.GameplayEventTypes.IntroAct);
-                break;
-            case PF_GamePlay.GameplayEventTypes.EnemyTurnBegins:
-                EnemyAttackPlayer();
-                break;
-        }
-    }
+        public TurnController turnController;
+        public FX_Placement fxController;
 
-    void Init()
-    {
-        //TODO this needs to set up all the dynamic data for the many components
-        if (PF_GamePlay.encounters != null && PF_GamePlay.encounters.Count > 0 && PF_GamePlay.ActiveQuest != null)
+        #region Setup & UI Actions
+        void OnEnable()
         {
-            if (PF_GamePlay.UseRaidMode)
-                PF_GamePlay.QuestProgress = SpoofQuestResults();
-            RaiseGameplayEvent(GlobalStrings.QUEST_START_EVENT, PF_GamePlay.GameplayEventTypes.IntroQuest);
-        }
-    }
-
-    private QuestTracker SpoofQuestResults()
-    {
-        var tracker = new QuestTracker();
-        tracker.CompletedEncounters = PF_GamePlay.encounters;
-
-        var rng = Random.value;
-        if (rng > .9)
-        {
-            tracker.DamageTaken = Random.Range(235, 976);
-            tracker.Deaths = 2;
-        }
-        else if (rng > .1f && rng < .4f)
-        {
-            tracker.DamageTaken = Random.Range(235, 750);
-            tracker.Deaths = 1;
-        }
-        else
-        {
-            tracker.DamageTaken = Random.Range(235, 400);
-            tracker.Deaths = 0;
+            OnGameplayEvent += OnGameplayEventReceived;
+            Init();
         }
 
-        if (PF_GamePlay.isHardMode)
+        void OnDisable()
         {
-            tracker.DamageTaken = Random.Range(880, 2450);
-            tracker.Deaths += Random.value > .6 ? 1 : 0;
+            OnGameplayEvent -= OnGameplayEventReceived;
         }
 
-        tracker.ItemsUsed = Random.Range(0, 5);
-
-        foreach (var encounter in PF_GamePlay.encounters)
+        void OnGameplayEventReceived(string message, UBGamePlay.GameplayEventTypes type)
         {
-            tracker.ItemsFound.AddRange(encounter.Data.Rewards.ItemsDropped);
-            tracker.XpCollected += Random.Range(encounter.Data.Rewards.XpMin, encounter.Data.Rewards.XpMax);
-            tracker.GoldCollected += Random.Range(encounter.Data.Rewards.GoldMin, encounter.Data.Rewards.GoldMax);
-
-            if (encounter.Data.EncounterType == EncounterTypes.Hero)
-                tracker.HeroRescues++;
-
-            if (encounter.Data.EncounterType.ToString().Contains(GlobalStrings.ENCOUNTER_CREEP))
-                tracker.CreepEncounters++;
-        }
-        tracker.isQuestWon = true;
-
-        return tracker;
-    }
-
-    public static void RaiseGameplayEvent(string message, PF_GamePlay.GameplayEventTypes type)
-    {
-        if (OnGameplayEvent != null)
-            OnGameplayEvent(message, type);
-    }
-    #endregion
-
-    public bool AreQuestGoalsComplete()
-    {
-        //TODO add the logic to check current progress vs the goal 
-        return false;
-    }
-
-    public void UseItem()
-    {
-    }
-
-    public void OpenStore()
-    {
-    }
-
-    public void OpenInventory()
-    {
-    }
-
-    public void EnemyAttackPlayer(bool isAmbush = false)
-    {
-        //randomly select a spell from the enemies spells and cast it on the player.
-        var rng = 0;
-        var vitals = turnController.currentEncounter.Data.Vitals;
-        if (vitals.Spells.Count > 1)
-        {
-            var tries = new List<int>();
-            do
+            switch (type)
             {
-                if (tries.Count < vitals.Spells.Count)
-                {
-                    rng = Random.Range(0, vitals.Spells.Count);
-                    if (tries.IndexOf(rng) == -1)
-                        tries.Add(rng);
-                }
-                else
-                {
+                case UBGamePlay.GameplayEventTypes.IntroQuest:
+                    RaiseGameplayEvent(GlobalStrings.QUEST_START_EVENT, UBGamePlay.GameplayEventTypes.IntroAct);
                     break;
-                }
-            } while (vitals.Spells[rng].IsOnCooldown == false && tries.Count < vitals.Spells.Count);
+                case UBGamePlay.GameplayEventTypes.EnemyTurnBegins:
+                    EnemyAttackPlayer();
+                    break;
+            }
         }
 
-        var spellRecord = vitals.Spells[rng];
-
-        // we will run this after the Callout animation
-        UnityAction applyDamage = () =>
+        void Init()
         {
-            fxController.PlayerTakesDamage(playerController, spellRecord.Detail.FX);
-            playerController.TakeDamage(spellRecord.Detail.BaseDmg);
-
-            // NEED TO make this decrement each turn
-
-            // No penalty for the first attack on an ambush
-            if (isAmbush != true && spellRecord.Detail.Cooldown > 0)
+            //TODO this needs to set up all the dynamic data for the many components
+            if (GameController.Instance.ActiveEncounterList != null
+                && GameController.Instance.ActiveEncounterList.Count > 0
+                && GameController.Instance.ActiveLevel != null)
             {
-                spellRecord.IsOnCooldown = true;
-                spellRecord.CdTurns = spellRecord.Detail.Cooldown;
+                if (UBGamePlay.UseRaidMode)
+                    GameController.Instance.QuestProgress = SpoofQuestResults();
+                RaiseGameplayEvent(GlobalStrings.QUEST_START_EVENT, UBGamePlay.GameplayEventTypes.IntroQuest);
             }
-        };
+        }
 
-        //Make our callout
-        var spellIcon = GameController.Instance.iconManager.GetIconById(spellRecord.Detail.Icon, IconManager.IconTypes.Spell);
-        enemyController.Callout(spellIcon, string.Format("{0} casts {1}", turnController.currentEncounter.DisplayName, spellRecord.SpellName), applyDamage);
-    }
-
-
-    public void PlayerAttacks(SpellSlot sp, bool isAmbush = false) //, bool isAmbush = false)
-    {
-        var spellIcon = sp.SpellIcon.overrideSprite;
-
-        // we will run this after the Callout animation
-        UnityAction applyDamage = () =>
+        private UBQuest SpoofQuestResults()
         {
-            fxController.TestFx(enemyController, sp.SpellData.FX);
-            enemyController.TakeDamage(sp.SpellData.Dmg);
+            var tracker = new UBQuest();
+            tracker.CompletedEncounters = GameController.Instance.ActiveEncounterList;
 
-            DecrementPlayerCDs();
-
-            // No penalty for the first attack on an ambush
-            if (isAmbush != true)
+            var rng = Random.value;
+            if (rng >.9)
             {
-                if (sp.SpellData.Cooldown > 0)
+                tracker.DamageTaken = Random.Range(235, 976);
+                tracker.Deaths = 2;
+            }
+            else if (rng >.1f && rng < .4f)
+            {
+                tracker.DamageTaken = Random.Range(235, 750);
+                tracker.Deaths = 1;
+            }
+            else
+            {
+                tracker.DamageTaken = Random.Range(235, 400);
+                tracker.Deaths = 0;
+            }
+
+            if (UBGamePlay.isHardMode)
+            {
+                tracker.DamageTaken = Random.Range(880, 2450);
+                tracker.Deaths += Random.value >.6 ? 1 : 0;
+            }
+
+            tracker.ItemsUsed = Random.Range(0, 5);
+
+            foreach (var encounter in tracker.CompletedEncounters)
+            {
+                tracker.ItemsFound.AddRange(encounter.Data.Rewards.ItemsDropped);
+                tracker.XpCollected += Random.Range(encounter.Data.Rewards.XpMin, encounter.Data.Rewards.XpMax);
+                tracker.GoldCollected += Random.Range(encounter.Data.Rewards.GoldMin, encounter.Data.Rewards.GoldMax);
+
+                if (encounter.Data.EncounterType == EncounterTypes.Hero)
+                    tracker.HeroRescues++;
+
+                if (encounter.Data.EncounterType.ToString().Contains(GlobalStrings.ENCOUNTER_CREEP))
+                    tracker.CreepEncounters++;
+            }
+            tracker.isQuestWon = true;
+
+            return tracker;
+        }
+
+        public static void RaiseGameplayEvent(string message, UBGamePlay.GameplayEventTypes type)
+        {
+            if (OnGameplayEvent != null)
+                OnGameplayEvent(message, type);
+        }
+        #endregion
+
+        public bool AreQuestGoalsComplete()
+        {
+            //TODO add the logic to check current progress vs the goal 
+            return false;
+        }
+
+        public void UseItem() { }
+
+        public void OpenStore() { }
+
+        public void OpenInventory() { }
+
+        public void EnemyAttackPlayer(bool isAmbush = false)
+        {
+            //randomly select a spell from the enemies spells and cast it on the player.
+            var rng = 0;
+            var vitals = turnController.currentEncounter.Data.Vitals;
+            if (vitals.Spells.Count > 1)
+            {
+                var tries = new List<int>();
+                do
                 {
-                    sp.isOnCD = true;
-                    sp.EnableCD(sp.SpellData.Cooldown);
-                }
+                    if (tries.Count < vitals.Spells.Count)
+                    {
+                        rng = Random.Range(0, vitals.Spells.Count);
+                        if (tries.IndexOf(rng) == -1)
+                            tries.Add(rng);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                } while (vitals.Spells[rng].IsOnCooldown == false && tries.Count < vitals.Spells.Count);
             }
-        };
 
-        //Make our callout
-        playerController.Callout(spellIcon, string.Format("You cast {0}", sp.SpellData.SpellName), applyDamage);
-    }
+            var spellRecord = vitals.Spells[rng];
 
-    public void DecrementPlayerCDs()
-    {
-        playerController.ActionBar.Spell1Button.DecrementCD();
-        playerController.ActionBar.Spell2Button.DecrementCD();
-        playerController.ActionBar.Spell3Button.DecrementCD();
+            // we will run this after the Callout animation
+            UnityAction applyDamage = () =>
+            {
+                fxController.PlayerTakesDamage(playerController, spellRecord.FX);
+                playerController.TakeDamage(spellRecord.BaseDmg);
+
+                // NEED TO make this decrement each turn
+
+                // No penalty for the first attack on an ambush
+                if (isAmbush != true && spellRecord.Cooldown > 0)
+                {
+                    spellRecord.IsOnCooldown = true;
+                    spellRecord.CdTurns = spellRecord.Cooldown;
+                }
+            };
+
+            //Make our callout
+            var spellIcon = GameController.Instance.iconManager.GetIconById(spellRecord.Icon, IconManager.IconTypes.Spell);
+            enemyController.Callout(spellIcon, string.Format("{0} casts {1}", turnController.currentEncounter.DisplayName, spellRecord.SpellName), applyDamage);
+        }
+
+        public void PlayerAttacks(SpellSlot sp, bool isAmbush = false) //, bool isAmbush = false)
+        {
+            var spellIcon = sp.SpellIcon.overrideSprite;
+
+            // we will run this after the Callout animation
+            UnityAction applyDamage = () =>
+            {
+                fxController.TestFx(enemyController, sp.SpellData.FX);
+                enemyController.TakeDamage(sp.SpellData.Dmg);
+
+                DecrementPlayerCDs();
+
+                // No penalty for the first attack on an ambush
+                if (isAmbush != true)
+                {
+                    if (sp.SpellData.Cooldown > 0)
+                    {
+                        sp.isOnCD = true;
+                        sp.EnableCD(sp.SpellData.Cooldown);
+                    }
+                }
+            };
+
+            //Make our callout
+            playerController.Callout(spellIcon, string.Format("You cast {0}", sp.SpellData.SpellName), applyDamage);
+        }
+
+        public void DecrementPlayerCDs()
+        {
+            playerController.ActionBar.Spell1Button.DecrementCD();
+            playerController.ActionBar.Spell2Button.DecrementCD();
+            playerController.ActionBar.Spell3Button.DecrementCD();
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 public interface IAppCenterSettingsMaker
@@ -23,4 +22,5 @@ public interface IAppCenterSettingsMaker
     void SetMaxStorageSize(long size);
     void EnableFirebaseAnalytics();
     void CommitSettings();
+    void SetShouldEnableDistributeForDebuggableBuild();
 }

@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using UnicornBattle.Controllers;
 
 public static class GlobalStrings
 {
+    // game version
+    public const string UB_VERSION = "2.0.0 v196";
     // Strings displayed to the user
     public const string FB_LOGIN_MSG = "\n Facebook Login Found";
     public const string DEVICE_ID_LOGIN_MSG = "\n Device ID Found";
@@ -59,11 +62,13 @@ public static class GlobalStrings
     public const string CATEGORY_SELECTOR_PROMPT = "Select Category";
     public const string QUEST_SELECTOR_PROMPT = "Select Quest";
 
+    public const string INSUFFICIENT_GEM_SLOT_MSG = "Not Enough Gems to Buy Slot.";
+
     // Programatic strings
     public const string PrimaryCatalogName = "CharacterClasses";
     public static readonly List<string> InitTitleKeys = new List<string> { "Achievements", "ActiveEventKeys", "AndroidPushSenderId", "CharacterLevelRamp", "Classes", "CommunityWebsite", "Events", "Levels", "MinimumInterstitialWait", "Spells", "StandardStores", "StartingCharacterSlots", "UseCDN" };
     public const string DEFAULT_UB_TITLE_ID = "A5F3";
-	public const string DEFAULT_ANDROID_PUSH_SENDER_ID = "494923569376";
+    public const string DEFAULT_ANDROID_PUSH_SENDER_ID = "494923569376";
     public const string FB_PREF_KEY = "LinkedFacebook";
     public const string DEVICE_PREF_KEY = "LastDeviceIdUsed";
     public const string ENCOUNTER_CREEP = "Creep";
@@ -98,10 +103,6 @@ public static class GlobalStrings
     public const string SMOKE_EFFECT_2 = "CFXM_SmokePuffsAltLarge";
 
     public static readonly Dictionary<DialogCanvasController.InventoryFilters, string> INV_FILTER_DISPLAY_NAMES = new Dictionary<DialogCanvasController.InventoryFilters, string>()
-    {
-        {DialogCanvasController.InventoryFilters.AllItems, "All Items"},
-        {DialogCanvasController.InventoryFilters.UsableInCombat, "Combat Items"},
-        {DialogCanvasController.InventoryFilters.Keys, "Keys"},
-        {DialogCanvasController.InventoryFilters.Containers, "Containers"},
+    { { DialogCanvasController.InventoryFilters.AllItems, "All Items" }, { DialogCanvasController.InventoryFilters.UsableInCombat, "Combat Items" }, { DialogCanvasController.InventoryFilters.Keys, "Keys" }, { DialogCanvasController.InventoryFilters.Containers, "Containers" },
     };
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnicornBattle.Controllers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -65,7 +66,7 @@ public class FX_Placement : MonoBehaviour
     // will need combo or not effects.
     public void PlayerTakesDamage(PlayerUIEffectsController player, string fxName = null)
     {
-        var lifeRect = player.LifeBar.btmBar.gameObject.GetComponent<RectTransform>();
+        var lifeRect = player.LifeBar.fillBG.gameObject.GetComponent<RectTransform>();
         var center = lifeRect.rect.center;
         var worldPos = lifeRect.TransformPoint(new Vector3(lifeRect.rect.xMax, center.y, 0));
         GameObject fx;

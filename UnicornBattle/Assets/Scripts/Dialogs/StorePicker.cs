@@ -1,57 +1,59 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
-public class StorePicker : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public List<UnicornStore> stores;
-    public StoreDisplayController storeDisplay;
-    public StorePickerItem selectedStore;
-
-    public Transform tabMenu;
-
-    void Start()
+    public class StorePicker : MonoBehaviour
     {
-        storeDisplay.pageController.LoadStore(stores[selectedStore.storeIndex].items);
+        public List<UnicornStore> stores;
+        public StoreDisplayController storeDisplay;
+        public StorePickerItem selectedStore;
+
+        public Transform tabMenu;
+
+        void Start()
+        {
+            storeDisplay.pageController.LoadStore(stores[selectedStore.storeIndex].items);
+        }
+
+        public void StorePickerItemClicked(StorePickerItem item)
+        {
+            if (selectedStore == item)
+                return;
+
+            ClearSelected();
+            storeDisplay.HideSelected();
+            selectedStore = item;
+            item.GetComponent<Image>().color = Color.green;
+            storeDisplay.pageController.LoadStore(stores[item.storeIndex].items);
+        }
+
+        public void ClearSelected()
+        {
+            selectedStore = null;
+            foreach (Transform each in tabMenu)
+                each.GetComponent<Image>().color = Color.white;
+        }
     }
 
-    public void StorePickerItemClicked(StorePickerItem item)
+    #region helper_classes
+    [Serializable]
+    public class UnicornStore
     {
-        if (selectedStore == item)
-            return;
-
-        ClearSelected();
-        storeDisplay.HideSelected();
-        selectedStore = item;
-        item.GetComponent<Image>().color = Color.green;
-        storeDisplay.pageController.LoadStore(stores[item.storeIndex].items);
+        public string storeName;
+        //public List<CatalogItem> items; //use this one for actual PF items
+        public List<TEST_StoreItem> items; // use this one for UI testing
     }
 
-    public void ClearSelected()
+    [Serializable]
+    public class TEST_StoreItem
     {
-        selectedStore = null;
-        foreach (Transform each in tabMenu)
-            each.GetComponent<Image>().color = Color.white;
+        public string displayName;
+        public string displayText;
+        public Color iconColor = Color.gray;
+        public Color textColor = Color.black;
     }
+    #endregion
 }
-
-
-#region helper_classes
-[Serializable]
-public class UnicornStore
-{
-    public string storeName;
-    //public List<CatalogItem> items; //use this one for actual PF items
-    public List<TEST_StoreItem> items; // use this one for UI testing
-}
-
-[Serializable]
-public class TEST_StoreItem
-{
-    public string displayName;
-    public string displayText;
-    public Color iconColor = Color.gray;
-    public Color textColor = Color.black;
-}
-#endregion

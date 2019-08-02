@@ -25,6 +25,7 @@ using OnePF;
  */ 
 public class OpenIABEventManager : MonoBehaviour
 {
+#pragma warning disable 0067
     /**
      * Successfull Init callback. Billing is supported on current platform
      */ 
@@ -65,7 +66,7 @@ public class OpenIABEventManager : MonoBehaviour
      */ 
     public static event Action<string> consumePurchaseFailedEvent;
 
-#pragma warning disable 0067
+
     /**
      * Fired when transaction was restored
      */ 

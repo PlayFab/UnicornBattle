@@ -3,6 +3,7 @@ guid: 93324a471a6d44bb8297d17d8b191e52
 labels:
 - gvh
 - gvh_dotnet-3.5
+- gvh_version-6.2.2
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -12,6 +13,7 @@ PluginImporter:
   isPreloaded: 0
   isOverridable: 0
   isExplicitlyReferenced: 0
+  validateReferences: 1
   platformData:
   - first:
       Any: 

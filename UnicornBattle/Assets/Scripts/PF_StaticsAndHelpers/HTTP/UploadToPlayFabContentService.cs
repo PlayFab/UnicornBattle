@@ -1,13 +1,15 @@
-using PlayFab;
-using PlayFab.AdminModels;
-using PlayFab.ClientModels;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using PlayFab;
+using PlayFab.ClientModels;
+using UnicornBattle.Controllers;
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 
 /// <summary>
 /// The out of the box WWW Unity3d class does not afford compatable PUT capability with AWS
@@ -18,25 +20,25 @@ using UnityEngine.Events;
 public class UploadToPlayFabContentService : MonoBehaviour
 {
     public bool cleanCacheOnStart = false;
-    public bool isInitalContentUnpacked = false;
-    public bool useCDN = true;
+    public bool isInitialContentUnpacked = false;
+    public bool useCDN = false;
     public Texture2D defaultBanner;
     public Texture2D defaultSplash;
     public List<AssetBundleHelperObject> assets;
 
-    public Dictionary<string, UB_UnpackedAssetBundle> unpackedAssets = new Dictionary<string, UB_UnpackedAssetBundle>();
+    public Dictionary<string, UBUnpackedAssetBundle> unpackedAssets = new Dictionary<string, UBUnpackedAssetBundle>();
 
     // Use this for initialization
     void Start()
     {
-        if (cleanCacheOnStart)
-        {
-#if UNITY_2017_1_OR_NEWER
-            Caching.ClearCache();
-#else
-            Caching.CleanCache();
-#endif
-        }
+        //         if (cleanCacheOnStart)
+        //         {
+        // #if UNITY_2017_1_OR_NEWER && (UNITY_ANDROID || UNITY_IOS || UNITY)
+        //             Caching.ClearCache();
+        // #else
+        //             Caching.CleanCache();
+        // #endif
+        //         }
 
         foreach (var asset in assets)
         {
@@ -54,20 +56,20 @@ public class UploadToPlayFabContentService : MonoBehaviour
     /// </summary>
     void GetContentUploadURL(AssetBundleHelperObject asset)
     {
-        var request = new GetContentUploadUrlRequest();
+        var request = new PlayFab.AdminModels.GetContentUploadUrlRequest();
 
         if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.Android)
-            request.Key = "Android/" + asset.ContentKey;        // folder location & file name to use on the remote server
+            request.Key = "Android/" + asset.ContentKey; // folder location & file name to use on the remote server
         else if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.iOS)
             request.Key = "iOS/" + asset.ContentKey;
+        else if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.Switch)
+            request.Key = "Switch/" + asset.ContentKey;
         else // stand-alone
             request.Key = asset.ContentKey;
-        request.ContentType = asset.MimeType;       // mime type to match the file
+        request.ContentType = asset.MimeType; // mime type to match the file
 
-#if UNITY_WEBPLAYER
-		//UnityEngine.Deubg.Log("Webplayer does not support uploading files.");
-#else
-        PlayFabAdminAPI.GetContentUploadUrl(request, result =>
+#if !UNITY_WEBPLAYER
+        PlayFab.PlayFabAdminAPI.GetContentUploadUrl(request, result =>
         {
             asset.PutUrl = result.URL;
 
@@ -86,50 +88,102 @@ public class UploadToPlayFabContentService : MonoBehaviour
     {
         if (payload == null)
         {
-            Debug.LogWarning("ERROR: Byte arrry was empty or null");
+            Debug.LogWarning("ERROR: Byte array was empty or null");
             return;
         }
 
-        var request = (HttpWebRequest)WebRequest.Create(asset.PutUrl);
+        var request = (HttpWebRequest) WebRequest.Create(asset.PutUrl);
         request.Method = "PUT";
         request.ContentType = asset.MimeType;
-        using (var dataStream = request.GetRequestStream())
-            dataStream.Write(payload, 0, payload.Length);
-        var response = (HttpWebResponse)request.GetResponse();
+        using(var dataStream = request.GetRequestStream())
+        dataStream.Write(payload, 0, payload.Length);
+        var response = (HttpWebResponse) request.GetResponse();
         if (response.StatusCode != HttpStatusCode.OK)
             Debug.LogWarning(string.Format("ERROR: Asset:{0} -- Code:[{1}] -- Msg:{2}", asset.FileName, response.StatusCode, response.StatusDescription));
     }
     #endregion
 
     #region GET_Methods
-    public void KickOffCDNGet(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
+    public void KickOffCDNGet(List<AssetBundleHelperObject> assets, UnityAction<bool> p_onCompleteCallback = null)
     {
-        StartCoroutine(GetDownloadEndpoints(assets, callback));
+        StartCoroutine(GetDownloadEndpoints(assets, p_onCompleteCallback));
     }
 
-    public void KickOffStreamingAssetsGet(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
+    public void LoadBundlesFromStreamingAssets(List<AssetBundleHelperObject> p_assetList, UnityAction<bool> p_onCompleteCallback = null)
     {
-        var path = Application.streamingAssetsPath;
-        var keyPrefix = string.Empty;
-        foreach (var asset in assets)
+        foreach (var asset in p_assetList)
         {
-            switch (asset.BundlePlatform)
+            // #if UNITY_ANDROID
+            // asset.BundlePlatform = AssetBundleHelperObject.BundleTypes.Android;
+            // asset.GetUrl = string.Format("file:///{0}/Android/{1}", Application.streamingAssetsPath, asset.ContentKey);
+            // #elif UNITY_IOS
+            // asset.BundlePlatform = AssetBundleHelperObject.BundleTypes.iOS;
+            // asset.GetUrl = string.Format("{0}/iOS/{1}", Application.streamingAssetsPath, asset.ContentKey);
+            // #else
+            // asset.BundlePlatform = AssetBundleHelperObject.BundleTypes.StandAlone:
+            // asset.GetUrl = string.Format("{0}/{1}", Application.streamingAssetsPath, asset.ContentKey);
+            // #endif
+            Debug.Log("Loading Asset from: " + asset.GetUrl);
+            try
             {
-                case AssetBundleHelperObject.BundleTypes.Android:
-                    keyPrefix = "Android/";
-                    break;
-                case AssetBundleHelperObject.BundleTypes.iOS:
-                    keyPrefix = "iOS/";
-                    break;
+                var loadedBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, asset.ContentKey));
+
+                if (null == loadedBundle) continue;
+
+                asset.Error = string.Empty;
+                asset.Unpacked.ContentKey = asset.ContentKey;
+                asset.Unpacked.PromoId = asset.FileName;
+                asset.Bundle = loadedBundle;
+
+                var assetNames = asset.Bundle.GetAllAssetNames();
+                foreach (var assetName in assetNames)
+                {
+                    var bannerUri = string.Empty;
+                    var splashUri = string.Empty;
+
+                    var assetNameLc = assetName.ToLower();
+                    var isImage = assetNameLc.EndsWith(".jpg") || assetNameLc.EndsWith(".png");
+                    if (assetName.ToLower().Contains("banner.") && isImage)
+                        bannerUri = assetName;
+                    else if (assetName.ToLower().Contains("splash.") && isImage)
+                        splashUri = assetName;
+
+                    if (string.IsNullOrEmpty(bannerUri) == false)
+                        asset.Unpacked.Banner = asset.Bundle.LoadAsset<Texture2D>(bannerUri);
+                    else if (string.IsNullOrEmpty(splashUri) == false)
+                        asset.Unpacked.Splash = asset.Bundle.LoadAsset<Texture2D>(splashUri);
+                    else
+                        asset.Error += string.Format("[Err: Unpacking: {0} -- {1} ]", asset.FileName, assetName);
+                }
+
+                asset.Bundle.Unload(false);
+                asset.IsUnpacked = true;
+
+                if (unpackedAssets.ContainsKey(asset.FileName))
+                {
+                    unpackedAssets[asset.FileName] = asset.Unpacked;
+                }
+                else
+                {
+                    unpackedAssets.Add(asset.FileName, asset.Unpacked);
+                }
+
+                Debug.Log("Loaded: " + asset.FileName);
             }
-            asset.GetUrl = string.Format("file://{0}/{1}{2}", path, keyPrefix, asset.ContentKey);
-            Debug.LogWarningFormat("Get At: {0}",asset.GetUrl);
+            catch (System.Exception ex)
+            {
+                Debug.LogError("Unable to load bundle: " + asset.ContentKey + " with Error: " + ex.Message);
+                asset.Error = "Unable to load";
+                continue;
+            }
         }
-        StartCoroutine(GetAssetPackages(assets, callback));
+
+        if (p_onCompleteCallback != null)
+            p_onCompleteCallback(true);
+        Debug.Log("--- AllComplete ---");
     }
 
-    
-    public IEnumerator GetDownloadEndpoints(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
+    public IEnumerator GetDownloadEndpoints(List<AssetBundleHelperObject> assets, UnityAction<bool> p_onCompleteCallback = null)
     {
         var endTime = Time.time + 30.0f;
 
@@ -140,14 +194,14 @@ public class UploadToPlayFabContentService : MonoBehaviour
         {
             if (Time.time > endTime)
             {
-                Debug.Log("Error: TimeOut");
-                PF_Bridge.RaiseCallbackError("CDN Timeout: Could not obtain endpoints", PlayFabAPIMethods.GetCDNConent, MessageDisplayStyle.error);
+                Debug.LogError("Error: TimeOut");
+                PF_Bridge.RaiseCallbackError("CDN Timeout: Could not obtain endpoints", PlayFabAPIMethods.GetCDNContent);
                 yield break;
             }
             yield return 0;
         }
 
-        StartCoroutine(GetAssetPackages(assets, callback));
+        StartCoroutine(GetAssetPackages(assets, p_onCompleteCallback));
     }
 
     /// <summary>
@@ -158,7 +212,7 @@ public class UploadToPlayFabContentService : MonoBehaviour
         var request = new GetContentDownloadUrlRequest();
 
         if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.Android)
-            request.Key = "Android/" + asset.ContentKey;        // folder location & file name to use on the remote server
+            request.Key = "Android/" + asset.ContentKey; // folder location & file name to use on the remote server
         else if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.iOS)
             request.Key = "iOS/" + asset.ContentKey;
         else // stand-alone
@@ -170,96 +224,78 @@ public class UploadToPlayFabContentService : MonoBehaviour
         }, OnPlayFabError);
     }
 
-    public IEnumerator GetAssetPackages(List<AssetBundleHelperObject> assets, UnityAction<bool> callback = null)
+    public IEnumerator GetAssetPackages(List<AssetBundleHelperObject> assets, UnityAction<bool> p_onCompleteCallback = null)
     {
-        var stTime = Time.time;
-        var timeOut = 30.0f;
+        yield return new WaitForEndOfFrame();
 
         foreach (var asset in assets)
-            StartCoroutine(DownloadAndUnpackAsset(asset));
-
-        while (AreAssetDownloadsAndUnpacksComplete(assets) == false)
         {
-            if (Time.time > stTime + timeOut)
+            var request = UnityWebRequestAssetBundle.GetAssetBundle(asset.GetUrl, asset.Version, 0);
+
+            yield return request.SendWebRequest();
+
+            if (request.isNetworkError || request.isHttpError)
             {
-                PF_Bridge.RaiseCallbackError("CDN Timeout: Could not obtain AssetBundles", PlayFabAPIMethods.GetCDNConent, MessageDisplayStyle.error);
-                if (callback != null)
-                    callback(false);
-                yield break;
+                asset.Error = request.error;
+                Debug.LogError("HTTP ERROR:" + asset.ContentKey + "\n" + request.error);
+                continue;
             }
 
-            yield return 0;
-        }
+            asset.Error = string.Empty;
+            asset.Unpacked.ContentKey = asset.ContentKey;
+            asset.Unpacked.PromoId = asset.FileName;
 
-        foreach (var asset in assets)
-            unpackedAssets.Add(asset.FileName, asset.Unpacked);
+            asset.Bundle = DownloadHandlerAssetBundle.GetContent(request);
+            var assetNames = asset.Bundle.GetAllAssetNames();
+            foreach (var assetName in assetNames)
+            {
+                var bannerUri = string.Empty;
+                var splashUri = string.Empty;
 
-        if (callback != null)
-            callback(true);
-        Debug.Log("--- AllComplete ---");
-    }
+                var assetNameLc = assetName.ToLower();
+                var isImage = assetNameLc.EndsWith(".jpg") || assetNameLc.EndsWith(".png");
+                if (assetName.ToLower().Contains("banner.") && isImage)
+                    bannerUri = assetName;
+                else if (assetName.ToLower().Contains("splash.") && isImage)
+                    splashUri = assetName;
 
-    public IEnumerator DownloadAndUnpackAsset(AssetBundleHelperObject asset)
-    {
-        // Caching.IsVersionCached(asset.GetUrl, asset.Version)
-        // Start a download of the given URL
-        var www = WWW.LoadFromCacheOrDownload(asset.GetUrl, asset.Version);
+                if (string.IsNullOrEmpty(bannerUri) == false)
+                    asset.Unpacked.Banner = asset.Bundle.LoadAsset<Texture2D>(bannerUri);
+                else if (string.IsNullOrEmpty(splashUri) == false)
+                    asset.Unpacked.Splash = asset.Bundle.LoadAsset<Texture2D>(splashUri);
+                else
+                    asset.Error += string.Format("[Err: Unpacking: {0} -- {1} ]", asset.FileName, assetName);
+            }
 
-        // wait until the download is done
-        while (www.progress < 1)
-        {
-            asset.progress = www.progress;
-            yield return www;
-        }
+            asset.Bundle.Unload(false);
+            asset.IsUnpacked = true;
 
-        if (!string.IsNullOrEmpty(www.error))
-        {
-            asset.Error = www.error;
-            Debug.LogError("HTTP ERROR:" + asset.ContentKey + "\n" + www.error);
-            yield break;
-        }
-
-        asset.Error = "";
-        asset.Unpacked.ContentKey = asset.ContentKey;
-        asset.Unpacked.PromoId = asset.FileName;
-
-        asset.Bundle = www.assetBundle;
-        var assetNames = asset.Bundle.GetAllAssetNames();
-        foreach (var assetName in assetNames)
-        {
-            var bannerUri = string.Empty;
-            var splashUri = string.Empty;
-
-            var assetNameLc = assetName.ToLower();
-            var isImage = assetNameLc.EndsWith(".jpg") || assetNameLc.EndsWith(".png");
-            if (assetName.ToLower().Contains("banner.") && isImage)
-                bannerUri = assetName;
-            else if (assetName.ToLower().Contains("splash.") && isImage)
-                splashUri = assetName;
-
-            if (string.IsNullOrEmpty(bannerUri) == false)
-                asset.Unpacked.Banner = asset.Bundle.LoadAsset<Texture2D>(bannerUri);
-            else if (string.IsNullOrEmpty(splashUri) == false)
-                asset.Unpacked.Splash = asset.Bundle.LoadAsset<Texture2D>(splashUri);
+            if (unpackedAssets.ContainsKey(asset.FileName))
+            {
+                unpackedAssets[asset.FileName] = asset.Unpacked;
+            }
             else
-                asset.Error += string.Format("[Err: Unpacking: {0} -- {1} ]", asset.FileName, assetName);
+            {
+                unpackedAssets.Add(asset.FileName, asset.Unpacked);
+            }
         }
 
-        asset.Bundle.Unload(false);
-        asset.IsUnpacked = true;
+        if (p_onCompleteCallback != null)
+            p_onCompleteCallback(true);
+        //Debug.Log("--- AllComplete ---");
     }
     #endregion
 
     #region Helper_Methods
     /// <summary>
-    /// Gets the reletive file path; works acrocss Unity build targets (Web, iOS, Android, PC, Mac) 
+    /// Gets the relative file path; works across Unity build targets (Web, iOS, Android, PC, Mac) 
     /// </summary>
-    /// <returns> The assetPath where the file can be found (will varry depending on the platform) </returns>
+    /// <returns> The assetPath where the file can be found (will vary depending on the platform) </returns>
     IEnumerator GetFilePath(AssetBundleHelperObject asset)
     {
         var platformPrefix = "/";
         if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.Android)
-            platformPrefix = "/Android/";       // folder location & file name to use on the remote server
+            platformPrefix = "/Android/"; // folder location & file name to use on the remote server
         else if (asset.BundlePlatform == AssetBundleHelperObject.BundleTypes.iOS)
             platformPrefix = "/iOS/";
 
@@ -269,9 +305,9 @@ public class UploadToPlayFabContentService : MonoBehaviour
         //useful for uploading from crossplatform (iOS / Android) clients
         if (filePath.Contains("://"))
         {
-            var www = new WWW(filePath);
-            yield return www;
-            asset.LocalPutPath = www.text;
+            var uwr = new UnityWebRequest(filePath);
+            yield return uwr.SendWebRequest();
+            asset.LocalPutPath = uwr.downloadHandler.text;
         }
         else
         {
@@ -296,7 +332,7 @@ public class UploadToPlayFabContentService : MonoBehaviour
     }
 
     // need a way to serve up assets by id now.
-    public UB_UnpackedAssetBundle GetAssetsByID(string id)
+    public UBUnpackedAssetBundle GetAssetsByID(string id)
     {
         if (unpackedAssets.ContainsKey(id))
         {
@@ -308,7 +344,7 @@ public class UploadToPlayFabContentService : MonoBehaviour
         }
         else
         {
-            var obj = new UB_UnpackedAssetBundle
+            var obj = new UBUnpackedAssetBundle
             {
                 ContentKey = "Default",
                 PromoId = "Default",
@@ -337,7 +373,7 @@ public class AssetBundleHelperObject
 {
     public string FileName;
     public string ContentKey;
-    public int Version;
+    public uint Version;
     public string MimeType;
     public BundleTypes BundlePlatform;
     public string LocalPutPath;
@@ -348,17 +384,8 @@ public class AssetBundleHelperObject
     public AssetBundle Bundle;
     public bool IsUnpacked;
     public bool IsFlagedForUpload;
-    public UB_UnpackedAssetBundle Unpacked;
+    public UBUnpackedAssetBundle Unpacked;
 
     //public enum MimeTypes { application/x-gzip, application/octet-stream}
-    public enum BundleTypes { StandAlone, iOS, Android }
-}
-
-[Serializable]
-public class UB_UnpackedAssetBundle
-{
-    public string PromoId;
-    public string ContentKey;
-    public Texture2D Banner;
-    public Texture2D Splash;
+    public enum BundleTypes { StandAlone, iOS, Android, Switch }
 }
