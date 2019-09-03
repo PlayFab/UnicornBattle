@@ -1,7 +1,5 @@
 fileFormatVersion: 2
-guid: e0e7c852bf0a34941bf8a0da612f178e
-timeCreated: 1528189060
-licenseType: Pro
+guid: e8fc0e12067c645378157be24a1e207f
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -25,6 +23,7 @@ PluginImporter:
         Exclude Win: 1
         Exclude Win64: 1
         Exclude iOS: 1
+        Exclude tvOS: 1
   - first:
       Android: Android
     second:
@@ -105,6 +104,13 @@ PluginImporter:
         CPU: AnyCPU
   - first:
       iPhone: iOS
+    second:
+      enabled: 0
+      settings:
+        CompileFlags: 
+        FrameworkDependencies: 
+  - first:
+      tvOS: tvOS
     second:
       enabled: 0
       settings:

@@ -1,122 +1,118 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Collections;
+using UnityEngine.UI;
 
-public class FillBarController : MonoBehaviour {
-	public int maxValue;
-	public int currentValue;
-	
-	public Image topBar;
-	public Image btmBar;
-	
-	public TweenColor colorFader;
-	public float fadeDuration = 2;
-	
-	public bool useRGBColors = false;
-	public bool useFadeAnimation = false;
-	
-	//TODO add this color array to switch up the fade colors after the animation completes
-	public Color[] fadeColors;
+namespace UnicornBattle.Controllers
+{
+	public class FillBarController : MonoBehaviour
+	{
+		public int maxValue;
+		public int currentValue;
 
-	// Update is called once per frame
-	void Update () 
-	{
-		Rect current = topBar.rectTransform.rect;
-		float percentFilled =  current.width / btmBar.rectTransform.rect.width;
-		
-		if(!Mathf.Approximately(percentFilled, this.currentValue))
+		public Gradient gradient;
+
+		public Image frame;
+		public Image fill;
+		public Image fillBG;
+
+		public TweenColor colorFader;
+		public float fadeDuration = 2;
+
+		public bool useRGBColor = false;
+		public bool useFadeAnimation = false;
+		public bool useGradientColor = true;
+
+		//TODO add this color array to switch up the fade colors after the animation completes
+		public Color[] fadeColors;
+
+		// Update is called once per frame
+		void Update()
 		{
-			topBar.rectTransform.sizeDelta = new Vector2(btmBar.rectTransform.rect.width * currentValue/maxValue, btmBar.rectTransform.rect.height);
-			if(this.useRGBColors)
+			if (fillBG != null)
 			{
-				if(percentFilled >= .75f)
+				Rect current = fillBG.rectTransform.rect;
+				float percent = (float) currentValue / (float) maxValue;
+
+				fill.rectTransform.sizeDelta = new Vector2((fillBG.rectTransform.rect.width * percent), fill.rectTransform.sizeDelta.y);
+
+				if (this.useRGBColor)
 				{
-					this.topBar.color = Color.green;
+					if (percent >= .75f) this.fill.color = Color.green;
+					else if (percent >.25f && percent < .75f) this.fill.color = Color.yellow;
+					else if (percent <= .25f) this.fill.color = Color.red;
+
 				}
-				else if(percentFilled > .25f && percentFilled < .75f)
+				// Gradient is prioritzed 
+				if (this.useGradientColor)
 				{
-					this.topBar.color = Color.yellow;
+					this.fill.color = gradient.Evaluate(percent);
 				}
-				else if(percentFilled <= .25f)
+
+			}
+		}
+
+		// should only be used in battle (player life or enemy life)
+		public IEnumerator UpdateBar(int target, bool immediate = false)
+		{
+			if (currentValue > target && !immediate)
+			{
+				while (currentValue > target && currentValue > 0)
 				{
-					this.topBar.color = Color.red;
+					currentValue -= Mathf.RoundToInt(this.maxValue * .01f);
+					yield return new WaitForEndOfFrame();
+				}
+				if (target <= 0)
+				{
+					// fire the event, and let the turn manager decide how to proceed.
+					//GameplayController.RaiseGameplayEvent("Target Died", PF_GamePlay.GameplayEventTypes.OutroEncounter);
 				}
 			}
-		} 
-		
-		if(this.useFadeAnimation && this.colorFader != null && this.colorFader.enabled == false)
-		{
-			this.colorFader.enabled = true;
-			this.colorFader.duration = this.fadeDuration;
-		}
-		else if(this.useFadeAnimation == false && this.colorFader != null && this.colorFader.enabled)
-		{
-			this.colorFader.enabled = false;
-		}
-		
-	}
-	
-	// should only be used in battle (player life or enemy life)
-	public IEnumerator UpdateBar(int target, bool immediate = false)
-	{
-		if(currentValue > target && !immediate)
-		{
-			while(currentValue > target && currentValue > 0)
+			else if (currentValue < target && !immediate)
 			{
-				currentValue -= Mathf.RoundToInt(this.maxValue * .01f);
-				yield return new WaitForEndOfFrame();
+				while (currentValue < target && currentValue < this.maxValue)
+				{
+					currentValue += Mathf.RoundToInt(this.maxValue * .01f);
+					yield return new WaitForEndOfFrame();
+				}
 			}
-			if(target <= 0)
+			else if (immediate && currentValue != target)
 			{
-				// fire the event, and let the turn manager decide how to proceed.
-				//GameplayController.RaiseGameplayEvent("Target Died", PF_GamePlay.GameplayEventTypes.OutroEncounter);
+				currentValue = target;
 			}
+			yield break;
 		}
-		else if (currentValue < target && !immediate)
+
+		public IEnumerator UpdateBarWithCallback(int target, bool immediate = false, UnityAction callback = null)
 		{
-			while(currentValue < target && currentValue < this.maxValue)
+			if (currentValue > target && !immediate)
 			{
-				currentValue += Mathf.RoundToInt(this.maxValue * .01f);
-				yield return new WaitForEndOfFrame();
+				while (currentValue > target && currentValue > 0)
+				{
+					currentValue -= Mathf.RoundToInt(this.maxValue * .001f);
+					yield return new WaitForEndOfFrame();
+				}
 			}
-		}
-		else if(immediate && currentValue != target)
-		{
-			currentValue = target;
-		}
-		yield break;
-	}
-	
-	public IEnumerator UpdateBarWithCallback(int target, bool immediate = false, UnityAction callback = null)
-	{
-		if(currentValue > target && !immediate)
-		{
-			while(currentValue > target && currentValue > 0)
+			else if (currentValue < target && !immediate)
 			{
-				currentValue -= Mathf.RoundToInt(this.maxValue * .01f);
-				yield return new WaitForEndOfFrame();
+				while (currentValue < target && currentValue < this.maxValue)
+				{
+					currentValue += Mathf.RoundToInt(this.maxValue * 0.001f);
+					yield return new WaitForEndOfFrame();
+				}
 			}
-		}
-		else if (currentValue < target && !immediate)
-		{
-			while(currentValue < target && currentValue < this.maxValue)
+			else
 			{
-				currentValue += Mathf.RoundToInt(this.maxValue * .01f);
-				yield return new WaitForEndOfFrame();
+				currentValue = target;
 			}
+
+			if (callback != null)
+			{
+				callback();
+
+			}
+			yield break;
 		}
-		else
-		{
-			currentValue = target;
-		}
-		
-		if(callback != null)
-		{
-			callback();
-		
-		}
-		yield break;
 	}
 }

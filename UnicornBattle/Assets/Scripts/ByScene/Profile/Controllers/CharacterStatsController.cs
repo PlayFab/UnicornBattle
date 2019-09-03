@@ -1,34 +1,33 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using System.Collections;
+﻿using UnicornBattle.Models;
+using UnityEngine;
 
-public class CharacterStatsController : MonoBehaviour {
-	
-	public StatItem HP_Stat;
-	public StatItem MP_Stat;
-	public StatItem DP_Stat;
-	public StatItem SP_Stat;
+namespace UnicornBattle.Controllers
+{
 
-	public void Init()
+	public class CharacterStatsController : MonoBehaviour
 	{
-		UB_SavedCharacter active = PF_PlayerData.activeCharacter;
-		if(active != null)
+		public StatItem HP_Stat;
+		public StatItem MP_Stat;
+		public StatItem DP_Stat;
+		public StatItem SP_Stat;
+
+		public void Init()
 		{
-			HP_Stat.statValue.text = "" + active.characterData.Health;
-			HP_Stat.levelBonus.text = "+" + active.baseClass.HPLevelBonus;
-			
-			MP_Stat.statValue.text = "" + active.characterData.Mana;
-			MP_Stat.levelBonus.text = "+" +  active.baseClass.MPLevelBonus;
-			
-			DP_Stat.statValue.text = "" + active.characterData.Defense;
-			DP_Stat.levelBonus.text = "+" + active.baseClass.DPLevelBonus;
-			
-			SP_Stat.statValue.text = "" + active.characterData.Speed;
-			SP_Stat.levelBonus.text = "+" + active.baseClass.SPLevelBonus;
-		}	
-		
+			UBSavedCharacter l_activeCharacter = GameController.Instance.ActiveCharacter;
+			if (l_activeCharacter != null)
+			{
+				HP_Stat.statValue.text = "" + l_activeCharacter.characterData.Health;
+				HP_Stat.levelBonus.text = "+" + l_activeCharacter.baseClass.HPLevelBonus;
+
+				MP_Stat.statValue.text = "" + l_activeCharacter.characterData.Mana;
+				MP_Stat.levelBonus.text = "+" + l_activeCharacter.baseClass.MPLevelBonus;
+
+				DP_Stat.statValue.text = "" + l_activeCharacter.characterData.Defense;
+				DP_Stat.levelBonus.text = "+" + l_activeCharacter.baseClass.DPLevelBonus;
+
+				SP_Stat.statValue.text = "" + l_activeCharacter.characterData.Speed;
+				SP_Stat.levelBonus.text = "+" + l_activeCharacter.baseClass.SPLevelBonus;
+			}
+		}
 	}
-	
-	
 }

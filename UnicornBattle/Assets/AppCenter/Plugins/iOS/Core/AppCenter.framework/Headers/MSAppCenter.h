@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #import <Foundation/Foundation.h>
 
 #import "MSConstants.h"
@@ -73,6 +76,13 @@
  * @return YES if configured, NO otherwise.
  */
 + (BOOL)isConfigured;
+
+/**
+ * Check whether app is running in App Center Test Cloud.
+ *
+ * @return true if running in App Center Test Cloud, false otherwise.
+ */
++ (BOOL)isRunningInAppCenterTestCloud;
 
 /**
  * Change the base URL (schema + authority + port only) used to communicate with the backend.
@@ -197,13 +207,17 @@
  * @discussion Set the user identifier for logs sent for the default target token when the secret passed in @c
  * MSAppCenter:start:withServices: contains "target={targetToken}".
  *
- * The App Center backend currently do not yet use the user identifier so this API doesn't have a use case yet when the secret passed to @c
- * MSAppCenter:start:withServices: contains an App Center application secret.
- *
  * For App Center backend the user identifier maximum length is 256 characters.
  *
  * AppCenter must be configured or started before this API can be used.
  */
 + (void)setUserId:(NSString *)userId;
+
+/**
+ * Set country code to use when building device properties.
+ *
+ * @param countryCode The two-letter ISO country code. @see https://www.iso.org/obp/ui/#search for more information.
+ */
++ (void)setCountryCode:(NSString *)countryCode;
 
 @end

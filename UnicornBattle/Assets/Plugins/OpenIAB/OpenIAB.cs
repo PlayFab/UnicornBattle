@@ -28,7 +28,9 @@ namespace OnePF
     {
         public static GameObject EventManager { get { return GameObject.Find(typeof(OpenIABEventManager).ToString()); } }
 
+        #pragma warning disable 0649
         static IOpenIAB _billing;
+        #pragma warning restore 0649
 
         /**
          * Static constructor 

@@ -34,8 +34,10 @@ public static class CreateAssetBundles
         var androidPackage = Path.Combine(GetBuildPath(), "UnicornBattle.apk");
         MkDir(GetBuildPath());
         BuildPipeline.BuildPlayer(TestScenes, androidPackage, BuildTarget.Android, BuildOptions.None);
-        if (Directory.GetFiles(androidPackage).Length == 0)
-            throw new Exception("Target file did not build: " + androidPackage);
+
+        string androidPackageDirectory = Path.GetDirectoryName(androidPackage);
+        if (Directory.GetFiles(androidPackageDirectory).Length == 0)
+            throw new Exception("Target file did not build: " + androidPackageDirectory);
     }
 
     [MenuItem("PlayFab/Build Unicorn Battle/Bundles: All AssetBundles")]

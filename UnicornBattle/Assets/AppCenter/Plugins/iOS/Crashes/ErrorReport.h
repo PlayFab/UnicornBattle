@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 extern "C" const char* app_center_unity_crashes_error_report_incident_identifier(void* errorReport);

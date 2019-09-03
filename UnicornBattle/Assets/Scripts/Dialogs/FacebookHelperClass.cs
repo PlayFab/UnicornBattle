@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
-using Facebook.Unity;
 using PlayFab.Json;
+#if UNITY_ANDROID || UNITY_IOS
+using Facebook.Unity;
 
 public class FacebookHelperClass
 {
@@ -120,6 +121,7 @@ public class FacebookHelperClass
         });
     }
 }
+#endif
 
 public class FB_PhotoResponse
 {

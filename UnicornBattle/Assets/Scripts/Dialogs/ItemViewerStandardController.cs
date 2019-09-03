@@ -1,5 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
-public class ItemViewerStandardController : MonoBehaviour {
+namespace UnicornBattle.Controllers
+{
+    public class ItemViewerStandardController : MonoBehaviour { }
 }

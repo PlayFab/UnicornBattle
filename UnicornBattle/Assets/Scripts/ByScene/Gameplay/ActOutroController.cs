@@ -1,51 +1,52 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
-public class ActOutroController : MonoBehaviour {
-	public Text ActName;
-	public Text ActIntro;
-	public Button StartButton;
+namespace UnicornBattle.Controllers
+{
 
-	public void UpdateFields()
+	public class ActOutroController : MonoBehaviour
 	{
-		
-		if(PF_GamePlay.ActiveQuest != null)
+		public Text ActName;
+		public Text ActIntro;
+		public Button StartButton;
+
+		public void UpdateFields()
 		{
-			if(string.IsNullOrEmpty(PF_GamePlay.QuestProgress.CurrentAct.Key) || PF_GamePlay.QuestProgress.CurrentAct.Value.IsActCompleted == false)
+			GameController l_gc = GameController.Instance;
+
+			if (l_gc.ActiveLevel != null)
 			{
-				// FIRST ACT
-				//TODO fix the bug here when re-entering scenes
-				if(PF_GamePlay.ActiveQuest.levelData.Acts.Count > 0)
+				if (string.IsNullOrEmpty(l_gc.QuestProgress.CurrentAct.Key) || l_gc.QuestProgress.CurrentAct.Value.IsActCompleted == false)
 				{
-					var firstAct = PF_GamePlay.ActiveQuest.levelData.Acts.First();
-					ActName.text = firstAct.Key;
-					ActIntro.text = firstAct.Value.IntroMonolog;
-					PF_GamePlay.QuestProgress.CurrentAct = firstAct;
-					PF_GamePlay.QuestProgress.ActIndex = 0;
+					// FIRST ACT
+					//TODO fix the bug here when re-entering scenes
+					if (l_gc.ActiveLevel.levelData.Acts.Count > 0)
+					{
+						var firstAct = l_gc.ActiveLevel.levelData.Acts.First();
+						ActName.text = firstAct.Key;
+						ActIntro.text = firstAct.Value.IntroMonolog;
+						l_gc.QuestProgress.CurrentAct = firstAct;
+						l_gc.QuestProgress.ActIndex = 0;
+					}
 				}
-			}
-			else
-			{
-				// NEXT ACT
-				Debug.Log ("NEXT ACT -- TESTING LOGIC: " + (PF_GamePlay.ActiveQuest.levelData.Acts.Count > ++PF_GamePlay.QuestProgress.ActIndex).ToString());
-				Debug.Log(PF_GamePlay.QuestProgress.ActIndex.ToString());
-				
-				if(PF_GamePlay.ActiveQuest.levelData.Acts.Count > ++PF_GamePlay.QuestProgress.ActIndex)
+				else
 				{
-					//TODO finish this code block
+					// NEXT ACT
+					//Debug.Log("NEXT ACT -- TESTING LOGIC: " + (l_gc.ActiveLevel.levelData.Acts.Count > ++l_gc.QuestProgress.ActIndex).ToString());
+					//Debug.Log(l_gc.QuestProgress.ActIndex.ToString());
+
+					if (l_gc.ActiveLevel.levelData.Acts.Count > ++l_gc.QuestProgress.ActIndex)
+					{
+						//TODO finish this code block
+					}
 				}
 			}
 		}
+
+		public void StartQuest()
+		{
+			GameplayController.RaiseGameplayEvent("Starting Quest", UBGamePlay.GameplayEventTypes.StartQuest);
+		}
 	}
-	
-	public void StartQuest()
-	{
-		GameplayController.RaiseGameplayEvent("Starting Quest", PF_GamePlay.GameplayEventTypes.StartQuest);
-	}
-	
 }

@@ -1,3 +1,5 @@
+using UnicornBattle.Controllers;
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +9,7 @@ public class InventoryDisplayItem : MonoBehaviour
     public Image image;
     public Button btn;
     public FloatingInventoryController controller;
-    public InventoryCategory category;
+    public UBInventoryCategory category;
 
     public void Init()
     {
@@ -19,8 +21,7 @@ public class InventoryDisplayItem : MonoBehaviour
         });
     }
 
-
-    public void SetButton(Sprite icon, InventoryCategory cItem)
+    public void SetButton(Sprite icon, UBInventoryCategory cItem)
     {
         ActivateButton();
         image.overrideSprite = icon;

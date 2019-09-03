@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
-public class FriendListController : MonoBehaviour {
-}
+public class FriendListController : MonoBehaviour { }

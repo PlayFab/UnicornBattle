@@ -72,11 +72,11 @@ function SaveProgress(args) {
         characterData.ExpThisLevel += questProgress.XpCollected;
     }
     //check for achievements & offers
-    EvaluateAchievements(args.CurrentPlayerData.characterDetails.CharacterId);
+    EvaluateAchievements(args.CurrentPlayerData.CharacterId);
     // API params
     var updateDataRequest = {
         PlayFabId: currentPlayerId,
-        CharacterId: args.CurrentPlayerData.characterDetails.CharacterId,
+        CharacterId: args.CurrentPlayerData.CharacterId,
         Data: { CharacterData: JSON.stringify(characterData) },
         Permission: "Public"
     };
@@ -89,7 +89,7 @@ function SaveProgress(args) {
     };
     server.AddUserVirtualCurrency(addVcRequest);
 }
-function RetriveQuestItems(args) {
+function RetrieveQuestItems(args) {
     var grantRequest = {
         PlayFabId: currentPlayerId,
         ItemIds: args.ItemIds
@@ -338,7 +338,7 @@ handlers.GetBaseClassForType = GetBaseClassForType;
 handlers.CreateCharacter = CreateCharacter;
 handlers.DeleteCharacter = DeleteCharacter;
 handlers.SaveProgress = SaveProgress;
-handlers.RetriveQuestItems = RetriveQuestItems;
+handlers.RetrieveQuestItems = RetrieveQuestItems;
 handlers.SubtractLife = SubtractLife;
 handlers.SetEventStatus = SetEventStatus;
 handlers.SendMessageToPlayer = SendMessageToPlayer;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.Networking;
 
 namespace AppCenterEditor
 {
@@ -12,7 +13,7 @@ namespace AppCenterEditor
         private const float Tick = .02f;
         private readonly IEnumerator _routine;
         private SortedList<float, IEnumerator> _shouldRunAfterTimes = new SortedList<float, IEnumerator>();
-        private IEnumerable<WWW> _www;
+        private IEnumerable<UnityWebRequest> _www;
         private float _timeCounter = 0;
 
         public string Id { get; private set; }
@@ -32,12 +33,12 @@ namespace AppCenterEditor
             return coroutine;
         }
 
-        public static EditorCoroutine Start(IEnumerator routine, WWW www)
+        public static EditorCoroutine Start(IEnumerator routine, UnityWebRequest www)
         {
             return Start(routine, new[] { www });
         }
 
-        public static EditorCoroutine Start(IEnumerator routine, IEnumerable<WWW> www)
+        public static EditorCoroutine Start(IEnumerator routine, IEnumerable<UnityWebRequest> www)
         {
             var coroutine = new EditorCoroutine(routine)
             {

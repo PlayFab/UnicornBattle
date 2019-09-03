@@ -1,286 +1,400 @@
 using System;
 using System.Collections.Generic;
+using UnicornBattle.Managers;
+using UnicornBattle.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class QuestOutroController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public Image CreepEncountersImage;
-    public Text CreepEncountersText;
-
-    public Image HeroEncountersImage;
-    public Text HeroEncountersText;
-
-    public Image GoldCollectedImage;
-    public Text GoldCollectedText;
-
-    public Image LivesLostImage;
-    public Text LivesLostText;
-
-    public Image ItemsCollectedImage;
-    public Text ItemsCollectedText;
-    public Button ViewItems;
-
-    public FillBarController XpBar;
-
-    public Image QuestIcon;
-    public Text QuestName;
-
-    public Image BG;
-    public Sprite winBG;
-    public Sprite loseBG;
-
-    public Button ReturnToHub;
-    public Image Mastery;
-    public Image LevelUp;
-
-    public Text LivesRemaining;
-    public Button TryAgain;
-    public Button BuyMoreLives;
-
-    public LevelUpOverlayController LevelUpPane;
-    public Transform WinGraphics;
-    public Transform LoseGraphics;
-    public TweenColor colorTweener;
-
-    void OnEnable()
+    public class QuestOutroController : MonoBehaviour
     {
-        PF_Bridge.OnPlayFabCallbackError += HandleCallbackError;
-        PF_Bridge.OnPlayfabCallbackSuccess += HandleCallbackSuccess;
-    }
+        public Image CreepEncountersImage;
+        public Text CreepEncountersText;
 
-    void OnDisable()
-    {
-        PF_Bridge.OnPlayFabCallbackError -= HandleCallbackError;
-        PF_Bridge.OnPlayfabCallbackSuccess -= HandleCallbackSuccess;
-    }
+        public Image HeroEncountersImage;
+        public Text HeroEncountersText;
 
-    public void HandleCallbackError(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
-    {
-    }
+        public Image GoldCollectedImage;
+        public Text GoldCollectedText;
 
-    public void HandleCallbackSuccess(string details, PlayFabAPIMethods method, MessageDisplayStyle style)
-    {
-    }
+        public Image LivesLostImage;
+        public Text LivesLostText;
 
-    public void OnReturnToHubClick()
-    {
-        if (PF_GamePlay.QuestProgress.isQuestWon)
+        public Image ItemsCollectedImage;
+        public Text ItemsCollectedText;
+        public Button ViewItems;
+
+        public FillBarController XpBar;
+
+        public Image QuestIcon;
+        public Text QuestName;
+
+        public Image BG;
+        public Sprite winBG;
+        public Sprite loseBG;
+
+        public Button ReturnToHub;
+        public Image Mastery;
+        public Image LevelUp;
+
+        public Text LivesRemaining;
+        public Button TryAgain;
+        public Button BuyMoreLives;
+
+        public LevelUpOverlayController LevelUpPane;
+        public Transform WinGraphics;
+        public Transform LoseGraphics;
+        public TweenColor colorTweener;
+
+        [System.NonSerialized] private CharacterManager m_characterMgr;
+        [System.NonSerialized] private GameDataManager m_gameDataMgr;
+        [System.NonSerialized] private PlayerManager m_playerMgr;
+        [System.NonSerialized] private InventoryManager m_inventoryMgr;
+
+        protected CharacterManager characterManager
         {
-            Dictionary<string, object> eventData = new Dictionary<string, object>()
+            get
             {
-                { "Current_Quest", PF_GamePlay.ActiveQuest.levelName },
-                { "Character_ID", PF_PlayerData.activeCharacter.characterDetails.CharacterId }
-            };
-            PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_LevelComplete, eventData);
-        }
-
-        if (PF_PlayerData.activeCharacter.PlayerVitals.didLevelUp)
-        {
-            Dictionary<string, object> eventData = new Dictionary<string, object>()
-            {
-                { "New_Level", PF_PlayerData.activeCharacter.characterData.CharacterLevel + 1 },
-                { "Character_ID", PF_PlayerData.activeCharacter.characterDetails.CharacterId },
-                { "Current_Quest", PF_GamePlay.ActiveQuest.levelName }
-            };
-            PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_LevelUp, eventData);
-        }
-
-        // Only save if the game has been won
-        // may want to add in some stats for missions failed / deaths
-        if (PF_GamePlay.QuestProgress.isQuestWon)
-        {
-            PF_GamePlay.SavePlayerData();
-            SaveStatistics();
-
-            if (PF_GamePlay.QuestProgress.areItemsAwarded == false)
-            {
-                PF_GamePlay.RetriveQuestItems();
+                if (null == m_characterMgr)
+                {
+                    m_characterMgr = MainManager.Instance.getCharacterManager();
+                }
+                return m_characterMgr;
             }
         }
 
-        var loadingDelay = .5f;
-        if (PF_GamePlay.UseRaidMode)
+        protected PlayerManager playerManager
         {
-            var eventData = new Dictionary<string, object>
+            get
             {
-                { "Killed_By", "Raid Mode" },
-                { "Enemy_Health", "Raid Mode" },
-                { "Current_Quest", PF_GamePlay.ActiveQuest.levelName },
-                { "Character_ID", PF_PlayerData.activeCharacter.characterDetails.CharacterId }
-            };
-
-            for (var z = 0; z < PF_GamePlay.QuestProgress.Deaths; z++)
-            {
-                PF_PlayerData.SubtractLifeFromPlayer();
-                PF_Bridge.LogCustomEvent(PF_Bridge.CustomEventTypes.Client_PlayerDied, eventData);
+                if (null == m_playerMgr)
+                {
+                    m_playerMgr = MainManager.Instance.getPlayerManager();
+                }
+                return m_playerMgr;
             }
         }
 
-        GameController.Instance.sceneController.RequestSceneChange(SceneController.GameScenes.Profile, loadingDelay);
-    }
-
-
-    public void SaveStatistics()
-    {
-        var prefix = PF_GamePlay.ActiveQuest.levelData.StatsPrefix;
-        var charUpdates = new Dictionary<string, int>();
-
-        var damageDone = 0;
-        var bossesKilled = 0;
-
-        foreach (var item in PF_GamePlay.QuestProgress.CompletedEncounters)
+        protected GameDataManager gameDataManager
         {
-            if (item.Data.EncounterType == EncounterTypes.BossCreep)
+            get
             {
-                bossesKilled++;
-            }
-
-            if (item.Data.EncounterType.ToString().Contains(GlobalStrings.ENCOUNTER_CREEP))
-            {
-                damageDone += item.Data.Vitals.MaxHealth;
+                if (null == m_gameDataMgr)
+                {
+                    m_gameDataMgr = MainManager.Instance.getGameDataManager();
+                }
+                return m_gameDataMgr;
             }
         }
 
-        // Character Statistics Section
-        charUpdates.Add(prefix + "Complete", PF_GamePlay.ActiveQuest.difficulty);
-        charUpdates.Add(prefix + "Deaths", PF_GamePlay.QuestProgress.Deaths);
-        charUpdates.Add(prefix + "DamageDone", damageDone);
-        charUpdates.Add(prefix + "EncountersCompleted", PF_GamePlay.QuestProgress.CompletedEncounters.Count);
-        charUpdates.Add(prefix + "UnicornsRescued", PF_GamePlay.QuestProgress.HeroRescues);
-        charUpdates.Add(prefix + "ItemsUsed", PF_GamePlay.QuestProgress.ItemsUsed);
-        charUpdates.Add(prefix + "XPGained", PF_GamePlay.QuestProgress.XpCollected);
-        charUpdates.Add(prefix + "ItemsFound", PF_GamePlay.QuestProgress.ItemsFound.Count);
-        charUpdates.Add(prefix + "GoldFound", PF_GamePlay.QuestProgress.GoldCollected);
-        charUpdates.Add("QuestsCompleted", 1);
-        charUpdates.Add("BossesKilled", bossesKilled);
-
-        PF_PlayerData.UpdateCharacterStatistics(PF_PlayerData.activeCharacter.characterDetails.CharacterId, charUpdates);
-
-
-        // User Statistics Section
-        Dictionary<string, int> userUpdates = new Dictionary<string, int>();
-
-        // Special calculation for the HighestCharacterLevel (we're pushing a delta, so we have to determine it)
-        var curLevel = PF_PlayerData.activeCharacter.characterData.CharacterLevel;
-        var savedLevel = 0;
-        PF_PlayerData.userStatistics.TryGetValue("HighestCharacterLevel", out savedLevel);
-        var levelUpdate = (Math.Max(curLevel, savedLevel) - savedLevel);
-
-        userUpdates.Add("Total_DamageDone", damageDone);
-        userUpdates.Add("Total_EncountersCompleted", PF_GamePlay.QuestProgress.CompletedEncounters.Count);
-        userUpdates.Add("Total_UnicornsRescued", PF_GamePlay.QuestProgress.HeroRescues);
-        userUpdates.Add("Total_ItemsUsed", PF_GamePlay.QuestProgress.ItemsUsed);
-        userUpdates.Add("Total_XPGained", PF_GamePlay.QuestProgress.XpCollected);
-        userUpdates.Add(prefix + "XPGained", PF_GamePlay.QuestProgress.XpCollected);
-        userUpdates.Add("Total_ItemsFound", PF_GamePlay.QuestProgress.ItemsFound.Count);
-        userUpdates.Add("Total_GoldFound", PF_GamePlay.QuestProgress.GoldCollected);
-        userUpdates.Add("Total_QuestsCompleted", 1);
-        userUpdates.Add("Total_BossesKilled", bossesKilled);
-        userUpdates.Add("HighestCharacterLevel", levelUpdate);
-
-        PF_PlayerData.UpdateUserStatistics(userUpdates);
-    }
-
-    public void UpdateQuestStats()
-    {
-        //TODO update mastery stars to reflect difficulty.
-        if (PF_GamePlay.QuestProgress != null)
+        protected InventoryManager inventoryManager
         {
-            CreepEncountersText.text = "x" + PF_GamePlay.QuestProgress.CreepEncounters;
-            GoldCollectedText.text = string.Format("+{0:n0}", PF_GamePlay.QuestProgress.GoldCollected);
-            ItemsCollectedText.text = string.Format("+{0}", PF_GamePlay.QuestProgress.ItemsFound.Count);
-            HeroEncountersText.text = "x" + PF_GamePlay.QuestProgress.HeroRescues;
-            LivesLostText.text = string.Format("- {0}", PF_GamePlay.QuestProgress.Deaths);
-
-            if (PF_GamePlay.QuestProgress.isQuestWon)
+            get
             {
-                PF_GamePlay.IntroPane(WinGraphics.gameObject, .333f, null);
-                PF_GamePlay.OutroPane(LoseGraphics.gameObject, .01f, null);
-                colorTweener.from = Color.blue;
-                colorTweener.to = Color.magenta;
-                BG.overrideSprite = winBG;
-
-            }
-            else
-            {
-                PF_GamePlay.IntroPane(LoseGraphics.gameObject, .333f, null);
-                PF_GamePlay.OutroPane(WinGraphics.gameObject, .01f, null);
-                colorTweener.from = Color.red;
-                colorTweener.to = Color.yellow;
-                BG.overrideSprite = loseBG;
+                if (null == m_inventoryMgr)
+                    m_inventoryMgr = MainManager.Instance.getInventoryManager();
+                return m_inventoryMgr;
             }
         }
 
-        if (PF_PlayerData.activeCharacter != null && PF_GamePlay.ActiveQuest.levelIcon != null)
+        private void OnEnable()
         {
-            //PlayerIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon);
-            QuestIcon.overrideSprite = PF_GamePlay.ActiveQuest.levelIcon;
-            QuestName.text = PF_GamePlay.ActiveQuest.levelName;
+            TelemetryManager.RecordScreenViewed(TelemetryScreenId.BattleResults);
+        }
 
-            var balance = 0;
-            LivesRemaining.text = string.Format("{0}", PF_PlayerData.virtualCurrency.TryGetValue(GlobalStrings.HEART_CURRENCY, out balance) ? balance : -1);
+        public void OnReturnToHubClick()
+        {
+            var l_gc = GameController.Instance;
 
-            var nextLevelStr = string.Format("{0}", PF_PlayerData.activeCharacter.characterData.CharacterLevel + 1);
-            if (PF_GameData.CharacterLevelRamp.ContainsKey(nextLevelStr) && PF_GamePlay.QuestProgress.isQuestWon)
+            var l_activeCharacter = l_gc.ActiveCharacter;
+            if (null == l_activeCharacter) return;
+
+            if (l_gc.QuestProgress.isQuestWon)
             {
-                XpBar.maxValue = PF_GameData.CharacterLevelRamp[nextLevelStr];
-                StartCoroutine(XpBar.UpdateBarWithCallback(PF_PlayerData.activeCharacter.characterData.ExpThisLevel + PF_GamePlay.QuestProgress.XpCollected, false, EvaluateLevelUp));
+                Dictionary<string, object> eventData = new Dictionary<string, object>
+                    { { "Current_Quest", l_gc.ActiveLevel.levelName },
+                        { "Character_ID", l_activeCharacter.CharacterId }
+                    };
+                TelemetryManager.RecordPlayerEvent(TelemetryEvent.Client_LevelComplete, eventData);
+            }
+
+            if (l_activeCharacter.PlayerVitals.didLevelUp)
+            {
+                Dictionary<string, object> eventData = new Dictionary<string, object>
+                    { { "New_Level", l_activeCharacter.characterData.CharacterLevel + 1 },
+                        { "Character_ID", l_activeCharacter.CharacterId },
+                        { "Current_Quest", l_gc.ActiveLevel.levelName }
+                    };
+                TelemetryManager.RecordPlayerEvent(TelemetryEvent.Client_LevelUp, eventData);
+            }
+
+            // Only save if the game has been won
+            // may want to add in some stats for missions failed / deaths
+            if (l_gc.QuestProgress.isQuestWon)
+            {
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.SavePlayerInfo);
+                playerManager.SavePlayerData(
+                    l_activeCharacter,
+                    l_gc.QuestProgress,
+                    characterManager.GetAllLevelRamps(),
+                    s => PF_Bridge.RaiseCallbackSuccess(s, PlayFabAPIMethods.SavePlayerInfo),
+                    f => PF_Bridge.RaiseCallbackError(f, PlayFabAPIMethods.SavePlayerInfo)
+                );
+                SaveStatistics();
+
+                InventoryManager l_inventoryMgr = MainManager.Instance.getInventoryManager();
+
+                if (l_gc.QuestProgress.areItemsAwarded == false)
+                {
+                    DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.RetrieveQuestItems);
+
+                    //Debug.Log( "RetrieveQuestItems() called. ItemsFound:\n" + l_gc.QuestProgress.ItemsFound.WriteToString()) ;
+                    l_inventoryMgr.RetrieveQuestItems(
+                        l_gc.QuestProgress.ItemsFound,
+                        (itemsAwarded) =>
+                        {
+                            l_gc.QuestProgress.ItemsGranted = new List<UBQuestRewardItem>(itemsAwarded);
+                            l_gc.QuestProgress.areItemsAwarded = true;
+
+                            // after items retrieved, refresh user inventory
+                            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.GetUserInventory);
+                            l_inventoryMgr.Refresh(true,
+                                s2 => { PF_Bridge.RaiseCallbackSuccess(s2, PlayFabAPIMethods.GetUserInventory); },
+                                f2 => { PF_Bridge.RaiseCallbackError(f2, PlayFabAPIMethods.GetUserInventory); }
+                            );
+
+                            PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.RetrieveQuestItems);
+                        },
+                        f => { PF_Bridge.RaiseCallbackError(f, PlayFabAPIMethods.RetrieveQuestItems); }
+                    );
+                }
+            }
+
+            var loadingDelay = 2f;
+            // USE_RAID_MODE
+            if (UBGamePlay.UseRaidMode)
+            {
+                var eventData = new Dictionary<string, object>
+                    {
+                        // 
+                        { "Killed_By", "Raid Mode" },
+                        // 
+                        { "Enemy_Health", "Raid Mode" },
+                        //
+                        { "Current_Quest", l_gc.ActiveLevel.levelName },
+                        // 
+                        { "Character_ID", l_activeCharacter.CharacterId }
+                    };
+
+                for (var z = 0; z < l_gc.QuestProgress.Deaths; z++)
+                {
+                    DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ExecuteCloudScript);
+
+                    m_playerMgr.SubtractLifeFromPlayer(
+                        l_activeCharacter.CharacterId,
+                        s => { PF_Bridge.RaiseCallbackSuccess(s, PlayFabAPIMethods.ExecuteCloudScript); },
+                        f => { PF_Bridge.RaiseCallbackError(f, PlayFabAPIMethods.ExecuteCloudScript); }
+                    );
+
+                    TelemetryManager.RecordPlayerEvent(TelemetryEvent.Client_PlayerDied, eventData);
+                }
+            }
+
+            GameController.Instance.sceneController.RequestSceneChange(SceneController.GameScenes.Profile, loadingDelay);
+        }
+
+        public void SaveStatistics()
+        {
+            var l_activeCharacter = GameController.Instance.ActiveCharacter;
+            var l_questProgress = GameController.Instance.QuestProgress;
+            var l_activeQuest = GameController.Instance.ActiveLevel;
+            var l_prefix = l_activeQuest.levelData.StatsPrefix;
+            var l_charUpdates = new Dictionary<string, int>();
+            var l_damageDone = 0;
+            var l_bossesKilled = 0;
+
+            foreach (var item in l_questProgress.CompletedEncounters)
+            {
+                if (item.Data.EncounterType == EncounterTypes.BossCreep)
+                {
+                    l_bossesKilled++;
+                }
+
+                if (item.Data.EncounterType.ToString().Contains(GlobalStrings.ENCOUNTER_CREEP))
+                {
+                    l_damageDone += item.Data.Vitals.MaxHealth;
+                }
+            }
+
+            // Character Statistics Section
+            l_charUpdates.Add($"{l_prefix}Complete", l_activeQuest.difficulty);
+            l_charUpdates.Add($"{l_prefix}Deaths", l_questProgress.Deaths);
+            l_charUpdates.Add($"{l_prefix}DamageDone", l_damageDone);
+            l_charUpdates.Add($"{l_prefix}EncountersCompleted", l_questProgress.CompletedEncounters.Count);
+            l_charUpdates.Add($"{l_prefix}UnicornsRescued", l_questProgress.HeroRescues);
+            l_charUpdates.Add($"{l_prefix}ItemsUsed", l_questProgress.ItemsUsed);
+            l_charUpdates.Add($"{l_prefix}XPGained", l_questProgress.XpCollected);
+            l_charUpdates.Add($"{l_prefix}ItemsFound", l_questProgress.ItemsFound.Count);
+            l_charUpdates.Add($"{l_prefix}GoldFound", l_questProgress.GoldCollected);
+            l_charUpdates.Add("QuestsCompleted", 1);
+            l_charUpdates.Add("BossesKilled", l_bossesKilled);
+
+            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateCharacterStatistics);
+            characterManager.UpdateCharacterStatistics(
+                l_activeCharacter.CharacterId,
+                l_charUpdates,
+                () => PF_Bridge.RaiseCallbackSuccess("User Statistics Uploaded", PlayFabAPIMethods.UpdateCharacterStatistics),
+                s => PF_Bridge.RaiseCallbackError(s, PlayFabAPIMethods.UpdateCharacterStatistics));
+
+            // User Statistics Section
+            Dictionary<string, int> userUpdates = new Dictionary<string, int>();
+
+            // Special calculation for the HighestCharacterLevel (we're pushing a delta, so we have to determine it)
+            var curLevel = l_activeCharacter.characterData.CharacterLevel;
+            var savedLevel = playerManager.GetPlayerStatistic("HighestCharacterLevel");
+            var levelUpdate = (Math.Max(curLevel, savedLevel) - savedLevel);
+
+            userUpdates.Add("Total_DamageDone", l_damageDone);
+            userUpdates.Add("Total_EncountersCompleted", l_questProgress.CompletedEncounters.Count);
+            userUpdates.Add("Total_UnicornsRescued", l_questProgress.HeroRescues);
+            userUpdates.Add("Total_ItemsUsed", l_questProgress.ItemsUsed);
+            userUpdates.Add("Total_XPGained", l_questProgress.XpCollected);
+            userUpdates.Add($"{l_prefix}XPGained", l_questProgress.XpCollected);
+            userUpdates.Add("Total_ItemsFound", l_questProgress.ItemsFound.Count);
+            userUpdates.Add("Total_GoldFound", l_questProgress.GoldCollected);
+            userUpdates.Add("Total_QuestsCompleted", 1);
+            userUpdates.Add("Total_BossesKilled", l_bossesKilled);
+            userUpdates.Add("HighestCharacterLevel", levelUpdate);
+
+            DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.UpdateUserStatistics);
+            playerManager.UpdatePlayerStatistics(
+                userUpdates,
+                (s) => PF_Bridge.RaiseCallbackSuccess("User Statistics Uploaded", PlayFabAPIMethods.UpdateUserStatistics),
+                (f) => PF_Bridge.RaiseCallbackError(f, PlayFabAPIMethods.UpdateUserStatistics));
+        }
+
+        public void UpdateQuestStats()
+        {
+            gameDataManager.Refresh(false, (s) =>
+            {
+                //TODO update mastery stars to reflect difficulty.
+                var l_questProgress = GameController.Instance.QuestProgress;
+
+                if (l_questProgress == null) return;
+
+                CreepEncountersText.text = $"x{l_questProgress.CreepEncounters}";
+                HeroEncountersText.text = $"x{l_questProgress.HeroRescues}";
+                GoldCollectedText.text = $"+{l_questProgress.GoldCollected:n0}";
+                ItemsCollectedText.text = $"+{l_questProgress.ItemsFound.Count}";
+                LivesLostText.text = $"- {l_questProgress.Deaths}";
+
+                if (l_questProgress.isQuestWon)
+                {
+                    UBAnimator.IntroPane(WinGraphics.gameObject, .333f);
+                    UBAnimator.OutroPane(LoseGraphics.gameObject, .01f);
+                    colorTweener.@from = Color.blue;
+                    colorTweener.to = Color.magenta;
+                    BG.overrideSprite = winBG;
+                }
+                else
+                {
+                    UBAnimator.IntroPane(LoseGraphics.gameObject, .333f);
+                    UBAnimator.OutroPane(WinGraphics.gameObject, .01f);
+                    colorTweener.@from = Color.red;
+                    colorTweener.to = Color.yellow;
+                    BG.overrideSprite = loseBG;
+                }
+
+                var activeQuest = GameController.Instance.ActiveLevel;
+
+                var activeCharacter = GameController.Instance.ActiveCharacter;
+                if (activeCharacter == null || activeQuest.levelIcon == null) return;
+
+                //PlayerIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(PF_PlayerData.activeCharacter.baseClass.Icon);
+                QuestIcon.overrideSprite = activeQuest.levelIcon;
+                QuestName.text = activeQuest.levelName;
+
+                if (null != inventoryManager)
+                    LivesRemaining.text = $"{inventoryManager.GetCurrencyAmount(GlobalStrings.HEART_CURRENCY)}";
+                else
+                    LivesRemaining.text = "-1";
+
+                var characterData = activeCharacter.characterData;
+                var nextLevelStr = $"{characterData.CharacterLevel + 1}";
+
+                if (!l_questProgress.isQuestWon) return;
+
+                XpBar.maxValue = characterManager.GetLevelRamp(nextLevelStr);
+                XpBar.currentValue = characterData.ExpThisLevel;
+
+                StartCoroutine(XpBar.UpdateBarWithCallback(XpBar.currentValue + l_questProgress.XpCollected, false, EvaluateLevelUp));
 
                 ViewItems.interactable = true;
                 // PlayerLevel.text = "" + PF_PlayerData.activeCharacter.characterData.CharacterLevel;
                 // PlayerName.text = PF_PlayerData.activeCharacter.characterDetails.CharacterName;
+            });
+        }
+
+        void EvaluateLevelUp()
+        {
+            var l_activeCharacter = GameController.Instance.ActiveCharacter;
+            if (null == l_activeCharacter) return;
+
+            if (XpBar.maxValue < l_activeCharacter.characterData.ExpThisLevel
+                + GameController.Instance.QuestProgress.XpCollected)
+            {
+                // Level Up!!!
+                l_activeCharacter.PlayerVitals.didLevelUp = true;
+                UBAnimator.IntroPane(LevelUp.gameObject, .333f);
+
+                LevelUpPane.Init();
+                StartCoroutine(
+                    UBAnimator.Wait(1.5f, () => { UBAnimator.IntroPane(LevelUpPane.gameObject, .333f); }));
             }
         }
-    }
 
-    void EvaluateLevelUp()
-    {
-        if (XpBar.maxValue < PF_PlayerData.activeCharacter.characterData.ExpThisLevel + PF_GamePlay.QuestProgress.XpCollected)
+        public void AcceptLevelupInput(int spellNumber)
         {
-            // Level Up!!!
-            PF_PlayerData.activeCharacter.PlayerVitals.didLevelUp = true;
-            PF_GamePlay.IntroPane(LevelUp.gameObject, .333f, null);
+            var l_activeCharacter = GameController.Instance.ActiveCharacter;
+            if (null == l_activeCharacter) return;
 
-            LevelUpPane.Init();
-            StartCoroutine(PF_GamePlay.Wait(1.5f, () => { PF_GamePlay.IntroPane(LevelUpPane.gameObject, .333f, null); }));
+            l_activeCharacter.PlayerVitals.skillSelected = spellNumber;
+            UBAnimator.OutroPane(LevelUpPane.gameObject, .333f);
         }
-    }
 
-    public void AcceptLevelupInput(int spellNumber)
-    {
-        PF_PlayerData.activeCharacter.PlayerVitals.skillSelected = spellNumber;
-        PF_GamePlay.OutroPane(LevelUpPane.gameObject, .333f, null);
-    }
-
-    public void OnTryAgainClick()
-    {
-        //Debug.Log("Try Again not implemented");
-        int hearts;
-        PF_PlayerData.virtualCurrency.TryGetValue(GlobalStrings.HEART_CURRENCY, out hearts);
-        if (hearts > 0)
+        public void OnTryAgainClick()
         {
-            // decrement HT currency
-            hearts -= 1;
-            PF_PlayerData.virtualCurrency[GlobalStrings.HEART_CURRENCY] = hearts;
-            PF_PlayerData.SubtractLifeFromPlayer();
-            // will need to trigger Cloud Script to tick this on the server side
+            //Debug.Log("Try Again not implemented");
+            int hearts = inventoryManager.GetCurrencyAmount(GlobalStrings.HEART_CURRENCY);
+            if (hearts > 0)
+            {
+                // triggers Cloud Script to subtract life on the server side
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.ExecuteCloudScript);
+                playerManager.SubtractLifeFromPlayer(
+                    GameController.Instance.ActiveCharacter.CharacterId,
+                    r => PF_Bridge.RaiseCallbackSuccess(r, PlayFabAPIMethods.ExecuteCloudScript),
+                    e => PF_Bridge.RaiseCallbackError(e, PlayFabAPIMethods.ExecuteCloudScript)
+                );
+                // refill the character's vitals
+                GameController.Instance.ActiveCharacter.RefillVitals();
 
-            PF_PlayerData.activeCharacter.RefillVitals();
-
-            PF_GamePlay.OutroPane(gameObject, .333f, null);
-            GameplayController.RaiseGameplayEvent(GlobalStrings.PLAYER_RESPAWN_EVENT, PF_GamePlay.GameplayEventTypes.EnemyTurnEnds);
+                UBAnimator.OutroPane(gameObject, .333f);
+                GameplayController.RaiseGameplayEvent(GlobalStrings.PLAYER_RESPAWN_EVENT,
+                    UBGamePlay.GameplayEventTypes.EnemyTurnEnds);
+            }
         }
-    }
 
-    public void ShowItemsFound()
-    {
-        DialogCanvasController.RequestItemViewer(PF_GamePlay.QuestProgress.ItemsFound);
-    }
+        public void ShowItemsFound()
+        {
+            GameController.Instance.QuestProgress.areItemsAwarded = true;
+            DialogCanvasController.RequestItemViewer(GameController.Instance.QuestProgress.ItemsFound);
+        }
 
-    public void OnBuyMoreLivesClick()
-    {
-        Debug.Log("Buy More Lives not implemented");
-        //throw an error?
+        public void OnBuyMoreLivesClick()
+        {
+            Debug.LogWarning("Buy More Lives not implemented");
+            //throw an error?
+        }
     }
 }

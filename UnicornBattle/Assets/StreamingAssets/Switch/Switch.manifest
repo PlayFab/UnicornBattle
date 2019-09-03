@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 3951222282
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: egdc
+      Dependencies: {}
+    Info_1:
+      Name: gm100
+      Dependencies: {}

@@ -1,43 +1,65 @@
 using System;
 using PlayFab.ClientModels;
+using UnicornBattle.Managers;
+using UnicornBattle.Managers.Auth;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RegistrationController : MonoBehaviour
+namespace UnicornBattle.Controllers
 {
-    public InputField userName;
-    public InputField email;
-    public InputField pass1;
-    public InputField pass2;
 
-    public Button register;
-    public Button exit;
-    public AccountStatusController controller;
-    private Action<AddUsernamePasswordResult> callback;
-
-    public void Init(Action<AddUsernamePasswordResult> cb = null)
+    public class RegistrationController : MonoBehaviour
     {
-        callback = cb;
-    }
+        public InputField userName;
+        public InputField email;
+        public InputField pass1;
+        public InputField pass2;
 
-    public void CloseRegistration()
-    {
-        gameObject.SetActive(false);
-    }
+        public Button register;
+        public Button exit;
+        public AccountStatusController controller;
+        private Action<AddUsernamePasswordResult> callback;
 
-    public void RegisterClicked()
-    {
-        if (!string.IsNullOrEmpty(pass1.text) && !string.IsNullOrEmpty(pass2.text) && string.Equals(pass1.text, pass2.text))
+        private PlayFabAuthManager Authentication
         {
-            PF_Authentication.AddUserNameAndPassword(userName.text, pass1.text, email.text, result =>
-            {
-                callback(result);
-                CloseRegistration();
-            });
+            get { return (PlayFabAuthManager) MainManager.Instance.getAuthManager(); }
         }
-        else
+
+        public void Init(Action<AddUsernamePasswordResult> cb = null)
         {
-            PF_Bridge.RaiseCallbackError(GlobalStrings.REGISTER_FAIL_MSG, PlayFabAPIMethods.AddUsernamePassword, MessageDisplayStyle.error);
+            callback = cb;
+        }
+
+        public void CloseRegistration()
+        {
+            gameObject.SetActive(false);
+        }
+
+        public void RegisterClicked()
+        {
+            if (null == Authentication) return;
+
+            if (!string.IsNullOrEmpty(pass1.text) && !string.IsNullOrEmpty(pass2.text) && string.Equals(pass1.text, pass2.text))
+            {
+                DialogCanvasController.RequestLoadingPrompt(PlayFabAPIMethods.AddUsernamePassword);
+
+                Authentication.AddUserNameAndPassword(
+                    userName.text,
+                    pass1.text,
+                    email.text,
+                    result =>
+                    {
+                        callback(result);
+                        CloseRegistration();
+                        PF_Bridge.RaiseCallbackSuccess(string.Empty, PlayFabAPIMethods.AddUsernamePassword);
+                    },
+                    (f) => { PF_Bridge.RaiseCallbackError(f, PlayFabAPIMethods.AddUsernamePassword); }
+                );
+            }
+            else
+            {
+                PF_Bridge.RaiseCallbackError(GlobalStrings.REGISTER_FAIL_MSG, PlayFabAPIMethods.AddUsernamePassword);
+            }
         }
     }
 }

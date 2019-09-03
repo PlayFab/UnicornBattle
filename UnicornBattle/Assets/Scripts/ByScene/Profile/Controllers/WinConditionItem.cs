@@ -1,5 +1,3 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class WinConditionItem : MonoBehaviour {
-}
+public class WinConditionItem : MonoBehaviour { }

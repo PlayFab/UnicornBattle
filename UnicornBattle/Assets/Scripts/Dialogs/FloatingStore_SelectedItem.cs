@@ -1,3 +1,5 @@
+using UnicornBattle.Controllers;
+using UnicornBattle.Managers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -33,7 +35,10 @@ public class FloatingStore_SelectedItem : MonoBehaviour
         itemCost.text = string.Format(" x{0}", item.finalPrice);
         currencyIcon.overrideSprite = GameController.Instance.iconManager.GetIconById(item.currencyKey, IconManager.IconTypes.Misc);
 
-        var qty = PF_PlayerData.GetItemQty(itemData.catalogItem.ItemId);
+        var l_inventoryMgr = MainManager.Instance.getInventoryManager();
+        if (null == l_inventoryMgr) return;
+
+        var qty = l_inventoryMgr.CountItemsByID(itemData.catalogItem.ItemId);
         if (qty != 1)
             totalUses.text = " x" + qty;
     }

@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 using System;
@@ -31,8 +30,8 @@ public class FirebaseDependency
     private const string GoogleStorageBucketKey = "google_storage_bucket";
     private const string ProjectIdKey = "project_id";
 
-    private const string FirebaseMessagingVersion = "17.0.0";
-    private const string FirebaseCoreVersion = "16.0.1";
+    private const string FirebaseMessagingVersion = "18.0.0";
+    private const string FirebaseCoreVersion = "16.0.9";
 
     static void SetupDependencies()
     {

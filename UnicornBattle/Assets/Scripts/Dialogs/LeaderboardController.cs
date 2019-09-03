@@ -1,7 +1,12 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
-public class LeaderboardController : MonoBehaviour {
-	public List<LeaderboardRowController> items = new List<LeaderboardRowController>();
+namespace UnicornBattle.Controllers
+{
+
+	public class LeaderboardController : MonoBehaviour
+	{
+		public List<LeaderboardRowController> items = new List<LeaderboardRowController>();
+	}
 }

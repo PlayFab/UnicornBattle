@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-//
 // Licensed under the MIT license.
 
 using System;
@@ -67,7 +66,7 @@ namespace Microsoft.AppCenter.Unity
             return AppCenterInternal.GetSdkVersion();
         }
 
-        public static AppCenterTask<string> GetLogUrl()
+        public static AppCenterTask<string> GetLogUrlAsync()
         {
             if (_logUrlTask == null)
             {
@@ -76,7 +75,7 @@ namespace Microsoft.AppCenter.Unity
             return _logUrlTask;
         }
 
-        public static AppCenterTask<long> GetStorageSize()
+        public static AppCenterTask<long> GetStorageSizeAsync()
         {
             if (_storageSizeTask == null)
             {
@@ -136,7 +135,7 @@ namespace Microsoft.AppCenter.Unity
         /// <summary>
         // Gets cached secret.
         /// </summary>
-        public static AppCenterTask<string> GetSecretForPlatform()
+        public static AppCenterTask<string> GetSecretForPlatformAsync()
         {
             if (_secretTask == null)
             {
