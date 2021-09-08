@@ -16,17 +16,8 @@
         "UsagePeriod": 3600,
         "UsagePeriodGroup": null
       },
-      "Container": {
-        "KeyItemId": null,
-        "ItemContents": null,
-        "ResultTableContents": null,
-        "VirtualCurrencyContents": null
-      },
-      "Bundle": {
-        "BundledItems": [],
-        "BundledResultTables": [],
-        "BundledVirtualCurrencies": null
-      },
+      "Container": null,
+      "Bundle": null,
       "CanBecomeCharacter": false,
       "IsStackable": false,
       "IsTradable": false,
@@ -70,11 +61,7 @@
       "RealCurrencyPrices": {},
       "Tags": [],
       "CustomData": "{\"icon\":\"DarkStone_Lock\"}",
-      "Consumable": {
-        "UsageCount": null,
-        "UsagePeriod": null,
-        "UsagePeriodGroup": null
-      },
+      "Consumable": null,
       "Container": null,
       "Bundle": null,
       "CanBecomeCharacter": false,
@@ -223,11 +210,7 @@
           "AU": 2500
         }
       },
-      "Bundle": {
-        "BundledItems": [],
-        "BundledResultTables": [],
-        "BundledVirtualCurrencies": null
-      },
+      "Bundle": null,
       "CanBecomeCharacter": false,
       "IsStackable": false,
       "IsTradable": false,
@@ -291,11 +274,7 @@
           "GM": 1
         }
       },
-      "Bundle": {
-        "BundledItems": [],
-        "BundledResultTables": [],
-        "BundledVirtualCurrencies": null
-      },
+      "Bundle": null,
       "CanBecomeCharacter": false,
       "IsStackable": false,
       "IsTradable": false,
@@ -538,11 +517,7 @@
           "AU": 10000
         }
       },
-      "Bundle": {
-        "BundledItems": [],
-        "BundledResultTables": [],
-        "BundledVirtualCurrencies": null
-      },
+      "Bundle": null,
       "CanBecomeCharacter": false,
       "IsStackable": false,
       "IsTradable": false,
