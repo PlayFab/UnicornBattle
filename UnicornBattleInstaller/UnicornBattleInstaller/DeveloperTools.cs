@@ -151,11 +151,3 @@ namespace UnicornBattleInstaller.DeveloperToolsUtility
     }
 
 }
-
-/*{
-	"Email":"marco@playfab.com",
-	"Password":"h!WifePF!03",
-	"DeveloperToolProductName":"EdEx-Unity-Hack-A-thon",
-	"DeveloperToolProductVersion":"1.01"
-}
-*/
